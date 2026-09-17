@@ -770,6 +770,11 @@ button {
   width: 100%;
   height: 100%;
   display: block;
+  /* Tum dokunuslar touch-action:none olan .maze-area'ya gitsin ki mobilde tarayici
+     yola dokununca kaydirma jesti sanip surustumeyi kesmesin. Surukleme tespiti
+     koordinat bazli oldugundan SVG'nin pointer olayina ihtiyaci yok. */
+  pointer-events: none;
+  touch-action: none;
 }
 .maze-road {
   fill: none;

@@ -61,18 +61,9 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
     return best;
   }
 
-  function down(e: React.PointerEvent) {
-    if (wonRef.current) return;
-    const p = toPct(e.clientX, e.clientY);
-    // baslangic hayvanina/yolun basina yakinsa sürüklemeyi baslat (cocuk dostu genis tolerans)
-    if (Math.hypot(p.x - pts[0].x, p.y - pts[0].y) < TOL * 1.6 || progRef.current > 0) {
-      dragging.current = true;
-      wrapRef.current?.setPointerCapture?.(e.pointerId);
-    }
-  }
-  function moveEv(e: React.PointerEvent) {
+  function applyMove(clientX: number, clientY: number) {
     if (!dragging.current || wonRef.current) return;
-    const p = toPct(e.clientX, e.clientY);
+    const p = toPct(clientX, clientY);
     const pr = project(p.x, p.y);
     if (pr.d < TOL) {
       const frac = pr.arc / total;
@@ -90,15 +81,43 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
       }
     }
   }
-  function up() {
-    dragging.current = false;
+  function down(e: React.PointerEvent) {
+    if (wonRef.current) return;
+    const p = toPct(e.clientX, e.clientY);
+    // baslangic hayvanina/yolun basina yakinsa sürüklemeyi baslat (cocuk dostu genis tolerans)
+    if (Math.hypot(p.x - pts[0].x, p.y - pts[0].y) < TOL * 1.6 || progRef.current > 0) {
+      dragging.current = true;
+      applyMove(e.clientX, e.clientY);
+    }
   }
+
+  // Hareket/bitisi WINDOW uzerinden dinle: mobilde en saglam yol. Parmak baska
+  // ogenin ustune gelse veya pointer-capture kaysa bile surukleme kesilmez
+  // (BodyGame ile ayni desen). Yataydaki tikanma bundan cok, SVG touch-action'dan
+  // kaynakliydi; ikisi birden cozuldu.
+  useEffect(() => {
+    function onMove(e: PointerEvent) {
+      if (dragging.current) applyMove(e.clientX, e.clientY);
+    }
+    function onUp() {
+      dragging.current = false;
+    }
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level.id]);
 
   if (!maze) return null;
 
   return (
     <div className="maze-wrap">
-      <div className="maze-area" ref={wrapRef} style={{ background: maze.bg }} onPointerDown={down} onPointerMove={moveEv} onPointerUp={up} onPointerLeave={up}>
+      <div className="maze-area" ref={wrapRef} style={{ background: maze.bg }} onPointerDown={down}>
         <svg viewBox="0 0 100 100" className="maze-svg">
           <path d={dstr} className="maze-road" pathLength={1} />
           <path d={dstr} className="maze-trail" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - progress} />

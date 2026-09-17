@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Eğlenceli Öğrenme Oyunu",
+  "short_name": "Öğren-Oyna",
+  "description": "3-5 yaş için sesli, sürükle-bırak eğitici oyunlar: sayılar, şekiller, eşleştirme, örüntü, karşılaştırma, dikkat, yapboz, hafıza ve yol bulma.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#a8e6ff",
+  "theme_color": "#ff6b6b",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

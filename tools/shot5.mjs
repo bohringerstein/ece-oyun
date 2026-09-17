@@ -1,0 +1,14 @@
+import { chromium } from "playwright";
+const OUT = process.argv[2] || ".";
+const b = await chromium.launch();
+const page = await b.newPage({ viewport: { width: 1100, height: 800 } });
+await page.goto("http://localhost:4173/?noshuffle", { waitUntil: "networkidle" });
+await page.getByText("Başla").click();
+await page.waitForTimeout(500);
+await page.getByText("Eşleştirme").first().click();
+await page.waitForTimeout(400);
+await page.getByText("Kim Ne Yer", { exact: false }).first().click();
+await page.waitForTimeout(1500);
+await page.screenshot({ path: `${OUT}/v-match.png` });
+await b.close();
+console.log("BITTI");

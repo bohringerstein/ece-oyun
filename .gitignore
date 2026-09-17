@@ -1,0 +1,7 @@
+node_modules
+dist
+tools/pages_render
+tools/segments
+tools/__pycache__
+*.tsbuildinfo
+.DS_Store

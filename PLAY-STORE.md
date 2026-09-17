@@ -9,7 +9,7 @@ Oyun bir PWA olduğu için Android uygulaması **PWABuilder** ile otomatik üret
 - ✅ Domain doğrulama iskeleti: `public/.well-known/assetlinks.json` (parmak izi sonra doldurulacak).
 
 ## Adımlar
-1. **Siteyi yayınla** (Cloudflare Pages). TWA bu HTTPS URL'yi açar.
+1. **Siteyi yayınla** (Vercel). TWA bu HTTPS URL'yi açar.
 2. **PWABuilder** (https://www.pwabuilder.com):
    - Yayın URL'ni gir → "Package for Stores" → **Android**.
    - **Package ID (paket adı):** `com.digilera.ogrenoyna` ← `assetlinks.json` ile AYNI olmalı.
@@ -18,7 +18,7 @@ Oyun bir PWA olduğu için Android uygulaması **PWABuilder** ile otomatik üret
 3. **Domain doğrulama:**
    - PWABuilder çıktısındaki (veya Play Console → App signing'deki) **SHA-256 parmak izini** kopyala.
    - `public/.well-known/assetlinks.json` içindeki `BURAYA_...` yazısını bu parmak iziyle değiştir.
-   - `npm run build` → Cloudflare'a yeniden yayınla. (Doğrula: `https://SITEN/.well-known/assetlinks.json` açılmalı.)
+   - `npm run build` → siteyi yeniden yayınla (Vercel: `git push` yeter). (Doğrula: `https://SITEN/.well-known/assetlinks.json` açılmalı.)
    - Not: Play "App Signing" kullanırsan gerçek parmak izi Play Console'daki olur; onu da eklemen gerekir (iki parmak izi de eklenebilir).
 4. **Play Console** (tek seferlik **25$**):
    - Uygulama oluştur → `.aab` yükle.

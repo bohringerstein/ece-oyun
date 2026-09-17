@@ -107,10 +107,18 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
         <span className="maze-goal" style={{ left: `${pts[pts.length - 1].x}%`, top: `${pts[pts.length - 1].y}%` }}>
           {maze.end}
         </span>
-        {/* baslangic isareti (yol basi) */}
+        {/* baslangic ipucu: hayvana "buradan tut" isareti. Hayvanla AYNI noktada olup
+            altinda kalmasin diye ekranin ic tarafina kaydirilir + z-index yuksek +
+            hayvani gosteren yone cevrilir (ust yaridaysa alttan 👆, alt yaridaysa ustten 👇). */}
         {progress < 0.06 && (
-          <span className="maze-flag" style={{ left: `${pts[0].x}%`, top: `${pts[0].y}%` }}>
-            👉
+          <span
+            className="maze-flag"
+            style={{
+              left: `${pts[0].x}%`,
+              top: `${pts[0].y < 50 ? pts[0].y + 13 : pts[0].y - 13}%`,
+            }}
+          >
+            {pts[0].y < 50 ? "👆" : "👇"}
           </span>
         )}
         {/* suruklenene hayvan */}

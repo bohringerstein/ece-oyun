@@ -805,15 +805,17 @@ button {
 }
 .maze-flag {
   font-size: min(8vw, 34px);
-  animation: mazePoint 0.9s ease-in-out infinite;
+  z-index: 3; /* hayvanin (z-index:2) USTUNDE kalsin, altinda gizlenmesin */
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  animation: mazeBounce 0.8s ease-in-out infinite;
 }
 @keyframes mazePulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-50%, -50%) scale(1.18); }
 }
-@keyframes mazePoint {
+@keyframes mazeBounce {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-62%, -50%) scale(1.12); }
+  50% { transform: translate(-50%, -66%) scale(1.12); }
 }
 
 /* ---------- ÇIKARTMA (ödül koleksiyonu) ---------- */

@@ -4,9 +4,10 @@ export type Content =
   | { kind: "image"; src: string }
   | { kind: "shadow"; src?: string; char?: string } // gorseli/emojiyi siyah siluet cizer (golge)
   | { kind: "emoji"; char: string }
-  | { kind: "shape"; shape: "circle" | "square" | "triangle" | "star"; color: string }
+  | { kind: "shape"; shape: "circle" | "square" | "triangle" | "star" | "rectangle"; color: string }
   | { kind: "number"; value: number; color?: string }
   | { kind: "group"; char: string; n: number; jar?: boolean } // n adet emoji; jar=kavanoz icinde
+  | { kind: "dots"; n: number; color?: string } // zar benzeri nokta deseni (subitizing / nokta say)
   | {
       kind: "puzzle"; // 2x2 izgarada eksik parcali sekil ya da tek parca
       shape: "circle" | "square" | "triangle" | "star" | "heart";
@@ -37,7 +38,10 @@ export type GameKind =
   | "puzzle" // eksik parcayi sekle tam yerlestir
   | "jigsaw" // resmi parcalara ayir, parcalari birlestir
   | "memory" // kapali kartlari cevir, ayni cifti bul (hafiza)
-  | "maze"; // hayvani parmakla yol boyunca surukleyip hedefe goturme (yol takibi)
+  | "maze" // hayvani parmakla yol boyunca surukleyip hedefe goturme (yol takibi)
+  | "seriate" // nesneleri kucukten buyuge sirala (boyut seriation)
+  | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
+  | "trace"; // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
 
 // Farkli bul (spot): bir sahnedeki tek bir nesne (emoji + konum + boyut)
 export interface SpotItem {
@@ -61,6 +65,8 @@ export interface Level {
   // select
   prompt?: string;
   items?: { content: Content; correct: boolean }[];
+  // sekiller: turun ustunde gosterilecek SAF sekil referansi (cihaz bagimsiz, canvas cizim)
+  refShape?: { shape: "circle" | "square" | "triangle" | "star" | "rectangle"; color: string };
 
   // compare (her satirda bir dogru)
   compareRows?: { items: Content[]; correctIndex: number; itemScales?: number[] }[];
@@ -102,6 +108,17 @@ export interface Level {
   // boyunca parmakla suruklenip 'end' hedefine ulastirilir. tol = isabet toleransi (0..1).
   maze?: { start: string; end: string; path: { x: number; y: number }[]; bg: string; tol: number };
 
+  // seriate (kucukten buyuge sirala): ayni emojinin n adedi farkli boyutlarda gosterilir,
+  // cocuk en kucukten en buyuge dogru siralar (dokunma sirasi).
+  seriate?: { emoji: string; n: number };
+
+  // weight (terazi): iki nesne terazi kefelerinde; cocuk mode'a gore (agir/hafif)
+  // olani secer, dogruysa o kefe iner (nedensel geri bildirim).
+  weight?: { mode: "heavy" | "light"; heavy: string; light: string };
+
+  // trace (rakam izleme): parmakla rakam sekilli yolun uzerinden gec. path = 0..100 noktalar.
+  trace?: { digit: string; path: { x: number; y: number }[] };
+
   // derinlik: ek bölümler (ilk bölüm level'in kendi alanlarıdır, bunlar sonrakiler)
   rounds?: Round[];
 
@@ -130,6 +147,8 @@ export type Round = Partial<Pick<
   | "jigsaw"
   | "memory"
   | "maze"
+  | "seriate"
+  | "weight"
   | "spot"
   | "diffs"
   | "instr"

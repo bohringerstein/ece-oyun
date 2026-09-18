@@ -5,6 +5,7 @@ const e = (char: string): Content => ({ kind: "emoji", char });
 const shd = (char: string): Content => ({ kind: "shadow", char });
 const grp = (char: string, n: number, jar?: boolean): Content => ({ kind: "group", char, n, jar });
 const num = (value: number): Content => ({ kind: "number", value });
+const dots = (n: number, color?: string): Content => ({ kind: "dots", n, color });
 
 // --------- RASTGELE YARDIMCILARI ---------
 // Her level acilisinda buyuk havuzlardan TAZE, rastgele bölümler uretilir.
@@ -54,40 +55,47 @@ export function shadowRounds(): Round[] {
 }
 
 // --------- EŞLEŞTİRME (ikili havuzlari) ---------
+// Bir turda HICBIR emoji tekrar etmesin (ne surukle ne hedef tarafinda). Aksi halde
+// ayni emoji (or. 🧦) iki farkli hedefe denk gelip cocugu "hangisi nereye?" ikilemine
+// sokabiliyordu. Benzersiz emoji seti garantili.
+function samplePairsUnique(pool: [string, string][], k: number): [string, string][] {
+  const out: [string, string][] = [];
+  const used = new Set<string>();
+  for (const [a, b] of shuffleArr(pool.slice())) {
+    if (a === b || used.has(a) || used.has(b)) continue;
+    out.push([a, b]);
+    used.add(a);
+    used.add(b);
+    if (out.length >= k) break;
+  }
+  return out;
+}
 function pairRounds(pool: [string, string][], per = 4): Round[] {
-  return rounds(() => ({ pairs: sample(pool, per).map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
+  return rounds(() => ({ pairs: samplePairsUnique(pool, per).map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
 }
 
+// ILISKILI = "birbiriyle ilgili": aitlik / neden-sonuç (hayvan-ürün, sebep-sonuç).
+// Soyut/tanınmaz çiftler (iplik-yumak, çapa-gemi, teleskop-yıldız, kamera-tablo) ayıklandı.
 const ILISKILI: [string, string][] = [
-  ["🥄", "🍽️"], ["🐝", "🍯"], ["☂️", "🌧️"], ["✏️", "📓"], ["🔑", "🔒"], ["🪥", "🦷"],
-  ["🖍️", "🎨"], ["⚽", "🥅"], ["🎸", "🎵"], ["📖", "👓"], ["🕯️", "🔥"], ["☕", "🥐"],
-  ["🧦", "👟"], ["🔨", "🧱"], ["💧", "🚰"], ["🌂", "🌧️"], ["🧵", "🧶"], ["📷", "🖼️"],
-  ["🎣", "🐟"], ["🛏️", "😴"], ["🍳", "🥚"], ["✂️", "📄"], ["🔌", "💡"], ["🎻", "🎶"],
-  ["🧼", "🛁"], ["🌱", "💧"], ["🧴", "🧽"], ["🔭", "⭐"], ["⚓", "⛵"], ["🎁", "🎀"],
-];
-const NESNE_ILISKI: [string, string][] = [
-  ["👶", "🍼"], ["🏫", "📚"], ["🍎", "🌳"], ["🌙", "⭐"], ["🐔", "🥚"], ["🐄", "🥛"],
-  ["🐝", "🌸"], ["✂️", "📄"], ["🍴", "🍳"], ["🚒", "🔥"], ["🚓", "🚨"], ["⛄", "❄️"],
-  ["🌧️", "☔"], ["🎂", "🎉"], ["🏖️", "🌊"], ["🚗", "🛣️"], ["🌽", "🌾"], ["🐛", "🦋"],
-  ["🥚", "🐣"], ["🌰", "🐿️"], ["🐑", "🧶"], ["🐴", "🐎"], ["🌞", "🌻"], ["🐢", "🥬"],
-  ["🎨", "🖼️"], ["🌵", "🏜️"], ["🐧", "🧊"], ["🐪", "🏜️"], ["🍇", "🧃"], ["🌾", "🍞"],
+  ["🐝", "🍯"], ["☂️", "🌧️"], ["🔑", "🔒"], ["🐔", "🥚"], ["🐄", "🥛"], ["🌱", "💧"],
+  ["🕯️", "🔥"], ["🎣", "🐟"], ["🐿️", "🌰"], ["🐝", "🌸"], ["☀️", "🌻"], ["🍎", "🌳"],
+  ["🌾", "🍞"], ["🍇", "🧃"], ["🐧", "🧊"], ["🐛", "🦋"], ["🚒", "🔥"], ["⛄", "❄️"],
 ];
 // 3-4 yasin NET bildigi, bariz hayvan-yiyecek eslesmeleri.
 // (tavuk-findik, kirpi-cilek, kaplumbaga-marul gibi zorlayici/belirsiz olanlar cikarildi)
 // Hedefler BENZERSIZ -> ayni turda iki hayvan ayni yiyecege denk gelip cocugu sasirtmaz.
 const YIYECEK: [string, string][] = [
   ["🐰", "🥕"], ["🐵", "🍌"], ["🐶", "🦴"], ["🐱", "🐟"], ["🐭", "🧀"], ["🐻", "🍯"],
-  ["🐴", "🍎"], ["🐷", "🌽"], ["🦁", "🥩"], ["🐮", "🌿"], ["🦆", "🍞"], ["🐝", "🌸"],
-  ["🐿️", "🌰"], ["🐼", "🎋"], ["🐘", "🥜"], ["🦒", "🍃"],
+  ["🐴", "🍎"], ["🐷", "🌽"], ["🦁", "🥩"], ["🦆", "🍞"], ["🐝", "🌸"], ["🐘", "🥜"],
 ];
+// IKILI = "birlikte kullandığımız/giydiğimiz ikili": giyim, vücut, somut araç ikilileri.
+// Soyut çiftler (şapka-damat, taç-prens, mayo-plaj, ok-hedef) ayıklandı.
 const IKILI: [string, string][] = [
-  ["🧦", "👟"], ["🧤", "🧥"], ["👓", "👀"], ["🖊️", "📝"], ["🔑", "🚪"], ["🪥", "🦷"],
-  ["🍴", "🍽️"], ["⚽", "🥅"], ["🎩", "🤵"], ["☂️", "🌧️"], ["🧢", "⚾"], ["👙", "🏖️"],
-  ["🖌️", "🎨"], ["🔦", "🌑"], ["🧣", "❄️"], ["🍞", "🧈"], ["🔒", "🗝️"], ["🎣", "🐟"],
-  ["🏹", "🎯"], ["🧦", "🦶"], ["👑", "🤴"], ["🕶️", "☀️"], ["🎧", "🎵"], ["🍼", "👶"],
+  ["🧦", "👟"], ["🧤", "🧥"], ["👓", "👀"], ["🍴", "🍽️"], ["🖊️", "📝"], ["🔑", "🚪"],
+  ["🪥", "🦷"], ["🧼", "🛁"], ["🧣", "❄️"], ["🎧", "🎵"], ["🩴", "🏖️"], ["🍞", "🧈"],
+  ["🧢", "☀️"], ["🍼", "👶"],
 ];
 export const iliskiliRounds = () => pairRounds(ILISKILI);
-export const nesneIliskiRounds = () => pairRounds(NESNE_ILISKI);
 export const yiyecekRounds = () => pairRounds(YIYECEK);
 export const ikiliRounds = () => pairRounds(IKILI, 3);
 
@@ -129,7 +137,7 @@ export function puzzleRounds(): Round[] {
   }));
 }
 
-// --------- SEÇME (şekiller / davranış / uçanlar / duygular) ---------
+// --------- SEÇME (şekiller / uçanlar / duygular) ---------
 function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?: string): Round[] {
   return rounds(() => {
     const items = [
@@ -143,7 +151,8 @@ function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?
 // (fis, dosya dolabi, kredi karti, bilgisayar gibi soyut/ofis nesneleri ayiklandi)
 export const kareRounds = () =>
   selectRounds(
-    ["🎁","🪟","🧇","📦","📺","🖼️","🧊","🍫","🧱","📚"],
+    // 🧱🍫📺 cikarildi: bunlar DIKDORTGEN (dik/uzun) ve dikdortgen havuzunda da vardi -> celiski
+    ["🎁","🪟","🧇","📦","🖼️","🧊","📚","🧀"],
     ["🏀","⚽","🍦","🍩","🌙","🍊","🎈","🕐","🍉","🥎","🌕","🍪","🎾","🪀"],
     3, 3
   );
@@ -161,7 +170,8 @@ export const daireRounds = () =>
   );
 export const yildizRounds = () =>
   selectRounds(
-    ["⭐","🌟","✨","💫","🌠"],
+    // 💫 cikarildi: cihazda YILDIZ degil halka/yuzuk olarak render oluyor
+    ["⭐","🌟","✨","🌠","✴️"],
     ["⚽","🟥","🍎","📦","🍕","🟩","🍩","🎈","🌙","🍊","🏀","🧱"],
     3, 3
   );
@@ -171,25 +181,36 @@ export const dikdortgenRounds = () =>
     ["⚽","🍊","🍕","🍩","⭐","🏀","🎈","🥎","🍪","🌕","🍦","🎾"],
     3, 3
   );
-export const davranisRounds = () =>
-  selectRounds(
-    ["🤝","🤗","🧹","📚","🪥","💧","🚿","🧼","🙋","❤️","🌱","🍎","♻️","🧺","🐶","💗","🤲","🍳","📖","👍"],
-    ["😡","👊","🗑️","😤","⛔","💢","🙅","😠","😾","💔","👎"],
-    3, 3,
-    "İyi ve doğru olan davranışları bul ve sepete sürükle."
-  );
 export const ucanlarRounds = () =>
   selectRounds(
     ["✈️","🎈","🦅","🚀","🦋","🐦","🚁","🪁","🦇","🛸","🕊️","🦉","🦜","🦆","🐝","🦩","🦟","🦚","🚟","🎆"],
     ["🚜","🏍️","🚗","🚲","🚂","⛵","🐢","🐘","🚌","🚚","🦔","🐌","🚑","🦥","🐊","🚕"],
     3, 3
   );
+// DUYGULAR: 3-4 yasin NET okuyabildigi INSAN yuzleri.
+// Belirsizler (😎😌☺️😏😂🥲🥺) ve kedi yuzleri (😸😻😿😾) + sinirdaki 🤩 cikarildi:
+// duygu = insan yuz ifadesi kavrami bulanmasin.
+const HAPPY_FACES = ["😀","😊","🥰","😄","😁","🤗","😆","😍","🥳","🙂"];
+const SAD_FACES = ["😢","😭","😞","😔","🙁","☹️","😥"];
+const ANGRY_FACES = ["😠","😡","😤"];
+const SCARED_FACES = ["😨","😰","😱"];
 export const duygularRounds = () =>
-  selectRounds(
-    ["😀","😊","🥰","😄","😁","🤗","😆","😍","😎","🤩","🥳","😻","☺️","😌","😸","🙂"],
-    ["😢","😠","😴","😨","😭","😡","😰","🥶","😱","😞","😔","🥺","😖","😣","😤"],
-    3, 3
-  );
+  selectRounds(HAPPY_FACES, [...SAD_FACES, ...ANGRY_FACES, ...SCARED_FACES], 3, 3);
+export const uzgunRounds = () =>
+  selectRounds(SAD_FACES, [...HAPPY_FACES, ...ANGRY_FACES], 3, 3);
+export const kizginRounds = () =>
+  selectRounds(ANGRY_FACES, [...HAPPY_FACES, ...SAD_FACES], 3, 3);
+
+// GUNLUK RUTIN (yasam becerisi): gunluk isleri dogru siraya diz (sequence).
+const ROUTINES: string[][] = [
+  ["🛏️", "🪥", "👕", "🥣"],   // uyan → diş fırçala → giyin → kahvaltı
+  ["🛁", "👚", "📖", "😴"],   // banyo → pijama → kitap → uyku
+  ["🧼", "🍽️", "🪥", "🎒"],   // el yıka → ye → diş fırçala → çanta
+  ["👟", "🧥", "🚪", "🌳"],   // ayakkabı → mont → kapı → dışarı
+];
+export function routineRounds(): Round[] {
+  return rounds(() => ({ order: pick(ROUTINES).map(e) }));
+}
 
 // --------- KARŞILAŞTIRMA (nicelik) ---------
 const QTY = ["🍎","🍬","⭐","🐟","🎈","🌸","🍓","🐥","🍇","🚗","🐝","🍒","🌼","🐞","🍊","🐤","🎁","🐙","🍄","🐚"];
@@ -227,28 +248,57 @@ function compareSizeRounds(kind: "big" | "small"): Round[] {
 export const buyukRounds = () => compareSizeRounds("big");
 export const kisaRounds = () => compareSizeRounds("small");
 
-// --------- KARŞILAŞTIRMA (agirlik) ---------
-// Yeni kavram: agir/hafif. Nesneler EsIT boyutta gosterilir ki cocuk BOYUTA degil
-// nesnenin kendisine (fil agir, tuy hafif) gore karar versin. Belirgin karsit ciftler.
-const HEAVY = ["🐘", "🦛", "🦏", "🐳", "🚗", "🚌", "🚜", "🪨", "🧱", "🏠", "⚓", "🐻", "🦁", "🌳", "🛢️"];
-const LIGHT = ["🪶", "🎈", "🍃", "🌸", "🦋", "🐝", "🐦", "🪁", "☁️", "🫧", "🍂", "🌾", "🧻", "🪷", "🍬"];
-function compareWeightRounds(kind: "heavy" | "light"): Round[] {
+// --------- AĞIRLIK (terazi) ---------
+// Terazide agir/hafif secimi; dogru secince agir kefe iner (WeightGame). Belirsiz
+// nesneler (ayi, aslan, agac, kus) cikarildi; 3-4 yasin net bildigi karsitlar kaldi.
+const HEAVY = ["🐘", "🦛", "🦏", "🐳", "🚗", "🚌", "🚜", "🪨", "🧱", "🏠", "⚓", "🛢️", "🚂", "🗿"];
+const LIGHT = ["🪶", "🎈", "🍃", "🌸", "🦋", "🐝", "🪁", "☁️", "🫧", "🍂", "🌾", "🧻", "🕊️", "🍬"];
+function weightRounds(mode: "heavy" | "light"): Round[] {
+  return rounds(() => ({ weight: { mode, heavy: pick(HEAVY), light: pick(LIGHT) } }));
+}
+export const agirRounds = () => weightRounds("heavy");
+export const hafifRounds = () => weightRounds("light");
+
+// --------- KARŞILAŞTIRMA (dolu/boş) ---------
+// Ayni kavanozun DOLU vs BOŞ hali; cocuk dolu (ya da bos) olani secer.
+const FILL_ITEMS = ["🔵", "🔴", "🟢", "🟡", "🟣", "🟠", "🍬", "⭐", "🍓", "🐟"];
+function fillRounds(kind: "full" | "empty"): Round[] {
+  return rounds(() => ({
+    compareRows: sample(FILL_ITEMS, 3).map((emoji) => ({
+      items: [grp(emoji, randInt(3, 5), true), grp(emoji, 0, true)], // [dolu, bos]
+      correctIndex: kind === "full" ? 0 : 1,
+    })),
+    compareBySize: false,
+  }));
+}
+export const doluRounds = () => fillRounds("full");
+export const bosRounds = () => fillRounds("empty");
+
+// --------- NOKTA SAY (subitizing) ---------
+// Zar benzeri nokta desenine bakip (saymadan) dogru rakami esle.
+const DOT_COLORS = ["#e63946", "#3a86ff", "#2a9d8f", "#f77f00", "#8338ec", "#ff006e"];
+export function noktaSayRounds(): Round[] {
   return rounds(() => {
-    const hs = sample(HEAVY, 3);
-    const ls = sample(LIGHT, 3);
+    const cnts = sample([1, 2, 3, 4, 5, 6], 3);
     return {
-      compareRows: hs.map((h, i) => ({ items: [e(h), e(ls[i])], correctIndex: kind === "heavy" ? 0 : 1 })),
-      compareBySize: false,
+      groups: cnts.map((c, i) => ({ content: dots(c, DOT_COLORS[i % DOT_COLORS.length]), n: c })),
+      numbers: cnts,
     };
   });
 }
-export const agirRounds = () => compareWeightRounds("heavy");
-export const hafifRounds = () => compareWeightRounds("light");
+
+// --------- KÜÇÜKTEN BÜYÜĞE SIRALA (seriation) ---------
+const SERIATE_POOL = [
+  "⭐", "🍎", "🎈", "🐟", "🌸", "🐻", "🚗", "🍰", "🌵", "🐰", "🦋", "🍄", "🎁", "🌙", "🐝", "🐘", "🌻", "🍦",
+];
+export function seriateRounds(): Round[] {
+  return rounds(() => ({ seriate: { emoji: pick(SERIATE_POOL), n: randInt(3, 4) } }));
+}
 
 // --------- SAYMA ---------
 function countRounds(pool: string[], jar: boolean): Round[] {
   return rounds(() => {
-    const cnts = sample([1, 2, 3, 4, 5, 6], 3); // 3 farkli sayi
+    const cnts = sample([1, 2, 3, 4, 5, 6, 7, 8, 9], 3); // 1-9 arasi 3 farkli sayi
     const emojis = sample(pool, 3);
     const groups = cnts.map((cnt, g) => ({ content: grp(emojis[g], cnt, jar), n: cnt }));
     return { groups, numbers: cnts };
@@ -478,8 +528,12 @@ function spotCellItem(r: number, c: number, e: string): SpotItem {
   return { e, x, y, s };
 }
 
+// Fark tipleri agirlikli: cogunlukla KALDIR/DEGISTIR (3-4 yas net gorur),
+// boyut-degisimi NADIR ve cok BELIRGIN (0.35x/2.1x) yapilir. Ilk bolumler 2 fark,
+// sonrakiler 3 fark (kademeli zorluk).
+const SPOT_DIFF_TYPES = [0, 0, 0, 0, 1, 1, 1, 1, 2]; // ~%44 kaldir, %44 degistir, %11 boyut
 export function spotRounds(): Round[] {
-  return rounds(() => {
+  return Array.from({ length: ROUNDS }, (_, roundIdx) => {
     const theme = pick(SPOT_THEMES);
     const cells: { r: number; c: number }[] = [];
     for (let r = 0; r < SPOT_ROWS; r++) for (let c = 0; c < SPOT_COLS; c++) cells.push({ r, c });
@@ -488,12 +542,12 @@ export function spotRounds(): Round[] {
     const emojis = sample(theme.items, count);
     const a: SpotItem[] = filled.map((cell, i) => spotCellItem(cell.r, cell.c, emojis[i]));
 
-    // B = kopya, sonra 3 fark uygula
+    const nDiffs = roundIdx < 4 ? 2 : 3; // kademeli: ilk 4 tur 2 fark, sonra 3
     const b: (SpotItem | null)[] = a.map((it) => ({ ...it }));
     const diffs: { x: number; y: number }[] = [];
-    for (const idx of sample(a.map((_, i) => i), SPOT_DIFFS)) {
+    for (const idx of sample(a.map((_, i) => i), nDiffs)) {
       const it = a[idx];
-      const t = randInt(0, 2);
+      const t = pick(SPOT_DIFF_TYPES);
       if (t === 0) {
         b[idx] = null; // nesneyi kaldir
       } else if (t === 1) {
@@ -502,10 +556,39 @@ export function spotRounds(): Round[] {
         while (ne === it.e && g++ < 12) ne = pick(theme.items);
         b[idx] = { ...it, e: ne }; // nesneyi degistir
       } else {
-        b[idx] = { ...it, s: it.s * (Math.random() < 0.5 ? 0.55 : 1.6) }; // boyutu degistir
+        b[idx] = { ...it, s: it.s * (Math.random() < 0.5 ? 0.35 : 2.1) }; // boyut: cok belirgin
       }
       diffs.push({ x: it.x, y: it.y });
     }
     return { spot: { bg: theme.bg, a, b: b.filter(Boolean) as SpotItem[], diffs } };
+  });
+}
+
+// --------- HEPSİNİ BUL (görsel dikkat / tarama) ---------
+// Kalabalıkta bir hedef türün TÜM örneklerini bul (ör. bütün kelebekleri).
+// Her hedefin TURKCE ADLI yönergesi var (emoji DEGIL): boylece her turun yönergesi
+// nöral mp3'e sahip olur (bkz. voiceLines FINDALL_INSTRS) ve LevelShell her turda
+// dogru hedefi seslendirir. round 0 = kelebek (level'in temel instr'iyle ayni).
+const FINDALL_SETS: { target: string; instr: string; distractors: string[] }[] = [
+  { target: "🦋", instr: "Bütün kelebekleri bul ve sepete sürükle.", distractors: ["🐝", "🐞", "🐛", "🌸", "🍄", "🐌"] },
+  { target: "🐟", instr: "Bütün balıkları bul ve sepete sürükle.", distractors: ["🐠", "🐙", "🦀", "🐚", "⭐", "🌊"] },
+  { target: "⭐", instr: "Bütün yıldızları bul ve sepete sürükle.", distractors: ["🌙", "☁️", "🌈", "🎈", "🪁", "🌞"] },
+  { target: "🍎", instr: "Bütün elmaları bul ve sepete sürükle.", distractors: ["🍌", "🍇", "🍓", "🍊", "🍐", "🍒"] },
+  { target: "🐢", instr: "Bütün kaplumbağaları bul ve sepete sürükle.", distractors: ["🐸", "🦎", "🐍", "🐰", "🦔", "🐹"] },
+  { target: "🌸", instr: "Bütün çiçekleri bul ve sepete sürükle.", distractors: ["🌻", "🌷", "🌼", "🌵", "🍀", "🌹"] },
+];
+// voiceLines bu yönergeleri seslendirilecek metinler listesine ekler (mp3 uretilsin)
+export const FINDALL_INSTRS = FINDALL_SETS.map((s) => s.instr);
+export function findAllRounds(): Round[] {
+  return Array.from({ length: ROUNDS }, (_, i) => {
+    const set = i === 0 ? FINDALL_SETS[0] : pick(FINDALL_SETS);
+    const nTarget = randInt(2, 3);
+    const nDist = randInt(3, 4);
+    const items = [
+      ...Array.from({ length: nTarget }, () => ({ content: e(set.target), correct: true })),
+      ...sample(set.distractors, nDist).map((d) => ({ content: e(d), correct: false })),
+    ];
+    // her tur KENDI hedef yönergesini tasir -> LevelShell her turda seslendirir
+    return { items: shuffleArr(items), instr: set.instr };
   });
 }

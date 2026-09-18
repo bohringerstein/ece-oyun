@@ -38,6 +38,8 @@ export interface Board {
   slots: Slot[];
   statics: StaticCard[];
   win: number;
+  // opsiyonel: bir noktayi gosteren animasyonlu parmak (sekiller: ust referansi isaret eder)
+  pointer?: [number, number];
 }
 
 const key = (c: Content) => JSON.stringify(c);
@@ -61,6 +63,7 @@ export function buildBoard(level: Level): Board {
   const slots: Slot[] = [];
   const statics: StaticCard[] = [];
   let win = 0;
+  let pointer: [number, number] | undefined;
 
   const noShuffle =
     typeof window !== "undefined" && new URLSearchParams(window.location.search).has("noshuffle");
@@ -185,15 +188,32 @@ export function buildBoard(level: Level): Board {
     const cols = n <= 4 ? 2 : n <= 6 ? 3 : 4; // az/geniş öğelerde üst üste binmesin
     const rows = Math.ceil(n / cols);
     const width = 8.8;
+    // gorsel (image) illustrasyonlari BUYUK gosterilsin (net anlasilsin);
+    // az sayida (<=2) resimli oge varsa daha da buyut.
+    const hasPic = its.some(({ it }) => it.content.kind === "image");
+    const bigScale = hasPic ? (n <= 2 ? 1.95 : 1.5) : undefined;
+    // SEKILLER: turun ustunde SAF sekil referansi goster (cocuk hedef sekli surekli gorsun)
+    const topY = level.refShape ? 2.7 : 3.5; // ref varsa ogeleri asagi kaydir
+    if (level.refShape) {
+      statics.push({
+        content: { kind: "shape", shape: level.refShape.shape, color: level.refShape.color },
+        pos: [0, 4.6],
+        w: 1.7,
+        h: 1.7,
+      });
+      // yonerge "bak bu bir kare" derken ustteki ornek sekli isaret eden parmak
+      pointer = [1.35, 3.75];
+    }
     its.forEach(({ it, i }, k) => {
       const r = Math.floor(k / cols);
       const c = k - r * cols;
       tokens.push({
         id: `i${i}`,
         content: it.content,
-        home: [cellX(cols, c, width), 3.7 - r * (rows > 2 ? 2.3 : 2.7)],
+        home: [cellX(cols, c, width), topY - r * (rows > 2 ? 2.3 : 2.7)],
         tag: `i${i}`,
         correct: it.correct,
+        scale: bigScale,
       });
     });
     slots.push({
@@ -291,7 +311,9 @@ export function buildBoard(level: Level): Board {
         expects: `o${i}`,
         basket: false,
         style: "slot",
-        label: String(i + 1),
+        // pozisyon etiketi (1,2,3...) YOK: "Sayıları Sırala"da referans sayilarla
+        // (or. 5-6-7-8-9) cakisip cocugu sasirtiyordu. Kutular ustteki rehber
+        // satirla zaten sutun sutun hizali; etikete gerek yok.
         w: size,
         h: size,
       });
@@ -375,5 +397,5 @@ export function buildBoard(level: Level): Board {
     win = groups.length;
   }
 
-  return { tokens, slots, statics, win };
+  return { tokens, slots, statics, win, pointer };
 }

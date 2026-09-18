@@ -44,6 +44,37 @@ export function flipSound() {
   tone(520, 0, 0.08, 0.16, "triangle");
 }
 
+// Kagit "sayfa cevirme" hisirtisi - cikartma kitabinda (bandpass suzulmus gurultu)
+export function pageFlipSound() {
+  const a = getAudioCtx();
+  if (a.state !== "running") resumeAudio();
+  const dur = 0.24;
+  const n = Math.floor(a.sampleRate * dur);
+  const buf = a.createBuffer(1, n, a.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) {
+    const t = i / n;
+    d[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t); // sonlanan gurultu
+  }
+  const src = a.createBufferSource();
+  src.buffer = buf;
+  const bp = a.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.Q.value = 0.7;
+  const now = a.currentTime;
+  bp.frequency.setValueAtTime(900, now);
+  bp.frequency.exponentialRampToValueAtTime(3600, now + dur); // yukselen "fişşt"
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.linearRampToValueAtTime(0.22, now + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0008, now + dur);
+  src.connect(bp);
+  bp.connect(g);
+  g.connect(a.destination);
+  src.start(now);
+  src.stop(now + dur + 0.02);
+}
+
 // Nazik "tekrar dene" sesi
 export function wrongSound() {
   tone(300, 0, 0.18, 0.18, "sine");

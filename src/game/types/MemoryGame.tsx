@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Level } from "../data/types";
 import { flipSound, popSound, wrongSound } from "../audio/sfx";
-import { speakPraise } from "../audio/speak";
 
 interface Card {
   id: string;
@@ -43,6 +42,7 @@ export function MemoryGame({ level, onWin }: { level: Level; onWin: () => void }
   const [flipped, setFlipped] = useState<string[]>([]); // acik ama henuz eslesmemis (en fazla 2)
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false); // yanlis ciftte geri kapanma bekleniyor
+  const [preview, setPreview] = useState(true); // tur basi: tum kartlar kisa sure acik (scaffolding)
   const wonRef = useRef(false);
 
   useEffect(() => {
@@ -50,10 +50,14 @@ export function MemoryGame({ level, onWin }: { level: Level; onWin: () => void }
     setMatched(new Set());
     setBusy(false);
     wonRef.current = false;
+    // tur basinda tum kartlari ~1.6sn acik goster, sonra kapat (kucuk yasa destek)
+    setPreview(true);
+    const t = setTimeout(() => setPreview(false), 1600);
+    return () => clearTimeout(t);
   }, [level.id]);
 
   function tap(card: Card) {
-    if (busy || wonRef.current) return;
+    if (preview || busy || wonRef.current) return;
     if (matched.has(card.id) || flipped.includes(card.id)) return;
 
     if (flipped.length === 0) {
@@ -71,8 +75,7 @@ export function MemoryGame({ level, onWin }: { level: Level; onWin: () => void }
       // eslesme: kisa sure goster, sonra kenara ayir
       setBusy(true);
       setTimeout(() => {
-        popSound();
-        speakPraise();
+        popSound(); // her eslesmede sadece sfx; ovgu sesi bitiste tek kaynaktan gelir
         setMatched((prev) => {
           const next = new Set(prev);
           two.forEach((id) => next.add(id));
@@ -108,7 +111,7 @@ export function MemoryGame({ level, onWin }: { level: Level; onWin: () => void }
         style={{ "--cols": cols, "--rows": rows } as React.CSSProperties}
       >
         {cards.map((card) => {
-          const isUp = flipped.includes(card.id);
+          const isUp = preview || flipped.includes(card.id);
           const isMatched = matched.has(card.id);
           return (
             <button

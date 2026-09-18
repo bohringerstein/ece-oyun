@@ -160,6 +160,7 @@ export function App() {
       <LevelShell
         key={level.id}
         level={level}
+        done={done}
         onBack={() => setView({ name: "section", sectionId: level.section })}
         onWin={() => markDone(level.id)}
         onNext={() => nextLevel(level.id)}

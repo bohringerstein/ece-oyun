@@ -2,35 +2,40 @@
 // Bu metinler icin dogal nöral ses dosyalari 'npm run voice' (tools/gen_voice.mjs)
 // ile ElevenLabs'tan uretilir; public/voice/<id>.mp3 olarak oyuna gomulur.
 import { LEVELS, SECTIONS } from "../data/levels";
+import { FINDALL_INSTRS } from "../data/rounds";
 
 export const GREETING = "Merhaba! Hadi birlikte oynayalım.";
 
+// SUREC/CABA ovgusu (Dweck/Brummelman): kisi-zeka ovgusu ("akillisin/harikasin")
+// ve abarti yigini yerine yapilan isi/cabayi oven sade, cesitli ovgu.
 export const PRAISE = [
-  "Bravo! Harikasın!",
-  "Aferin sana!",
+  "Aferin, doğru yaptın!",
+  "Doğru! Güzel iş çıkardın.",
   "Çok güzel yaptın!",
-  "Süpersin!",
-  "Yaşasın! Doğru!",
-  "Muhteşem!",
+  "Bravo! Çok iyi düşündün.",
+  "Doğru buldun, aferin!",
+  "Çok iyi çalıştın!",
 ];
 
+// Yanlista: suclamayan, tekrar denemeye davet eden dil.
 export const TRY_AGAIN = [
   "Aa, bir daha deneyelim.",
   "Olsun, tekrar deneyelim.",
   "Hadi bir daha bakalım.",
+  "Neredeyse oldu, tekrar deneyelim.",
 ];
+
+// Level TAMAMEN bitince (son bölüm) - cikartma odulu anonsu
+export const STICKER_WIN = "Oyunu tamamladın! Bir çıkartma kazandın. Hadi çıkartma kitabına ekleyelim.";
 
 // Ara bölüm gecis tesvikleri (LevelShell)
 export const CUES = [
   "Devam edelim!",
   "Bir tane daha!",
-  "Aynen böyle, harikasın!",
+  "Aynen böyle, çok güzel!",
   "Şimdi yeni resimler geldi!",
   "Hadi bakalım!",
 ];
-
-// davranis ek bölümlerinin yönergesi (round override ile seslendirilir)
-const DAVRANIS_INSTR = "İyi ve doğru olan davranışları bul ve sepete sürükle.";
 
 // Kararli dosya-adi hash'i (FNV-1a 32-bit hex). Runtime ile uretim scripti
 // AYNI JS metnini ayni sekilde hash'ler; boylece dosya adlari eslesir.
@@ -47,9 +52,10 @@ export function hashLine(text: string): string {
 export function allVoiceLines(): string[] {
   const set = new Set<string>();
   set.add(GREETING);
+  set.add(STICKER_WIN);
   for (const s of [...PRAISE, ...TRY_AGAIN, ...CUES]) set.add(s);
   for (const s of SECTIONS) set.add(s.title);
   for (const l of LEVELS) if (l.instr) set.add(l.instr);
-  set.add(DAVRANIS_INSTR);
+  for (const s of FINDALL_INSTRS) set.add(s); // Hepsini Bul: her turun kendi hedef yönergesi
   return [...set];
 }

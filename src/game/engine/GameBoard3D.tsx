@@ -3,7 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Board, Slot, Token } from "./buildBoard";
 import { Card3D } from "./Card3D";
-import { getTextTexture, getContainerTexture } from "./textures";
+import { getTextTexture, getContainerTexture, getTexture } from "./textures";
 import { popSound, wrongSound } from "../audio/sfx";
 import { speakEncourage } from "../audio/speak";
 
@@ -22,6 +22,34 @@ function TextLabel({ text, color, y = 0, size = 0.5 }: { text: string; color?: s
       <planeGeometry args={[size * 2, size]} />
       <meshBasicMaterial map={tex} transparent alphaTest={0.02} toneMapped={false} />
     </mesh>
+  );
+}
+
+// Ustteki ornek sekli isaret eden animasyonlu parmak (sekiller bolumu).
+// Yonerge calarken dikkat ceker: seklin altinda ziplar, ~4.5 sn sonra solar.
+function PointerHand({ pos }: { pos: [number, number] }) {
+  const ref = useRef<THREE.Group>(null);
+  const mat = useRef<THREE.MeshBasicMaterial>(null);
+  const start = useRef(performance.now());
+  const tex = useMemo(() => getTexture({ kind: "emoji", char: "👆" }), []);
+  useFrame(() => {
+    const g = ref.current;
+    if (!g) return;
+    const e = (performance.now() - start.current) / 1000;
+    if (e > 4.5) {
+      g.visible = false;
+      return;
+    }
+    g.position.y = pos[1] + Math.abs(Math.sin(e * 4)) * 0.32; // sekle dogru zipla
+    if (mat.current) mat.current.opacity = e > 3.8 ? Math.max(0, 1 - (e - 3.8) / 0.7) : 1;
+  });
+  return (
+    <group ref={ref} position={[pos[0], pos[1], 0.5]} rotation={[0, 0, 0.32]}>
+      <mesh>
+        <planeGeometry args={[1.25, 1.25]} />
+        <meshBasicMaterial ref={mat} map={tex} transparent alphaTest={0.02} toneMapped={false} />
+      </mesh>
+    </group>
   );
 }
 
@@ -102,25 +130,37 @@ function SlotView({ slot }: { slot: Slot }) {
     );
   }
   if (s.style === "bin") {
-    // sıralama kutusu: renkli kutu + ikon + etiket
+    // sıralama kutusu: renkli kutu + ust'te ikon + ALT BANT'ta etiket.
+    // Etiket, koyu seffaf bir alt bandin ICINDE net durur; kutu disina TASMAZ
+    // (eski surumde yazi alt kenara tasip yukarida kayik gorunuyordu).
+    const bandY = -s.h / 2 + 0.42;
     return (
       <group>
+        {/* renkli govde */}
         <mesh position={[0, -0.12, -0.1]}>
           <planeGeometry args={[s.w, s.h]} />
           <meshBasicMaterial color={s.color || "#d99a5b"} transparent opacity={0.95} />
         </mesh>
-        <mesh position={[0, 0.05, -0.08]}>
-          <planeGeometry args={[s.w - 0.2, s.h - 0.55]} />
+        {/* ikon icin beyaz alan (ust) */}
+        <mesh position={[0, 0.35, -0.08]}>
+          <planeGeometry args={[s.w - 0.25, s.h - 1.2]} />
           <meshBasicMaterial color="#ffffff" transparent opacity={0.5} />
         </mesh>
         {s.visual && (
-          <group position={[0, 0.3, 0]}>
-            <Card3D content={s.visual} boxW={s.w * 0.45} boxH={1.1} />
+          <group position={[0, 0.45, 0]}>
+            <Card3D content={s.visual} boxW={s.w * 0.42} boxH={0.95} />
           </group>
         )}
         {s.label && (
-          <group position={[0, -s.h / 2 + 0.32, 0]}>
-            <TextLabel text={s.label} color="#ffffff" size={0.5} />
+          <group>
+            {/* etiket bandi (koyu seffaf) -> yazi cercevelenir, kontrast artar */}
+            <mesh position={[0, bandY, -0.02]}>
+              <planeGeometry args={[s.w, 0.72]} />
+              <meshBasicMaterial color="#000000" transparent opacity={0.18} />
+            </mesh>
+            <group position={[0, bandY, 0]}>
+              <TextLabel text={s.label} color="#ffffff" size={0.42} />
+            </group>
           </group>
         )}
       </group>
@@ -142,12 +182,14 @@ export function GameBoard3D({ board, onWin }: Props) {
   placedRef.current = placed;
   const wonRef = useRef(false);
   const rootRef = useRef<THREE.Group>(null);
+  const [boardStamp, setBoardStamp] = useState(0); // parmagi her turda yeniden baslatmak icin
 
   useEffect(() => {
     targets.current.clear();
     board.tokens.forEach((t) => targets.current.set(t.id, [t.home[0], t.home[1], 0]));
     setPlaced({});
     wonRef.current = false;
+    setBoardStamp((s) => s + 1);
   }, [board]);
 
   // TEST kancası
@@ -340,6 +382,8 @@ export function GameBoard3D({ board, onWin }: Props) {
           <Card3D content={s.content} boxW={s.w} boxH={s.h} faint={s.faint} />
         </group>
       ))}
+
+      {board.pointer && <PointerHand key={boardStamp} pos={board.pointer} />}
 
       {board.slots.map((s) => (
         <group

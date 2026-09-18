@@ -44,6 +44,8 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: string, color: string) 
     ctx.arc(c, c, r, 0, Math.PI * 2);
   } else if (shape === "square") {
     ctx.rect(c - r, c - r, r * 2, r * 2);
+  } else if (shape === "rectangle") {
+    ctx.rect(c - r, c - r * 0.6, r * 2, r * 1.2); // yatay dikdortgen
   } else if (shape === "triangle") {
     ctx.moveTo(c, c - r);
     ctx.lineTo(c + r, c + r);
@@ -140,13 +142,66 @@ function drawGroup(ctx: CanvasRenderingContext2D, char: string, n: number, jar?:
     [[0.3, 0.3], [0.7, 0.3], [0.5, 0.5], [0.3, 0.7], [0.7, 0.7]],
     [[0.3, 0.28], [0.7, 0.28], [0.3, 0.5], [0.7, 0.5], [0.3, 0.72], [0.7, 0.72]],
   ];
-  const set = jar ? flat : center;
-  const pts = set[Math.min(n, 6)] || set[6];
-  const s = jar ? (n <= 3 ? 120 : 100) : n <= 2 ? 210 : n <= 4 ? 170 : 140;
+  let pts: [number, number][];
+  let s: number;
+  if (n <= 6) {
+    pts = (jar ? flat : center)[n] || (jar ? flat : center)[6];
+    s = jar ? (n <= 3 ? 120 : 100) : n <= 2 ? 210 : n <= 4 ? 170 : 140;
+  } else {
+    // 7-10: duzenli izgara (jar ise alt bolge)
+    const cols = n <= 8 ? 4 : 5;
+    const rows = Math.ceil(n / cols);
+    const x0 = 0.24, x1 = 0.76;
+    const yTop = jar ? 0.5 : 0.28, yBot = jar ? 0.86 : 0.74;
+    pts = [];
+    for (let i = 0; i < n; i++) {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      const inRow = Math.min(cols, n - r * cols);
+      const px = inRow === 1 ? 0.5 : x0 + ((x1 - x0) * c) / (inRow - 1);
+      const py = rows === 1 ? (yTop + yBot) / 2 : yTop + ((yBot - yTop) * r) / (rows - 1);
+      pts.push([px, py]);
+    }
+    s = jar ? 74 : 92;
+  }
+  // iOS: emojiden once fillStyle'i OPAK renge sifirla (kavanoz cizimi renkli
+  // fillStyle biraktigindan emoji renksiz cikabilir).
+  ctx.fillStyle = "#000";
+  ctx.globalAlpha = 1;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = `${s}px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
   for (const [px, py] of pts) ctx.fillText(char, px * SIZE, py * SIZE + 10);
+}
+
+// Nokta deseni (subitizing / "nokta say"): 1-6 arasi zar benzeri pip yerlesimi.
+function drawDots(ctx: CanvasRenderingContext2D, n: number, color = "#e63946") {
+  // beyaz yuvarlak kosumlu kart zemini
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, 40, 40, SIZE - 80, SIZE - 80, 60);
+  ctx.fill();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 18;
+  roundRect(ctx, 40, 40, SIZE - 80, SIZE - 80, 60);
+  ctx.stroke();
+  // zar pip konumlari (0..1 kart-goreli), 1..6
+  const layouts: [number, number][][] = [
+    [],
+    [[0.5, 0.5]],
+    [[0.33, 0.33], [0.67, 0.67]],
+    [[0.3, 0.3], [0.5, 0.5], [0.7, 0.7]],
+    [[0.33, 0.33], [0.67, 0.33], [0.33, 0.67], [0.67, 0.67]],
+    [[0.33, 0.33], [0.67, 0.33], [0.5, 0.5], [0.33, 0.67], [0.67, 0.67]],
+    [[0.33, 0.28], [0.67, 0.28], [0.33, 0.5], [0.67, 0.5], [0.33, 0.72], [0.67, 0.72]],
+  ];
+  const pts = layouts[Math.min(Math.max(n, 0), 6)] || [];
+  const r = n <= 3 ? 46 : 38;
+  ctx.fillStyle = color;
+  for (const [px, py] of pts) {
+    ctx.beginPath();
+    ctx.arc(px * SIZE, py * SIZE, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function shapePath(ctx: CanvasRenderingContext2D, shape: string) {
@@ -455,6 +510,7 @@ export function getTexture(c: Content): THREE.Texture {
   else if (c.kind === "shape") drawShape(ctx, c.shape, c.color);
   else if (c.kind === "number") drawNumber(ctx, c.value, c.color || "#ff7a00");
   else if (c.kind === "group") drawGroup(ctx, c.char, c.n, c.jar);
+  else if (c.kind === "dots") drawDots(ctx, c.n, c.color);
   else if (c.kind === "puzzle") drawPuzzle(ctx, c.shape, c.color, c.missing, c.piece);
   else if (c.kind === "picture") paintPicture(ctx, c.emoji, c.bg);
   else if (c.kind === "piece") drawPiece(ctx, c.emoji, c.bg, c.rows, c.row, c.cols, c.col);

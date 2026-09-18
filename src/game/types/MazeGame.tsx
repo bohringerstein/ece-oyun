@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Level } from "../data/types";
 import { popSound } from "../audio/sfx";
-import { speakPraise } from "../audio/speak";
 
 // Yol takibi: baslangictaki hayvani parmakla yol boyunca surukleyip hedefe ulastir.
 // Koordinatlar 0..100 (kare alan). Ilerleme = yol uzerinde ulasilan en uzak nokta.
@@ -99,8 +98,7 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
         setProgress(1);
         setCharBoth(pts[pts.length - 1].x, pts[pts.length - 1].y);
         popSound();
-        speakPraise();
-        setTimeout(onWin, 500);
+        setTimeout(onWin, 500); // ovgu sesi tek kaynaktan (LevelShell handleWin) gelir
       }
     }
   }

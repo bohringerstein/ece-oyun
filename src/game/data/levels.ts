@@ -1,12 +1,12 @@
 import type { Content, Level, Round, Section } from "./types";
 import {
-  shadowRounds, iliskiliRounds, nesneIliskiRounds, yiyecekRounds, ikiliRounds, puzzleRounds,
+  shadowRounds, iliskiliRounds, yiyecekRounds, ikiliRounds, puzzleRounds,
   kareRounds, ucgenRounds, daireRounds, yildizRounds, dikdortgenRounds, ucanlarRounds, duygularRounds,
-  fazlaRounds, azRounds, cokRounds, buyukRounds, kisaRounds, agirRounds, hafifRounds,
-  sayEsleRounds, nesneSaymaRounds, hayvanSayRounds,
+  fazlaRounds, azRounds, buyukRounds, kisaRounds, agirRounds, hafifRounds, doluRounds, bosRounds,
+  sayEsleRounds, nesneSaymaRounds, hayvanSayRounds, noktaSayRounds, seriateRounds,
   meyveSiraRounds, siraSayRounds, oruntuRounds, oruntuRenkRounds,
-  copleriAyirRounds, meyveSebzeRounds,
-  davranisRounds, farkliRounds, ayniRounds, spotRounds,
+  copleriAyirRounds, meyveSebzeRounds, uzgunRounds, kizginRounds, routineRounds,
+  farkliRounds, ayniRounds, spotRounds, findAllRounds,
   jigsawRounds, PICTURES, memoryRounds, mazeRounds,
 } from "./rounds";
 
@@ -17,10 +17,11 @@ const e = (char: string): Content => ({ kind: "emoji", char });
 const num = (value: number, color?: string): Content => ({ kind: "number", value, color });
 const shp = (shape: "circle" | "square" | "triangle" | "star", color: string): Content => ({ kind: "shape", shape, color });
 const grp = (char: string, n: number, jar?: boolean): Content => ({ kind: "group", char, n, jar });
+const num2dots = (n: number, color?: string): Content => ({ kind: "dots", n, color });
 
 // rakam bulma leveli. Her level KENDI rakaminin keycap emojisini kapak ikonu yapar
 // (1 Rakamini Bul -> 1️⃣, 2 -> 2️⃣ ...); boylece kartlar birbirinden ayirt edilir.
-const KEYCAPS: Record<number, string> = { 1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣", 6: "6️⃣", 7: "7️⃣", 8: "8️⃣", 9: "9️⃣" };
+const KEYCAPS: Record<number, string> = { 1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣", 6: "6️⃣", 7: "7️⃣", 8: "8️⃣", 9: "9️⃣", 10: "🔟" };
 function rakamBul(id: string, target: number, distractor: number): Level {
   const pattern = [target, distractor, target, distractor, target, distractor, target, target];
   const colors = ["#e63946", "#f77f00", "#2a9d8f", "#3a86ff", "#c1121f", "#00b4d8", "#8338ec", "#ff006e"];
@@ -30,7 +31,7 @@ function rakamBul(id: string, target: number, distractor: number): Level {
     title: `${target} Rakamını Bul`,
     kind: "select",
     icon: KEYCAPS[target] ?? "🔢",
-    instr: `Karışık sayıların arasından ${target} rakamlarını bul ve hepsini sepete sürükle.`,
+    instr: `${target} rakamlarını bul ve sepete sürükle.`,
     items: pattern.map((v, i) => ({ content: num(v, colors[i % colors.length]), correct: v === target })),
   };
 }
@@ -49,10 +50,10 @@ function jigsawLevel(count: number, seed: number): Level {
   return {
     id: `yapboz-${count}`,
     section: "yapboz",
-    title: `${count} Parça Yapboz`,
+    title: `${count} Parça Yapboz${count >= 7 ? " (İleri)" : ""}`, // 7-8 parça 5 yaş seviyesi
     kind: "jigsaw",
     icon: "🧩",
-    instr: "Yukarıdaki resme bak. Parçaları doğru yerine sürükleyerek resmi tamamla.",
+    instr: "Yukarıdaki resme bak. Parçaları yerlerine sürükle.",
     jigsaw: { emoji: pic.emoji, bg: pic.bg, layout: JIGSAW_LAYOUTS[count] },
   };
 }
@@ -63,10 +64,10 @@ function memoryLevel(pairs: number): Level {
   return {
     id: `hafiza-${pairs}`,
     section: "hafiza",
-    title: `${pairs * 2} Kartlı Hafıza`,
+    title: `${pairs * 2} Kartlı Hafıza${pairs >= 6 ? " (İleri)" : ""}`, // 12 kart 5-6 yaş seviyesi
     kind: "memory",
     icon: "🧠",
-    instr: "Kartlara dokunup çevir. Aynı olan iki resmi bul ve eşleştir.",
+    instr: "Kartlara dokun ve çevir. Aynı iki resmi bul.",
     memory: { chars: MEM_SAMPLE.slice(0, pairs) },
   };
 }
@@ -80,7 +81,7 @@ function mazeLevel(id: string, title: string, icon: string, complexity: "easy" |
     title,
     kind: "maze",
     icon,
-    instr: "Hayvanı parmağınla yol boyunca sürükleyerek hedefe ulaştır.",
+    instr: "Hayvanı parmağınla yol boyunca sürükle.",
     maze: {
       start: "🐰",
       end: "🥕",
@@ -99,13 +100,17 @@ export const LEVELS: Level[] = [
   rakamBul("rakam-4", 4, 5),
   rakamBul("rakam-5", 5, 3),
   rakamBul("rakam-6", 6, 4),
+  rakamBul("rakam-7", 7, 6),
+  rakamBul("rakam-8", 8, 9),
+  rakamBul("rakam-9", 9, 7),
+  rakamBul("rakam-10", 10, 1),
   {
     id: "say-esle",
     section: "sayilar",
     title: "Say ve Eşle",
     kind: "count",
     icon: "🍂",
-    instr: "Her kümede kaç tane olduğunu birlikte sayalım. Sonra doğru sayıyı bulup kümenin yanındaki kutuya sürükle.",
+    instr: "Her kümede kaç tane var, birlikte sayalım. Sonra doğru sayıyı kutuya sürükle.",
     groups: [
       { content: grp("🍁", 3), n: 3 },
       { content: grp("🌰", 2), n: 2 },
@@ -119,7 +124,7 @@ export const LEVELS: Level[] = [
     title: "Nesneleri Say",
     kind: "count",
     icon: "🫙",
-    instr: "Kavanozun içindeki topları say. Sonra doğru sayıyı bulup kutuya sürükle.",
+    instr: "Kavanozdaki topları say. Sonra doğru sayıyı kutuya sürükle.",
     groups: [
       { content: grp("🔵", 3, true), n: 3 },
       { content: grp("🔴", 5, true), n: 5 },
@@ -133,13 +138,66 @@ export const LEVELS: Level[] = [
     title: "Hayvanları Say",
     kind: "count",
     icon: "🐥",
-    instr: "Her kümedeki hayvanları say ve doğru sayıyı yanındaki kutuya sürükle.",
+    instr: "Hayvanları say. Sonra doğru sayıyı kutuya sürükle.",
     groups: [
       { content: grp("🐥", 4), n: 4 },
       { content: grp("🐟", 2), n: 2 },
       { content: grp("🐝", 1), n: 1 },
     ],
     numbers: [1, 2, 4],
+  },
+  {
+    id: "yaz-1",
+    section: "sayilar",
+    title: "1'i Yaz",
+    kind: "trace",
+    icon: "✏️",
+    instr: "Parmağınla bir rakamının üstünden geç. Yukarıdan aşağıya çiz.",
+    trace: { digit: "1", path: [{ x: 40, y: 26 }, { x: 54, y: 15 }, { x: 54, y: 85 }] },
+  },
+  {
+    id: "yaz-2",
+    section: "sayilar",
+    title: "2'yi Yaz",
+    kind: "trace",
+    icon: "✏️",
+    instr: "Parmağınla iki rakamının üstünden geç.",
+    trace: {
+      digit: "2",
+      path: [
+        { x: 28, y: 34 }, { x: 38, y: 20 }, { x: 58, y: 20 }, { x: 68, y: 34 },
+        { x: 56, y: 52 }, { x: 34, y: 70 }, { x: 26, y: 82 }, { x: 74, y: 82 },
+      ],
+    },
+  },
+  {
+    id: "yaz-3",
+    section: "sayilar",
+    title: "3'ü Yaz",
+    kind: "trace",
+    icon: "✏️",
+    instr: "Parmağınla üç rakamının üstünden geç.",
+    trace: {
+      digit: "3",
+      path: [
+        { x: 30, y: 26 }, { x: 52, y: 16 }, { x: 68, y: 30 }, { x: 52, y: 48 },
+        { x: 68, y: 66 }, { x: 50, y: 82 }, { x: 28, y: 74 },
+      ],
+    },
+  },
+  {
+    id: "nokta-say",
+    section: "sayilar",
+    title: "Nokta Say",
+    kind: "count",
+    icon: "🎲",
+    instr: "Noktaları say. Doğru sayıyı kutuya sürükle.",
+    groups: [
+      { content: num2dots(3, "#e63946"), n: 3 },
+      { content: num2dots(5, "#3a86ff"), n: 5 },
+      { content: num2dots(2, "#2a9d8f"), n: 2 },
+    ],
+    numbers: [2, 3, 5],
   },
 
   // ---------------- EŞLEŞTİRME ----------------
@@ -149,7 +207,7 @@ export const LEVELS: Level[] = [
     title: "Gölgeleri Eşle",
     kind: "match",
     icon: "🐱",
-    instr: "Her resmi kendi gölgesinin üstüne sürükle. Gölge, o şeyin karanlık halidir.",
+    instr: "Her resmi kendi gölgesine sürükle. Gölge, resmin siyah halidir.",
     pairs: [
       { drag: img("golge-esle", "00"), target: sh("golge-esle", "00") }, // kedi
       { drag: img("golge-esle", "02"), target: sh("golge-esle", "02") }, // kuş
@@ -162,7 +220,7 @@ export const LEVELS: Level[] = [
     title: "Eksik Parçayı Bul",
     kind: "puzzle",
     icon: "🧩",
-    instr: "Her şeklin bir parçası eksik. Doğru parçayı bulup şeklin boşluğuna tam oturacak şekilde sürükle.",
+    instr: "Her şeklin bir parçası eksik. Doğru parçayı boşluğa sürükle.",
     puzzles: [
       { shape: "circle", color: "#f77f00", missing: 3 },
       { shape: "triangle", color: "#ffd60a", missing: 2 },
@@ -175,7 +233,7 @@ export const LEVELS: Level[] = [
     title: "İlişkili Nesneler",
     kind: "match",
     icon: "🥄",
-    instr: "Birbiriyle ilgili olan nesneleri eşleştir. Soldaki resmi, ona uygun olan resmin üstüne sürükle.",
+    instr: "Soldaki resmi, ona uygun olan resmin üstüne sürükle.",
     pairs: [
       { drag: e("🥄"), target: e("🍽️") },
       { drag: e("🐝"), target: e("🍯") },
@@ -184,18 +242,13 @@ export const LEVELS: Level[] = [
     ],
   },
   {
-    id: "nesne-iliskilendir",
+    id: "kucukten-buyuge",
     section: "eslestirme",
-    title: "Nesne İlişkilendir",
-    kind: "match",
-    icon: "👶",
-    instr: "Soldaki nesneyi, onunla ilgili olan resmin üstüne sürükle.",
-    pairs: [
-      { drag: e("👶"), target: e("🍼") },
-      { drag: e("🏫"), target: e("📚") },
-      { drag: e("🍎"), target: e("🌳") },
-      { drag: e("🌙"), target: e("⭐") },
-    ],
+    title: "Küçükten Büyüğe Sırala",
+    kind: "seriate",
+    icon: "📏",
+    instr: "Nesnelere en küçükten en büyüğe doğru sırayla dokun.",
+    seriate: { emoji: "⭐", n: 3 },
   },
   {
     id: "esle-yiyecek",
@@ -203,7 +256,7 @@ export const LEVELS: Level[] = [
     title: "Kim Ne Yer?",
     kind: "match",
     icon: "🐰",
-    instr: "Her hayvanı sevdiği yiyecekle eşleştir. Hayvanı, yediği şeyin üstüne sürükle.",
+    instr: "Her hayvanı sevdiği yiyeceğe sürükle.",
     pairs: [
       { drag: e("🐰"), target: e("🥕") },
       { drag: e("🐵"), target: e("🍌") },
@@ -217,7 +270,7 @@ export const LEVELS: Level[] = [
     title: "İkilileri Eşle",
     kind: "match",
     icon: "🧦",
-    instr: "Birlikte kullandığımız ikilileri eşleştir.",
+    instr: "Birlikte kullandığımız şeyleri eşle.",
     pairs: [
       { drag: e("🧦"), target: e("👟") },
       { drag: e("🧤"), target: e("🧥") },
@@ -244,10 +297,10 @@ export const LEVELS: Level[] = [
   {
     id: "meyve-sira",
     section: "oruntu",
-    title: "Meyve Sırasını Diz",
+    title: "Aynı Sırayı Diz",
     kind: "sequence",
     icon: "🍎",
-    instr: "En üstteki sıraya bak. Aşağıdaki meyveleri aynı sırayla, her birini altındaki kutuya sürükle.",
+    instr: "En üstteki sıraya bak. Aynı sırayla alttaki kutulara sürükle.",
     order: [e("🍎"), e("🍐"), e("🍌"), e("🍊"), e("🍇"), e("🍍")],
   },
   {
@@ -270,7 +323,7 @@ export const LEVELS: Level[] = [
     title: "Sayıları Sırala",
     kind: "sequence",
     icon: "🔢",
-    instr: "En üstteki sıraya bak. Sayıları aynı sırayla, her birini altındaki kutuya sürükle.",
+    instr: "En üstteki sıraya bak. Sayıları aynı sırayla alttaki kutulara sürükle.",
     order: [num(1), num(2), num(3), num(4), num(5)],
   },
 
@@ -330,43 +383,48 @@ export const LEVELS: Level[] = [
     ],
   },
   {
-    id: "cok",
+    id: "dolu",
     section: "karsilastirma",
-    title: "Hangisi Daha Çok?",
+    title: "Hangisi Dolu?",
     kind: "compare",
-    icon: "🎈",
-    instr: "İki gruptan hangisinde daha çok var? Çok olanı masaya koy.",
+    icon: "🫙",
+    instr: "İki kavanozdan hangisi dolu? Dolu olanı masaya koy.",
     compareRows: [
-      { items: [grp("🎈", 3), grp("🎈", 1)], correctIndex: 0 },
-      { items: [grp("🐟", 2), grp("🐟", 5)], correctIndex: 1 },
-      { items: [grp("🌸", 4), grp("🌸", 2)], correctIndex: 0 },
+      { items: [grp("🔵", 4, true), grp("🔵", 0, true)], correctIndex: 0 },
+      { items: [grp("🔴", 0, true), grp("🔴", 5, true)], correctIndex: 1 },
+      { items: [grp("🟢", 3, true), grp("🟢", 0, true)], correctIndex: 0 },
+    ],
+  },
+  {
+    id: "bos",
+    section: "karsilastirma",
+    title: "Hangisi Boş?",
+    kind: "compare",
+    icon: "🫙",
+    instr: "İki kavanozdan hangisi boş? Boş olanı masaya koy.",
+    compareRows: [
+      { items: [grp("🟡", 0, true), grp("🟡", 4, true)], correctIndex: 0 },
+      { items: [grp("🟣", 5, true), grp("🟣", 0, true)], correctIndex: 1 },
+      { items: [grp("🟠", 0, true), grp("🟠", 3, true)], correctIndex: 0 },
     ],
   },
   {
     id: "agir",
     section: "karsilastirma",
     title: "Hangisi Daha Ağır?",
-    kind: "compare",
+    kind: "weight",
     icon: "🐘",
-    instr: "İki nesneden hangisi daha ağır? Ağır olanı masaya koy.",
-    compareRows: [
-      { items: [e("🐘"), e("🪶")], correctIndex: 0 },
-      { items: [e("🪨"), e("🎈")], correctIndex: 0 },
-      { items: [e("🚗"), e("🍃")], correctIndex: 0 },
-    ],
+    instr: "Terazide daha ağır olan nesneye dokun. Ağır olan aşağı iner.",
+    weight: { mode: "heavy", heavy: "🐘", light: "🪶" },
   },
   {
     id: "hafif",
     section: "karsilastirma",
     title: "Hangisi Daha Hafif?",
-    kind: "compare",
+    kind: "weight",
     icon: "🎈",
-    instr: "İki nesneden hangisi daha hafif? Hafif olanı masaya koy.",
-    compareRows: [
-      { items: [e("🐘"), e("🪶")], correctIndex: 1 },
-      { items: [e("🦛"), e("🦋")], correctIndex: 1 },
-      { items: [e("🧱"), e("🎈")], correctIndex: 1 },
-    ],
+    instr: "Terazide daha hafif olan nesneye dokun. Hafif olan yukarı kalkar.",
+    weight: { mode: "light", heavy: "🐘", light: "🎈" },
   },
 
   // ---------------- ŞEKİLLER ----------------
@@ -376,7 +434,8 @@ export const LEVELS: Level[] = [
     title: "Kareye Benzeyenler",
     kind: "select",
     icon: "🟥",
-    instr: "Kareye benzeyen nesneleri bul ve sepete sürükle.",
+    instr: "Bak, bu bir kare. Karenin dört köşesi var. Kareye benzeyen nesneleri bul ve sepete sürükle.",
+    refShape: { shape: "square", color: "#e63946" },
     items: [
       { content: e("🎁"), correct: true },
       { content: e("🏀"), correct: false },
@@ -392,7 +451,8 @@ export const LEVELS: Level[] = [
     title: "Üçgene Benzeyenler",
     kind: "select",
     icon: "🔺",
-    instr: "Üçgene benzeyen nesneleri bul ve sepete sürükle.",
+    instr: "Bak, bu bir üçgen. Üçgenin üç köşesi var. Üçgene benzeyen nesneleri bul ve sepete sürükle.",
+    refShape: { shape: "triangle", color: "#3a86ff" },
     items: [
       { content: e("🍕"), correct: true },
       { content: e("🍉"), correct: true },
@@ -408,7 +468,8 @@ export const LEVELS: Level[] = [
     title: "Daireye Benzeyenler",
     kind: "select",
     icon: "🟠",
-    instr: "Daireye benzeyen yuvarlak nesneleri bul ve sepete sürükle.",
+    instr: "Bak, bu bir daire. Daire yuvarlak, köşesi yok. Daireye benzeyen nesneleri bul ve sepete sürükle.",
+    refShape: { shape: "circle", color: "#f77f00" },
     items: [
       { content: e("⚽"), correct: true },
       { content: e("🍊"), correct: true },
@@ -424,7 +485,8 @@ export const LEVELS: Level[] = [
     title: "Dikdörtgene Benzeyenler",
     kind: "select",
     icon: "🚪",
-    instr: "Dikdörtgene benzeyen uzun nesneleri bul ve sepete sürükle.",
+    instr: "Bak, bu bir dikdörtgen. Dikdörtgen uzun bir şekil. Dikdörtgene benzeyen nesneleri bul ve sepete sürükle.",
+    refShape: { shape: "rectangle", color: "#2a9d8f" },
     items: [
       { content: e("🚪"), correct: true },
       { content: e("📱"), correct: true },
@@ -440,7 +502,8 @@ export const LEVELS: Level[] = [
     title: "Yıldıza Benzeyenler",
     kind: "select",
     icon: "⭐",
-    instr: "Yıldıza benzeyenleri bul ve sepete sürükle.",
+    instr: "Bak, bu bir yıldız. Yıldızın sivri köşeleri var. Yıldıza benzeyenleri bul ve sepete sürükle.",
+    refShape: { shape: "star", color: "#ffd23f" },
     items: [
       { content: e("⭐"), correct: true },
       { content: e("🌟"), correct: true },
@@ -458,7 +521,7 @@ export const LEVELS: Level[] = [
     title: "Farkları Bul",
     kind: "spot",
     icon: "🔎",
-    instr: "İki resim arasında üç fark var. Farkı bulunca üstüne dokun.",
+    instr: "İki resme dikkatle bak. Farklı olan yerleri bulunca üstüne dokun.",
   },
   {
     id: "farkli-bul",
@@ -480,11 +543,26 @@ export const LEVELS: Level[] = [
     title: "Aynıları Eşle",
     kind: "match",
     icon: "🎈",
-    instr: "Birbirinin tıpatıp aynısı olan resimleri eşleştir.",
+    instr: "Tıpatıp aynı olan resimleri eşle.",
     pairs: [
       { drag: e("🎈"), target: e("🎈") },
       { drag: e("🚗"), target: e("🚗") },
       { drag: e("🌸"), target: e("🌸") },
+    ],
+  },
+  {
+    id: "hepsini-bul",
+    section: "dikkat",
+    title: "Hepsini Bul",
+    kind: "select",
+    icon: "🦋",
+    instr: "Bütün kelebekleri bul ve sepete sürükle.",
+    items: [
+      { content: e("🦋"), correct: true },
+      { content: e("🦋"), correct: true },
+      { content: e("🐝"), correct: false },
+      { content: e("🐞"), correct: false },
+      { content: e("🌸"), correct: false },
     ],
   },
 
@@ -508,20 +586,6 @@ export const LEVELS: Level[] = [
       { content: e("📦"), bin: "kagit" },
       { content: e("🥛"), bin: "cam" },
       { content: e("🫙"), bin: "cam" },
-    ],
-  },
-  {
-    id: "davranis",
-    section: "yasam",
-    title: "Doğru Davranışlar",
-    kind: "select",
-    icon: "🤝",
-    instr: "Resimlerdeki doğru davranışları bul ve sepete sürükle. Paylaşmak ve yardım etmek doğrudur.",
-    items: [
-      { content: img("davranis", "00"), correct: false },
-      { content: img("davranis", "01"), correct: true },
-      { content: img("davranis", "02"), correct: false },
-      { content: img("davranis", "03"), correct: true },
     ],
   },
   {
@@ -576,6 +640,47 @@ export const LEVELS: Level[] = [
       { content: e("😴"), correct: false },
     ],
   },
+  {
+    id: "duygu-uzgun",
+    section: "yasam",
+    title: "Üzgün Yüzler",
+    kind: "select",
+    icon: "😢",
+    instr: "Üzgün olan yüzleri bul ve sepete sürükle.",
+    items: [
+      { content: e("😢"), correct: true },
+      { content: e("😭"), correct: true },
+      { content: e("😀"), correct: false },
+      { content: e("😠"), correct: false },
+      { content: e("😔"), correct: true },
+      { content: e("🥰"), correct: false },
+    ],
+  },
+  {
+    id: "duygu-kizgin",
+    section: "yasam",
+    title: "Kızgın Yüzler",
+    kind: "select",
+    icon: "😠",
+    instr: "Kızgın olan yüzleri bul ve sepete sürükle.",
+    items: [
+      { content: e("😠"), correct: true },
+      { content: e("😡"), correct: true },
+      { content: e("😀"), correct: false },
+      { content: e("😢"), correct: false },
+      { content: e("😤"), correct: true },
+      { content: e("😊"), correct: false },
+    ],
+  },
+  {
+    id: "gunluk-sira",
+    section: "yasam",
+    title: "Günlük Sıra",
+    kind: "sequence",
+    icon: "🪥",
+    instr: "Üstteki sıraya bak. Aynı sırayla alta sürükle.",
+    order: [e("🛏️"), e("🪥"), e("👕"), e("🥣")],
+  },
 
   // ---------------- YAPBOZ ----------------
   jigsawLevel(3, 0),
@@ -616,7 +721,7 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   "golge-esle": shadowRounds,
   "eksik-parca": puzzleRounds,
   "iliskili-nesne": iliskiliRounds,
-  "nesne-iliskilendir": nesneIliskiRounds,
+  "kucukten-buyuge": seriateRounds,
   "esle-yiyecek": yiyecekRounds,
   "esle-ikili": ikiliRounds,
   oruntu: oruntuRounds,
@@ -627,7 +732,8 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   buyuk: buyukRounds,
   kisa: kisaRounds,
   az: azRounds,
-  cok: cokRounds,
+  dolu: doluRounds,
+  bos: bosRounds,
   agir: agirRounds,
   hafif: hafifRounds,
   "kare-benzer": kareRounds,
@@ -638,13 +744,17 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   "say-esle": sayEsleRounds,
   "nesne-sayma": nesneSaymaRounds,
   "say-esle-2": hayvanSayRounds,
+  "nokta-say": noktaSayRounds,
   "copleri-ayir": copleriAyirRounds,
   ucanlar: ucanlarRounds,
   "meyve-sebze": meyveSebzeRounds,
   duygular: duygularRounds,
-  davranis: davranisRounds,
+  "duygu-uzgun": uzgunRounds,
+  "duygu-kizgin": kizginRounds,
+  "gunluk-sira": routineRounds,
   "farkli-bul": farkliRounds,
   "ayni-bul": ayniRounds,
+  "hepsini-bul": findAllRounds,
   fark: spotRounds,
   "yapboz-3": () => jigsawRounds(JIGSAW_LAYOUTS[3]),
   "yapboz-4": () => jigsawRounds(JIGSAW_LAYOUTS[4]),

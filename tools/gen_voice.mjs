@@ -7,6 +7,7 @@
 // - Metinler src/game/audio/voiceLines.ts'ten (allVoiceLines) alinir (tek kaynak).
 // - Her metin public/voice/<id>.mp3 olarak kaydedilir (id = hashLine(metin)).
 // - Zaten var olan dosyalar atlanir (kotayi bosa harcamaz, tekrar calistirilabilir).
+//   YENI ses/ayara gecerken hepsini yeniden uretmek icin: $env:FORCE="1"
 // - src/game/audio/voiceManifest.ts otomatik guncellenir.
 import { build } from "esbuild";
 import { writeFile, mkdir } from "node:fs/promises";
@@ -21,6 +22,15 @@ const root = path.resolve(__dirname, "..");
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM"; // Rachel (varsayilan)
 const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2"; // Turkce icin cok dilli model
+// FORCE=1: var olan mp3'leri de yeniden uret (yeni ses/ayara gecerken sifirdan uretmek icin)
+const FORCE = process.env.FORCE === "1" || process.env.ELEVENLABS_FORCE === "1";
+
+// Iki-tonlu uretim (arastirma onerisi):
+//  - COSKULU (ovgu/kutlama/karsilama): daha ekspresif, canli.
+//  - SAKIN-NET (yonerge/ogretim + cesaretlendirme): kararli, net; style=0 ile
+//    Turkce telaffuz artefaktlari (or. "hayvani"->"haayvani") en aza iner.
+const EXPRESSIVE = { stability: 0.45, similarity_boost: 0.8, style: 0.12, use_speaker_boost: false };
+const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false };
 
 if (!API_KEY) {
   console.error("HATA: ELEVENLABS_API_KEY ortam degiskeni gerekli.");
@@ -42,6 +52,15 @@ const mod = await import(pathToFileURL(tmp).href);
 const lines = mod.allVoiceLines();
 const hashLine = mod.hashLine;
 
+// coskulu tonla uretilecek metinler (ovgu, ara-gecis, karsilama, final kutlama)
+const expressiveSet = new Set([
+  mod.GREETING,
+  mod.STICKER_WIN,
+  ...mod.PRAISE,
+  ...mod.CUES,
+]);
+const settingsFor = (text) => (expressiveSet.has(text) ? EXPRESSIVE : STEADY);
+
 const outDir = path.join(root, "public", "voice");
 await mkdir(outDir, { recursive: true });
 
@@ -54,7 +73,7 @@ for (const text of lines) {
   const id = hashLine(text);
   ids.push(id);
   const file = path.join(outDir, `${id}.mp3`);
-  if (existsSync(file)) {
+  if (existsSync(file) && !FORCE) {
     skipped++;
     continue;
   }
@@ -68,8 +87,7 @@ for (const text of lines) {
     body: JSON.stringify({
       text,
       model_id: MODEL,
-      // Cocuklara yonelik sicak, dogal, sakin bir anlatim
-      voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.25, use_speaker_boost: true },
+      voice_settings: settingsFor(text), // iki-tonlu: coskulu ovgu / sakin-net yonerge
     }),
   });
   if (!res.ok) {

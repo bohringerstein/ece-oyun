@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Level, SpotItem } from "../data/types";
 import { popSound } from "../audio/sfx";
-import { speakPraise } from "../audio/speak";
 
 const RES = 560; // canvas cozunurlugu (kare panel)
 
@@ -61,8 +60,7 @@ export function SpotGame({ level, onWin }: { level: Level; onWin: () => void }) 
         const nf = [...foundRef.current];
         nf[i] = true;
         setFound(nf);
-        popSound();
-        speakPraise();
+        popSound(); // her farkta sadece sfx; ovgu sesi bitiste tek kaynaktan gelir
         if (nf.every(Boolean)) setTimeout(onWin, 500);
       }
     });
@@ -73,18 +71,20 @@ export function SpotGame({ level, onWin }: { level: Level; onWin: () => void }) 
   return (
     <div className="spot-wrap">
       <div className="spot-count">🔎 Kalan fark: {remaining}</div>
-      {[refA, refB].map((ref, panel) => (
-        <div key={panel} className="spot-panel" onClick={tap}>
-          <canvas ref={ref} width={RES} height={RES} />
-          {diffs.map((d, i) =>
-            found[i] ? (
-              <div key={i} className="spot-mark" style={{ left: `${d.x * 100}%`, top: `${d.y * 100}%` }}>
-                ⭕
-              </div>
-            ) : null
-          )}
-        </div>
-      ))}
+      <div className="spot-panels">
+        {[refA, refB].map((ref, panel) => (
+          <div key={panel} className="spot-panel" onClick={tap}>
+            <canvas ref={ref} width={RES} height={RES} />
+            {diffs.map((d, i) =>
+              found[i] ? (
+                <div key={i} className="spot-mark" style={{ left: `${d.x * 100}%`, top: `${d.y * 100}%` }}>
+                  ⭕
+                </div>
+              ) : null
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

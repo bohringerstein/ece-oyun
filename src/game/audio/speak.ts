@@ -77,7 +77,8 @@ function stopAudio() {
 }
 
 // Bu metin icin hazir dogal kayit varsa cal; yoksa false don.
-function playPrerecorded(text: string): boolean {
+// onEnd: ses bitince (veya hata) BIR KEZ cagrilir (senkron animasyonlar icin).
+function playPrerecorded(text: string, onEnd?: () => void): boolean {
   if (typeof window === "undefined" || !("Audio" in window)) return false;
   const id = hashLine(text);
   if (!VOICE_IDS.has(id)) return false;
@@ -86,10 +87,15 @@ function playPrerecorded(text: string): boolean {
   a.volume = 1;
   curAudio = a;
   setSpeechDucking(true); // konusurken arka plan muzigini kis
+  let ended = false;
   const done = () => {
     if (curAudio === a) {
       curAudio = null;
       setSpeechDucking(false);
+    }
+    if (!ended) {
+      ended = true;
+      onEnd?.();
     }
   };
   a.onended = done;
@@ -98,15 +104,21 @@ function playPrerecorded(text: string): boolean {
   return true;
 }
 
-export function speak(text: string, opts?: { rate?: number; pitch?: number; tone?: Tone }) {
+export function speak(
+  text: string,
+  opts?: { rate?: number; pitch?: number; tone?: Tone; onEnd?: () => void }
+) {
   lastText = text;
   // 1) Dogal kayit varsa onu cal (ve olasi Web Speech'i iptal et)
-  if (playPrerecorded(text)) {
+  if (playPrerecorded(text, opts?.onEnd)) {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     return;
   }
   // 2) Yedek: Web Speech
-  if (!("speechSynthesis" in window)) return;
+  if (!("speechSynthesis" in window)) {
+    opts?.onEnd?.(); // ses yoksa akis takilmasin
+    return;
+  }
   if (!ready) pickVoice();
   window.speechSynthesis.cancel();
   const base = TONES[opts?.tone ?? "default"];
@@ -116,6 +128,10 @@ export function speak(text: string, opts?: { rate?: number; pitch?: number; tone
   u.rate = clamp(opts?.rate ?? base.rate, 0.6, 1.1);
   u.pitch = clamp(opts?.pitch ?? base.pitch, 0.9, 1.2);
   u.volume = 1;
+  if (opts?.onEnd) {
+    u.onend = opts.onEnd;
+    u.onerror = opts.onEnd;
+  }
   window.speechSynthesis.speak(u);
 }
 

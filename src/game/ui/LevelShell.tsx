@@ -3,17 +3,22 @@ import type { Content, Level } from "../data/types";
 import { Scene3D } from "../engine/Scene3D";
 import { GameBoard3D } from "../engine/GameBoard3D";
 import { buildBoard } from "../engine/buildBoard";
-import { stickerFor } from "../data/levels";
+import { SECTIONS } from "../data/levels";
 import { SpotGame } from "../types/SpotGame";
 import { MemoryGame } from "../types/MemoryGame";
 import { MazeGame } from "../types/MazeGame";
+import { SeriateGame } from "../types/SeriateGame";
+import { WeightGame } from "../types/WeightGame";
+import { TraceGame } from "../types/TraceGame";
+import { StickerReward } from "./StickerReward";
 import { preloadImageAspect, clearTextureCache } from "../engine/textures";
-import { speak, speakPraise, stopSpeak } from "../audio/speak";
-import { CUES } from "../audio/voiceLines";
+import { speak, stopSpeak, randomPraise } from "../audio/speak";
+import { CUES, STICKER_WIN } from "../audio/voiceLines";
 import { bigCelebration, celebrateSound, fireConfetti } from "../audio/sfx";
 
 interface Props {
   level: Level;
+  done: Set<string>;
   onBack: () => void;
   onWin: () => void;
   onNext: () => void;
@@ -38,13 +43,14 @@ function collectImages(level: Level): string[] {
   return srcs;
 }
 
-export function LevelShell({ level, onBack, onWin, onNext }: Props) {
+export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   // rastgele bölümler: her level acilisinda (LevelShell key=level.id ile remount) taze uret
   const sessionRounds = useMemo(() => (level.makeRounds ? level.makeRounds() : null), [level.id]);
   const total = sessionRounds ? sessionRounds.length : (level.rounds?.length ?? 0) + 1;
   const [round, setRound] = useState(0);
   const [ready, setReady] = useState(false);
   const [won, setWon] = useState(false);
+  const [winPhase, setWinPhase] = useState<"announce" | "reward" | "card">("announce");
   const [flash, setFlash] = useState(false);
 
   // o anki bölümün verisi
@@ -59,6 +65,7 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
   useEffect(() => {
     setRound(0);
     setWon(false);
+    setWinPhase("announce");
     return () => clearTextureCache();
   }, [level.id]);
 
@@ -73,7 +80,14 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
     Promise.all([...imgs.map(preloadImageAspect), fontsReady]).then(() => {
       if (alive) setReady(true);
     });
-    const t = setTimeout(() => speak(round === 0 ? data.instr : CUES[(round - 1) % CUES.length]), 550);
+    // Bu turun KENDİ yönergesi var mı? (ör. Hepsini Bul'da her tur farklı hedef:
+    // kelebek/balık/yıldız...). Varsa her turda onu seslendir ki çocuk ne arayacağını
+    // bilsin; yoksa (görev her tur aynı) kısa bir devam ipucu (CUE) çal.
+    const roundHasOwnInstr = !!(sessionRounds && sessionRounds[round] && "instr" in sessionRounds[round]);
+    const t = setTimeout(
+      () => speak(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
+      550
+    );
     return () => {
       alive = false;
       clearTimeout(t);
@@ -86,23 +100,37 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
   function handleWin() {
     if (won || flash) return;
     if (round < total - 1) {
-      // ara bölüm bitti: mini kutlama, sıradaki bölüm
+      // ara bölüm bitti: mini kutlama, sıradaki bölüm.
+      // ÖVGÜ SESİ TAM BİTİNCE geç (sabit süreyle kesme). round degisince bu effect'in
+      // cleanup'i stopSpeak() cagirdigi icin sabit 1600ms ovguyu ortadan kesiyordu.
       celebrateSound();
       fireConfetti();
-      speakPraise();
       setFlash(true);
-      setTimeout(() => {
+      let advanced = false;
+      const advance = () => {
+        if (advanced) return;
+        advanced = true;
         setFlash(false);
         setRound((r) => r + 1);
-      }, 1600);
+      };
+      speak(randomPraise(), { tone: "praise", onEnd: () => setTimeout(advance, 300) });
+      // güvenlik: ses hiç gelmez/bitmezse akış takılmasın
+      setTimeout(advance, 3500);
     } else {
-      // son bölüm: büyük kutlama
+      // son bölüm: büyük kutlama + sesli anons. YAPISTIRMA animasyonu ANONS BITINCE baslar.
       setWon(true);
+      setWinPhase("announce");
       onWin();
       bigCelebration();
-      speakPraise();
+      const startReward = () => setWinPhase((p) => (p === "announce" ? "reward" : p));
+      speak(STICKER_WIN, { tone: "praise", onEnd: startReward });
+      // guvenlik: ses hic bitmezse akis takilmasin
+      setTimeout(startReward, 8000);
     }
   }
+
+  // kazanilan level'in bölümü + o bölümdeki level id'leri (odul animasyonu icin)
+  const winSection = SECTIONS.find((s) => s.id === level.section);
 
   return (
     <div className="level-shell">
@@ -122,7 +150,10 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
         {ready && data.kind === "spot" && <SpotGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "memory" && <MemoryGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "maze" && <MazeGame key={round} level={data} onWin={handleWin} />}
-        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && board && (
+        {ready && data.kind === "seriate" && <SeriateGame key={round} level={data} onWin={handleWin} />}
+        {ready && data.kind === "weight" && <WeightGame key={round} level={data} onWin={handleWin} />}
+        {ready && data.kind === "trace" && <TraceGame key={round} level={data} onWin={handleWin} />}
+        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && board && (
           <Scene3D>
             <GameBoard3D board={board} onWin={handleWin} />
           </Scene3D>
@@ -135,15 +166,29 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
         </div>
       )}
 
-      {won && (
+      {won && winPhase === "announce" && (
+        <div className="announce-overlay">
+          <div className="announce-emoji">🎉⭐🎉</div>
+          <div className="announce-title">Tebrikler!</div>
+        </div>
+      )}
+
+      {won && winPhase === "reward" && winSection && (
+        <StickerReward
+          section={winSection}
+          ids={winSection.levels}
+          targetId={level.id}
+          done={done}
+          onDone={() => setWinPhase("card")}
+        />
+      )}
+
+      {won && winPhase === "card" && (
         <div className="win-overlay">
           <div className="win-card">
             <div className="win-emoji">🎉⭐🎉</div>
             <h2>Bravo! Hepsini bitirdin!</h2>
-            <div className="win-sticker">
-              <div className="win-sticker-label">Çıkartma kazandın!</div>
-              <div className="win-sticker-emoji">{stickerFor(level.id)}</div>
-            </div>
+            <div className="win-sticker-sub">Çıkartma kitabına eklendi ✨</div>
             <div className="win-buttons">
               <button className="big-btn light" onClick={onBack}>
                 ⬅ Geri

@@ -25,12 +25,15 @@ const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2"; // Turkc
 // FORCE=1: var olan mp3'leri de yeniden uret (yeni ses/ayara gecerken sifirdan uretmek icin)
 const FORCE = process.env.FORCE === "1" || process.env.ELEVENLABS_FORCE === "1";
 
-// Iki-tonlu uretim (arastirma onerisi):
-//  - COSKULU (ovgu/kutlama/karsilama): daha ekspresif, canli.
-//  - SAKIN-NET (yonerge/ogretim + cesaretlendirme): kararli, net; style=0 ile
-//    Turkce telaffuz artefaktlari (or. "hayvani"->"haayvani") en aza iner.
-const EXPRESSIVE = { stability: 0.45, similarity_boost: 0.8, style: 0.12, use_speaker_boost: false };
-const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false };
+// Iki-tonlu uretim (arastirma onerisi) + tempo (speed) ince ayari:
+//  - COSKULU (ovgu/kutlama/karsilama): ekspresif + biraz DAHA HIZLI (speed 1.08).
+//  - SAKIN-NET (yonerge/ogretim + cesaretlendirme): kararli/net + biraz DAHA YAVAS
+//    (speed 0.9) ki cocuk yonergeyi rahat izlesin. style=0 -> Turkce telaffuz artefakti azalir.
+//  - PRON_FIX: telaffuzu zor cikan kelimeler (or. "terazide") icin YUKSEK stability;
+//    a->ağ tarzi sesli-harf kaymasini bastirir.
+const EXPRESSIVE = { stability: 0.45, similarity_boost: 0.8, style: 0.12, use_speaker_boost: false, speed: 1.08 };
+const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false, speed: 0.9 };
+const PRON_FIX = { stability: 0.72, similarity_boost: 0.85, style: 0.0, use_speaker_boost: false, speed: 0.9 };
 
 if (!API_KEY) {
   console.error("HATA: ELEVENLABS_API_KEY ortam degiskeni gerekli.");
@@ -59,7 +62,10 @@ const expressiveSet = new Set([
   ...mod.PRAISE,
   ...mod.CUES,
 ]);
-const settingsFor = (text) => (expressiveSet.has(text) ? EXPRESSIVE : STEADY);
+const settingsFor = (text) => {
+  if (/terazide/i.test(text)) return PRON_FIX; // "terazi" telaffuzu icin ozel
+  return expressiveSet.has(text) ? EXPRESSIVE : STEADY;
+};
 
 const outDir = path.join(root, "public", "voice");
 await mkdir(outDir, { recursive: true });

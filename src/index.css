@@ -1283,10 +1283,7 @@ button {
 .bk-slot.got {
   background: radial-gradient(circle at 35% 30%, #ffffff, #ffe9f6 70%);
   box-shadow: 0 4px 10px -3px rgba(120, 60, 100, 0.35), 0 0 0 3px rgba(255, 255, 255, 0.9) inset;
-  transform: rotate(-4deg);
-}
-.bk-slot.got:nth-child(even) {
-  transform: rotate(5deg);
+  /* düz otursun: çıkartma yamuk yapıştırılmış gibi görünmesin (eski rotate kaldırıldı) */
 }
 .bk-slot.locked {
   background: rgba(150, 130, 90, 0.1);

@@ -414,7 +414,7 @@ export const LEVELS: Level[] = [
     title: "Hangisi Daha Ağır?",
     kind: "weight",
     icon: "🐘",
-    instr: "Terazide daha ağır olan nesneye dokun. Ağır olan aşağı iner.",
+    instr: "Daha ağır olan nesneye dokun. Ağır olan, terazide aşağı iner.",
     weight: { mode: "heavy", heavy: "🐘", light: "🪶" },
   },
   {
@@ -423,7 +423,7 @@ export const LEVELS: Level[] = [
     title: "Hangisi Daha Hafif?",
     kind: "weight",
     icon: "🎈",
-    instr: "Terazide daha hafif olan nesneye dokun. Hafif olan yukarı kalkar.",
+    instr: "Daha hafif olan nesneye dokun. Hafif olan, terazide yukarı kalkar.",
     weight: { mode: "light", heavy: "🐘", light: "🎈" },
   },
 

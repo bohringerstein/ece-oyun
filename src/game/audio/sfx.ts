@@ -10,6 +10,8 @@ export function unlockAudio() {
 
 function tone(freq: number, start: number, dur: number, gain = 0.25, type: OscillatorType = "sine") {
   const a = getAudioCtx();
+  // iOS: ses calmadan hemen once askidaki context'i uyandir (kutlama/pop yutulmasin)
+  if (a.state !== "running") resumeAudio();
   const osc = a.createOscillator();
   const g = a.createGain();
   osc.type = type;

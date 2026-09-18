@@ -9,10 +9,24 @@
 
 let ctx: AudioContext | null = null;
 
+// iOS 16.4+: ses oturumunu "playback" yap -> Web Audio (osilatorle uretilen kutlama/
+// pop sesleri) telefonun SESSIZ (zil) anahtari ACIK olsa bile duyulur. Aksi halde
+// iOS'ta mp3 yonergeler calar ama sentezlenen sesler susar ("kutlama sesi cikmiyor").
+// Desteklemeyen tarayicilarda navigator.audioSession undefined -> guvenle atlanir.
+function setPlaybackSession() {
+  try {
+    const s = (navigator as any).audioSession;
+    if (s && s.type !== "playback") s.type = "playback";
+  } catch {
+    // yoksay
+  }
+}
+
 export function getAudioCtx(): AudioContext {
   if (!ctx) {
     const AC = window.AudioContext || (window as any).webkitAudioContext;
     ctx = new AC();
+    setPlaybackSession();
   }
   return ctx;
 }
@@ -33,6 +47,7 @@ function playSilent(c: AudioContext) {
 // Bir kullanici jesti icinde cagrilmali: context'i devam ettir + iOS unlock.
 export function resumeAudio() {
   const c = getAudioCtx();
+  setPlaybackSession(); // her jestte tekrar dene (iOS bazen ilk seferde uygulamaz)
   if (c.state !== "running") {
     c.resume().catch(() => {});
     playSilent(c);

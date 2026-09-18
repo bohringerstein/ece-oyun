@@ -489,3 +489,17 @@ export function preloadImageAspect(src: string): Promise<number> {
     img.src = src;
   });
 }
+
+// iOS uyumluluk: doku (texture) cache'i hic silinmezse uzun oturumda GPU bellek
+// sinirina takilir ve bazi kartlar EKSIK/yarim yuklenir (iOS'ta bariz, Android'de
+// bol pay oldugu icin gorunmez). Level degisince GPU dokularini serbest birak;
+// yeni level kendi dokularini talep uzerine yeniden uretir. Oyun mantigi degismez.
+// (en-boy/boyut cache'leri KORUNUR -> ucuz ve gerekli.)
+export function clearTextureCache() {
+  for (const t of cache.values()) t.dispose();
+  cache.clear();
+  for (const t of textCache.values()) t.dispose();
+  textCache.clear();
+  for (const t of containerCache.values()) t.dispose();
+  containerCache.clear();
+}

@@ -7,7 +7,7 @@ import { stickerFor } from "../data/levels";
 import { SpotGame } from "../types/SpotGame";
 import { MemoryGame } from "../types/MemoryGame";
 import { MazeGame } from "../types/MazeGame";
-import { preloadImageAspect } from "../engine/textures";
+import { preloadImageAspect, clearTextureCache } from "../engine/textures";
 import { speak, speakPraise, stopSpeak } from "../audio/speak";
 import { CUES } from "../audio/voiceLines";
 import { bigCelebration, celebrateSound, fireConfetti } from "../audio/sfx";
@@ -54,18 +54,23 @@ export function LevelShell({ level, onBack, onWin, onNext }: Props) {
     return { ...level, ...level.rounds[round - 1] };
   }, [level, round, sessionRounds]);
 
-  // level degisince sifirla
+  // level degisince sifirla + onceki level'in GPU dokularini serbest birak
+  // (iOS bellek hijyeni; yeni level dokularini talep uzerine yeniden uretir)
   useEffect(() => {
     setRound(0);
     setWon(false);
+    return () => clearTextureCache();
   }, [level.id]);
 
-  // her bölümde: görselleri yükle + yönergeyi söyle
+  // her bölümde: görselleri + FONTLARI yükle, sonra yönergeyi söyle.
+  // document.fonts.ready: iOS'ta emoji/yazi glyph'leri canvas'a cizilmeden once
+  // yuklensin ki kart gorselleri "yarim" cikmasin.
   useEffect(() => {
     let alive = true;
     setReady(false);
     const imgs = collectImages(data);
-    Promise.all(imgs.map(preloadImageAspect)).then(() => {
+    const fontsReady = (document as any).fonts?.ready ?? Promise.resolve();
+    Promise.all([...imgs.map(preloadImageAspect), fontsReady]).then(() => {
       if (alive) setReady(true);
     });
     const t = setTimeout(() => speak(round === 0 ? data.instr : CUES[(round - 1) % CUES.length]), 550);

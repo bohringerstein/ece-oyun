@@ -442,7 +442,7 @@ export const LEVELS: Level[] = [
       { content: e("🏀"), correct: false },
       { content: e("🪟"), correct: true },
       { content: e("🍦"), correct: false },
-      { content: e("🧇"), correct: true },
+      { content: e("🧊"), correct: true },
       { content: e("⚽"), correct: false },
     ],
   },
@@ -456,7 +456,7 @@ export const LEVELS: Level[] = [
     refShape: { shape: "triangle", color: "#3a86ff" },
     items: [
       { content: e("🍕"), correct: true },
-      { content: e("🍉"), correct: true },
+      { content: e("🔺"), correct: true },
       { content: e("⛺"), correct: true },
       { content: e("🏔️"), correct: true },
       { content: e("🎳"), correct: false },

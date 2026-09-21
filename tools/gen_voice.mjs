@@ -32,7 +32,8 @@ const FORCE = process.env.FORCE === "1" || process.env.ELEVENLABS_FORCE === "1";
 //  - PRON_FIX: telaffuzu zor cikan kelimeler (or. "terazide") icin YUKSEK stability;
 //    a->ağ tarzi sesli-harf kaymasini bastirir.
 const EXPRESSIVE = { stability: 0.45, similarity_boost: 0.8, style: 0.12, use_speaker_boost: false, speed: 1.08 };
-const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false, speed: 0.9 };
+// stability 0.62 (yuksek) -> prozodi dalgalanmasi azalir, TUM yonergeler ayni tempoda/tutarli okunur
+const STEADY = { stability: 0.62, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false, speed: 0.9 };
 const PRON_FIX = { stability: 0.72, similarity_boost: 0.85, style: 0.0, use_speaker_boost: false, speed: 0.9 };
 // "aferin" gibi bastaki 'a'si Turkce'de biraz UZUN okunan ovgu sozcukleri: coskulu ama
 // hizli uretimde 'a' kisalip kulagi tirmaliyordu. Daha yavas + kararli -> vokale nefes verir.

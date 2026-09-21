@@ -276,7 +276,7 @@ export function buildBoard(level: Level): Board {
       );
       // KARSILASTIRILAN GRUP = yataydaki seceneklerin TAMAMI; tek bir kutuyla cevrelenir
       // (her nesne ayri degil). Cocuk "bu grupta hangisi daha cok/buyuk" olarak bakar.
-      frames.push({ pos: [0, y], w: 7.6, h: 2.6 });
+      frames.push({ pos: [0, y], w: 7.4, h: 2.3 });
       shuffled.forEach(({ c, correct, sc }, i) => {
         let scale: number | undefined;
         if (level.compareBySize) {

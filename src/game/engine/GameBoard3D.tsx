@@ -3,7 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Board, Slot, Token } from "./buildBoard";
 import { Card3D } from "./Card3D";
-import { getTextTexture, getContainerTexture, getTexture } from "./textures";
+import { getTextTexture, getContainerTexture, getTexture, getShadowTexture } from "./textures";
 import { popSound, wrongSound } from "../audio/sfx";
 import { speakEncourage } from "../audio/speak";
 
@@ -13,6 +13,39 @@ interface Props {
 }
 
 const PLANE = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+// yuvarlak köşeli dikdörtgen Shape (karsilastirma cerceveleri icin - keskin kose degil)
+function roundedRectShape(w: number, h: number, r: number): THREE.Shape {
+  const s = new THREE.Shape();
+  const x = -w / 2, y = -h / 2;
+  const rr = Math.min(r, w / 2, h / 2);
+  s.moveTo(x + rr, y);
+  s.lineTo(x + w - rr, y);
+  s.absarc(x + w - rr, y + rr, rr, -Math.PI / 2, 0, false);
+  s.lineTo(x + w, y + h - rr);
+  s.absarc(x + w - rr, y + h - rr, rr, 0, Math.PI / 2, false);
+  s.lineTo(x + rr, y + h);
+  s.absarc(x + rr, y + h - rr, rr, Math.PI / 2, Math.PI, false);
+  s.lineTo(x, y + rr);
+  s.absarc(x + rr, y + rr, rr, Math.PI, Math.PI * 1.5, false);
+  return s;
+}
+
+// Karsilastirma grubunu cevreleyen YUMUSAK (yuvarlak kose) kutu
+function RoundedFrame({ f }: { f: { pos: [number, number]; w: number; h: number } }) {
+  const outer = useMemo(() => new THREE.ShapeGeometry(roundedRectShape(f.w, f.h, 0.42)), [f.w, f.h]);
+  const inner = useMemo(() => new THREE.ShapeGeometry(roundedRectShape(f.w - 0.16, f.h - 0.16, 0.34)), [f.w, f.h]);
+  return (
+    <group position={[f.pos[0], f.pos[1], -0.25]}>
+      <mesh geometry={outer}>
+        <meshBasicMaterial color="#ffb84d" transparent opacity={0.9} />
+      </mesh>
+      <mesh geometry={inner} position={[0, 0, 0.01]}>
+        <meshBasicMaterial color="#fffdf7" transparent opacity={0.92} />
+      </mesh>
+    </group>
+  );
+}
 
 // 3D metin etiketi
 function TextLabel({ text, color, y = 0, size = 0.5 }: { text: string; color?: string; y?: number; size?: number }) {
@@ -176,6 +209,7 @@ export function GameBoard3D({ board, onWin }: Props) {
   const slotRefs = useRef<Map<string, THREE.Group>>(new Map());
   const targets = useRef<Map<string, [number, number, number]>>(new Map());
   const pulse = useRef<Map<string, number>>(new Map());
+  const rots = useRef<Map<string, number>>(new Map()); // sepete/masaya konunca hafif eğim
   const dragId = useRef<string | null>(null);
   const [placed, setPlaced] = useState<Record<string, string>>({});
   const placedRef = useRef(placed);
@@ -245,19 +279,26 @@ export function GameBoard3D({ board, onWin }: Props) {
     // yuzey cizgisi: nesnenin TABANI buraya otursun. Deger, nesnelerin kabin ON
     // kopyasinin (asagida z=0.55 overlay) ARKASINA girip "icine/uzerine kondu" gorunmesi
     // icin ayarlandi.
+    // yuzey: nesnenin TABANI buraya otursun.
+    //  - table: nesne masanin ÜSTÜNde tam görünür (ön kopya yok) -> taban masa yüzeyinde
+    //  - basket: nesne sepetin İÇİNde (ön kopya alt kısmı örter)
     const surface =
-      slot.style === "table" ? slot.pos[1] + 0.55 :
+      slot.style === "table" ? slot.pos[1] + 1.0 :
       slot.style === "basket" ? slot.pos[1] + 0.85 :
       slot.style === "bin" ? slot.pos[1] + 0.4 :
       null;
+    // örtüşmeli öbekleme: nesneler tek-tek eşit dizilmesin, hafif üst üste binsin (doğal)
+    const spread = Math.min(slot.w - 1.8, n * 1.25);
     ids.forEach((id, i) => {
       const tok = board.tokens.find((t) => t.id === id)!;
-      const x = n === 1 ? slot.pos[0] : slot.pos[0] - (slot.w / 2 - 1) + ((slot.w - 2) * i) / Math.max(1, n - 1);
-      // nesnenin yaklasik yari yuksekligi (olcegine gore) -> tabani yuzeye otursun
+      const x = n === 1 ? slot.pos[0] : slot.pos[0] - spread / 2 + (spread * i) / Math.max(1, n - 1);
       const half = 0.9 * (tok.scale ?? 1);
       const y = surface !== null ? surface + half : slot.pos[1] + 0.2;
-      // artan z: ust uste binince z-fighting olmasin, sonra gelen ustte kalir
+      // artan z: sonra gelen üstte kalir
       targets.current.set(id, [x, y, 0.3 + i * 0.04]);
+      // deterministik hafif eğim (±~9°) -> "atılmış/konmuş" doğallığı
+      const seed = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+      rots.current.set(id, (((seed % 19) - 9) / 9) * 0.16);
     });
   }
 
@@ -357,6 +398,9 @@ export function GameBoard3D({ board, onWin }: Props) {
       g.scale.x += (targetScale - g.scale.x) * k;
       g.scale.y = g.scale.x;
       g.scale.z = g.scale.x;
+      // sepete/masaya konunca hafif eğim (yerleşince), sürüklerken/gridde dik
+      const rz = dragId.current === tok.id ? 0 : (placedRef.current[tok.id] ? rots.current.get(tok.id) ?? 0 : 0);
+      g.rotation.z += (rz - g.rotation.z) * k;
     });
     // hedef pulse efekti
     slotRefs.current.forEach((g, id) => {
@@ -389,19 +433,8 @@ export function GameBoard3D({ board, onWin }: Props) {
 
       {board.pointer && <PointerHand key={boardStamp} pos={board.pointer} />}
 
-      {/* karsilastirma gruplarini cevreleyen esit kutular (tokenlarin arkasinda) */}
-      {board.frames?.map((f, i) => (
-        <group key={`fr${i}`} position={[f.pos[0], f.pos[1], -0.25]}>
-          <mesh>
-            <planeGeometry args={[f.w, f.h]} />
-            <meshBasicMaterial color="#ffb84d" transparent opacity={0.9} />
-          </mesh>
-          <mesh position={[0, 0, 0.01]}>
-            <planeGeometry args={[f.w - 0.16, f.h - 0.16]} />
-            <meshBasicMaterial color="#fffdf7" transparent opacity={0.92} />
-          </mesh>
-        </group>
-      ))}
+      {/* karsilastirma gruplarini cevreleyen YUMUSAK (yuvarlak kose) kutular */}
+      {board.frames?.map((f, i) => <RoundedFrame key={`fr${i}`} f={f} />)}
 
       {board.slots.map((s) => (
         <group
@@ -423,15 +456,21 @@ export function GameBoard3D({ board, onWin }: Props) {
           }}
           position={[tok.home[0], tok.home[1], 0]}
         >
+          {placed[tok.id] && (
+            <mesh position={[0, -0.8, -0.03]} scale={[1.02, 0.36, 1]} raycast={() => null}>
+              <planeGeometry args={[2.0, 2.0]} />
+              <meshBasicMaterial map={getShadowTexture()} transparent depthWrite={false} toneMapped={false} />
+            </mesh>
+          )}
           <Card3D content={tok.content} boxW={tok.w ?? 1.9} boxH={tok.h ?? 1.9} onPointerDown={(e: any) => startDrag(tok, e)} />
         </group>
       ))}
 
-      {/* KABIN ÖN KOPYASI: nesnelerin ÖNÜNDE çizilir -> sepete/masaya konan nesnenin ALT
-          kısmı ön kenarın arkasına girer = "gerçekten içine/üstüne kondu" 3B hissi.
-          raycast kapalı: dokunmayı engellemesin. */}
+      {/* SEPET ÖN KOPYASI: nesnelerin ÖNÜNDE çizilir -> sepete konan nesnenin ALT kısmı
+          ön kenarın arkasına girer = "gerçekten içine kondu" hissi. Masada YOK: masada
+          nesne üstte tam görünür + temas gölgesiyle oturur. raycast kapalı. */}
       {board.slots
-        .filter((s) => s.style === "basket" || s.style === "table")
+        .filter((s) => s.style === "basket")
         .map((s) => (
           <group key={`front-${s.id}`} position={[s.pos[0], s.pos[1], 0.55]}>
             <mesh raycast={() => null}>

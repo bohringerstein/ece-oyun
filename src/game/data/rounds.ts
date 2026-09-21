@@ -159,8 +159,8 @@ export const kareRounds = () =>
   );
 export const ucgenRounds = () =>
   selectRounds(
-    // 🍦 cikarildi: ustu yuvarlak dondurma topu -> ucgen algisini bozuyor. 🔺 saf ucgen eklendi.
-    ["🍕","🍉","⛺","🏔️","🎄","⛰️","🚩","🗻","🎪","🏕️","🔺"],
+    // 🍦 (yuvarlak top) ve 🍉 (karpuz: üstü yarım daire; ayrıca daire/kare çeldiricisi -> çelişki) çıkarıldı.
+    ["🍕","⛺","🏔️","🎄","⛰️","🚩","🗻","🎪","🏕️","🔺"],
     ["🏀","🍎","📦","⚽","🕐","🍩","🎁","🪟","📺","🍊","🎈","🍪"],
     3, 3
   );
@@ -186,7 +186,8 @@ export const dikdortgenRounds = () =>
   );
 export const ucanlarRounds = () =>
   selectRounds(
-    ["✈️","🎈","🦅","🚀","🦋","🐦","🚁","🪁","🦇","🛸","🕊️","🦉","🦜","🦆","🐝","🦩","🦟","🦚","🚟","🎆"],
+    // 🚟 (tren, uçmaz) + 🎆 (havai fişek, muğlak) + 🦚 (tavus kuşu, yerde durur imgesi) çıkarıldı
+    ["✈️","🎈","🦅","🚀","🦋","🐦","🚁","🪁","🦇","🛸","🕊️","🦉","🦜","🦆","🐝","🦩","🦟"],
     ["🚜","🏍️","🚗","🚲","🚂","⛵","🐢","🐘","🚌","🚚","🦔","🐌","🚑","🦥","🐊","🚕"],
     3, 3
   );
@@ -422,7 +423,7 @@ export const copleriAyirRounds = () =>
       { arr: ["🛍️","🧴","🥤","🍼","🪀","🪥","🩴","🪣"], bin: "plastik" },
       { arr: ["📰","📦","📄","📃","📒","📔","📚","🗞️","🧻","📜"], bin: "kagit" },
       // cam: alkol/kadeh YOK -> kavanoz, bardak, vazo, ayna gibi guvenli cam esyalar
-      { arr: ["🫙","🥛","🍯","🏺","🪞","💡","👓","🔮"], bin: "cam" },
+      { arr: ["🫙","🥛","🍯","🪞","💡","👓","🔮"], bin: "cam" }, // 🏺 (seramik/toprak, cam değil) çıkarıldı
     ],
     2
   );
@@ -430,7 +431,7 @@ export const meyveSebzeRounds = () =>
   sortRounds(
     [
       { arr: ["🍌","🍇","🍓","🍎","🍊","🍑","🍒","🥝","🍍","🍐","🍉","🥭","🫐","🍈"], bin: "meyve" },
-      { arr: ["🥦","🌽","🍅","🥕","🥬","🧅","🥔","🫒","🍆","🧄","🥒","🌶️","🥗","🍠"], bin: "sebze" },
+      { arr: ["🥦","🌽","🍅","🥕","🥬","🧅","🥔","🫒","🍆","🧄","🥒","🌶️","🍠"], bin: "sebze" }, // 🥗 (yemek/salata, tekil sebze değil) çıkarıldı
     ],
     3
   );
@@ -575,11 +576,11 @@ export function spotRounds(): Round[] {
 // dogru hedefi seslendirir. round 0 = kelebek (level'in temel instr'iyle ayni).
 const FINDALL_SETS: { target: string; instr: string; distractors: string[] }[] = [
   { target: "🦋", instr: "Bütün kelebekleri bul ve sepete sürükle.", distractors: ["🐝", "🐞", "🐛", "🌸", "🍄", "🐌"] },
-  { target: "🐟", instr: "Bütün balıkları bul ve sepete sürükle.", distractors: ["🐠", "🐙", "🦀", "🐚", "⭐", "🌊"] },
+  { target: "🐟", instr: "Bütün balıkları bul ve sepete sürükle.", distractors: ["🐙", "🦀", "🐚", "⭐", "🌊", "🐢"] }, // 🐠 (o da balık) çıkarıldı
   { target: "⭐", instr: "Bütün yıldızları bul ve sepete sürükle.", distractors: ["🌙", "☁️", "🌈", "🎈", "🪁", "🌞"] },
   { target: "🍎", instr: "Bütün elmaları bul ve sepete sürükle.", distractors: ["🍌", "🍇", "🍓", "🍊", "🍐", "🍒"] },
   { target: "🐢", instr: "Bütün kaplumbağaları bul ve sepete sürükle.", distractors: ["🐸", "🦎", "🐍", "🐰", "🦔", "🐹"] },
-  { target: "🌸", instr: "Bütün çiçekleri bul ve sepete sürükle.", distractors: ["🌻", "🌷", "🌼", "🌵", "🍀", "🌹"] },
+  { target: "🌸", instr: "Bütün çiçekleri bul ve sepete sürükle.", distractors: ["🌵", "🍀", "🍄", "🐝", "🌿", "🐞"] }, // ÇİÇEK olan çeldiriciler (🌻🌷🌼🌹) çıkarıldı -> çiçek-olmayanlar
 ];
 // voiceLines bu yönergeleri seslendirilecek metinler listesine ekler (mp3 uretilsin)
 export const FINDALL_INSTRS = FINDALL_SETS.map((s) => s.instr);

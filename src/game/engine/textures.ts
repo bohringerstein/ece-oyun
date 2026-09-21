@@ -501,6 +501,25 @@ export function getTextTexture(text: string, color = "#444"): THREE.Texture {
 
 // Sepet / masa gibi geniş hedef görselleri
 const containerCache = new Map<string, THREE.Texture>();
+// Yumusak temas golgesi (radial gradient oval) - sepete/masaya konan nesnenin altina.
+let shadowTex: THREE.Texture | null = null;
+export function getShadowTexture(): THREE.Texture {
+  if (shadowTex) return shadowTex;
+  const cv = document.createElement("canvas");
+  cv.width = 256;
+  cv.height = 256;
+  const ctx = cv.getContext("2d")!;
+  const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grad.addColorStop(0, "rgba(40,26,12,0.55)");
+  grad.addColorStop(0.55, "rgba(40,26,12,0.32)");
+  grad.addColorStop(1, "rgba(40,26,12,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+  shadowTex = new THREE.CanvasTexture(cv);
+  shadowTex.colorSpace = THREE.SRGBColorSpace;
+  return shadowTex;
+}
+
 export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
   const hit = containerCache.get(kind);
   if (hit) return hit;
@@ -509,50 +528,83 @@ export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
   cv.height = 256;
   const ctx = cv.getContext("2d")!;
   if (kind === "basket") {
-    // örgü sepet
-    ctx.fillStyle = "#d9a066";
-    ctx.beginPath();
-    ctx.moveTo(150, 70);
-    ctx.lineTo(874, 70);
-    ctx.lineTo(806, 226);
-    ctx.lineTo(218, 226);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "#b5793f";
-    ctx.lineWidth = 6;
-    for (let x = 200; x < 820; x += 46) {
+    // ---- ÖRGÜ SEPET: dikey gradient gövde + çift yönlü örgü + eliptik ağız (hacimli) ----
+    const bTop = 92, bBot = 240;
+    const bodyPath = () => {
       ctx.beginPath();
-      ctx.moveTo(x, 74);
-      ctx.lineTo(x - 20, 222);
+      ctx.moveTo(176, bTop);
+      ctx.lineTo(848, bTop);
+      ctx.lineTo(800, bBot);
+      ctx.lineTo(224, bBot);
+      ctx.closePath();
+    };
+    const g = ctx.createLinearGradient(0, bTop, 0, bBot);
+    g.addColorStop(0, "#e6b579");
+    g.addColorStop(0.5, "#c98a4a");
+    g.addColorStop(1, "#9c6a34");
+    ctx.fillStyle = g;
+    bodyPath();
+    ctx.fill();
+    // örgü dokusu (çift yönlü çapraz + yatay bantlar), gövdeye kırpılı
+    ctx.save();
+    bodyPath();
+    ctx.clip();
+    ctx.lineWidth = 5;
+    for (let x = 180; x < 860; x += 40) {
+      ctx.strokeStyle = "rgba(90,55,25,0.4)";
+      ctx.beginPath(); ctx.moveTo(x, bTop); ctx.lineTo(x - 26, bBot); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,240,210,0.22)";
+      ctx.beginPath(); ctx.moveTo(x + 10, bTop); ctx.lineTo(x - 16, bBot); ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(80,50,22,0.4)";
+    ctx.lineWidth = 7;
+    for (const yy of [128, 170, 212]) { ctx.beginPath(); ctx.moveTo(150, yy); ctx.lineTo(874, yy); ctx.stroke(); }
+    ctx.restore();
+    // eliptik ağız: dış dudak + hafif iç karanlık + ön highlight (derinlik)
+    const mx = 512, my = 92, mrx = 348, mry = 42;
+    ctx.fillStyle = "#c98a4a";
+    ctx.beginPath(); ctx.ellipse(mx, my, mrx, mry, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#7a5228";
+    ctx.beginPath(); ctx.ellipse(mx, my, mrx - 22, mry - 14, 0, 0, Math.PI * 2); ctx.fill();
+    // iç üst gölge (derinlik)
+    ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 12;
+    ctx.beginPath(); ctx.ellipse(mx, my - 2, mrx - 26, mry - 18, 0, Math.PI, Math.PI * 2); ctx.stroke();
+    // ön dudak highlight (ışık hasır kenarına vuruyor)
+    ctx.strokeStyle = "rgba(255,245,220,0.6)"; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.ellipse(mx, my + 2, mrx, mry, 0, 0.12, Math.PI - 0.12); ctx.stroke();
+  } else {
+    // ---- AHŞAP MASA: gradient tabla + ahşap damarı + iki tonlu ön kenar ----
+    const tw = ctx.createLinearGradient(0, 70, 0, 118);
+    tw.addColorStop(0, "#e6b072");
+    tw.addColorStop(1, "#c48a4e");
+    ctx.fillStyle = tw;
+    roundRect(ctx, 88, 70, 848, 48, 16);
+    ctx.fill();
+    // ışıklı ön kenar şeridi (üst)
+    ctx.fillStyle = "rgba(255,240,215,0.5)";
+    roundRect(ctx, 88, 70, 848, 12, 10);
+    ctx.fill();
+    // ahşap damarı
+    ctx.strokeStyle = "rgba(120,75,35,0.28)";
+    ctx.lineWidth = 3;
+    for (const yy of [88, 100]) {
+      ctx.beginPath();
+      ctx.moveTo(110, yy);
+      ctx.bezierCurveTo(360, yy - 4, 660, yy + 4, 914, yy);
       ctx.stroke();
     }
-    ctx.beginPath();
-    ctx.moveTo(170, 120);
-    ctx.lineTo(854, 120);
-    ctx.moveTo(185, 175);
-    ctx.lineTo(839, 175);
-    ctx.stroke();
-    // ağız kısmı
-    ctx.fillStyle = "#c98a4a";
-    ctx.strokeStyle = "#a06a30";
-    ctx.lineWidth = 8;
-    roundRect(ctx, 120, 44, 784, 52, 24);
-    ctx.fill();
-    ctx.stroke();
-  } else {
-    // ahşap masa
-    ctx.fillStyle = "#c98a55";
-    roundRect(ctx, 90, 70, 844, 44, 18);
-    ctx.fill();
-    ctx.fillStyle = "#e0a86b";
-    roundRect(ctx, 90, 70, 844, 16, 10);
-    ctx.fill();
+    // ön kenar kalınlığı: iki tonlu (üst açık / alt koyu -> hacim)
+    ctx.fillStyle = "#a06a34";
+    ctx.fillRect(88, 118, 848, 9);
+    ctx.fillStyle = "#6e451f";
+    ctx.fillRect(88, 127, 848, 12);
+    // ayaklar + iç kenar gölgesi
     ctx.fillStyle = "#8a5a2a";
-    ctx.fillRect(90, 112, 844, 20);
-    // ayaklar
-    ctx.fillStyle = "#8a5a2a";
-    ctx.fillRect(160, 132, 34, 96);
-    ctx.fillRect(830, 132, 34, 96);
+    ctx.fillRect(158, 139, 34, 92);
+    ctx.fillRect(832, 139, 34, 92);
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(184, 139, 8, 92);
+    ctx.fillRect(858, 139, 8, 92);
   }
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;

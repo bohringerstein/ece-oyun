@@ -69,7 +69,7 @@ export function DepthGame({ level, onWin }: { level: Level; onWin: () => void })
   return (
     <div className="depth-wrap">
       <p className="depth-prompt">
-        Pofuduk hangisinde <span className="depth-obj">{obj}</span> <b>{REL_WORD[target]}</b>?
+        Pofuduk hangi resimde <span className="depth-obj">{obj}</span> <b>{REL_WORD[target]}</b>?
       </p>
       <div className="depth-options">
         {order.map((rel, i) => (

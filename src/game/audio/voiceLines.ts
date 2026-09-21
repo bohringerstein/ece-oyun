@@ -14,10 +14,10 @@ export const BREATHE_OUT = "Nefes ver";
 // ve abarti yigini yerine yapilan isi/cabayi oven sade, cesitli ovgu.
 export const PRAISE = [
   "Aferin, doğru yaptın!",
-  "Doğru! Güzel iş çıkardın.",
+  "Denedin ve buldun, aferin!",
   "Çok güzel yaptın!",
   "Bravo! Çok iyi düşündün.",
-  "Doğru buldun, aferin!",
+  "Çok dikkatli baktın, bravo!",
   "Çok iyi çalıştın!",
 ];
 
@@ -30,7 +30,7 @@ export const TRY_AGAIN = [
 ];
 
 // Level TAMAMEN bitince (son bölüm) - cikartma odulu anonsu
-export const STICKER_WIN = "Oyunu tamamladın! Bir çıkartma kazandın. Hadi çıkartma kitabına ekleyelim.";
+export const STICKER_WIN = "Bitirdin! Çıkartmanı kazandın. Hadi kitabına yapıştıralım!";
 
 // Ara bölüm gecis tesvikleri (LevelShell)
 export const CUES = [

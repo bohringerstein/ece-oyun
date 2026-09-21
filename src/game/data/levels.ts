@@ -112,7 +112,7 @@ export const LEVELS: Level[] = [
     title: "Say ve Eşle",
     kind: "count",
     icon: "🍂",
-    instr: "Her kümede kaç tane var, birlikte sayalım. Sonra doğru sayıyı kutuya sürükle.",
+    instr: "Kaç tane var, birlikte sayalım. Sonra doğru sayıyı kutuya sürükle.",
     groups: [
       { content: grp("🍁", 3), n: 3 },
       { content: grp("🌰", 2), n: 2 },
@@ -235,7 +235,7 @@ export const LEVELS: Level[] = [
     title: "İlişkili Nesneler",
     kind: "match",
     icon: "🥄",
-    instr: "Soldaki resmi, ona uygun olan resmin üstüne sürükle.",
+    instr: "Resmi, birlikte kullandığı resmin üstüne sürükle.",
     pairs: [
       { drag: e("🥄"), target: e("🍽️") },
       { drag: e("🐝"), target: e("🍯") },
@@ -249,7 +249,7 @@ export const LEVELS: Level[] = [
     title: "Küçükten Büyüğe Sırala",
     kind: "seriate",
     icon: "📏",
-    instr: "Nesnelere en küçükten en büyüğe doğru sırayla dokun.",
+    instr: "En küçükten en büyüğe doğru sırayla dokun.",
     seriate: { emoji: "⭐", n: 3 },
   },
   {
@@ -350,7 +350,7 @@ export const LEVELS: Level[] = [
     kind: "compare",
     icon: "⛄",
     compareBySize: true,
-    instr: "Her satırda en büyük olanı bul ve masaya koy.",
+    instr: "En büyük olanı bul ve masaya koy.",
     compareRows: [
       { items: [img("buyuk", "00"), img("buyuk", "01"), img("buyuk", "02")], correctIndex: 0 },
       { items: [img("buyuk", "03"), img("buyuk", "04"), img("buyuk", "05")], correctIndex: 0 },
@@ -364,7 +364,7 @@ export const LEVELS: Level[] = [
     kind: "compare",
     icon: "🦒",
     compareBySize: true,
-    instr: "Her satırda en kısa, yani en küçük olanı bul ve masaya koy.",
+    instr: "En küçük olanı bul ve masaya koy.",
     compareRows: [
       { items: [img("kisa", "00"), img("kisa", "01")], correctIndex: 1 },
       { items: [img("kisa", "02"), img("kisa", "03")], correctIndex: 1 },
@@ -556,7 +556,7 @@ export const LEVELS: Level[] = [
     title: "Nerede?",
     kind: "depth",
     icon: "🔭",
-    instr: "Pofuduk hangisinde topun arkasında? Ona dokun.",
+    instr: "Pofuduk hangi resimde topun arkasında? Ona dokun.",
     depth: { object: "⚽", rel: "behind" },
   },
 
@@ -567,7 +567,7 @@ export const LEVELS: Level[] = [
     title: "Çöpleri Ayır",
     kind: "sort",
     icon: "♻️",
-    instr: "Çöpleri doğru geri dönüşüm kutusuna at. Plastik, kağıt ve cam ayrı kutulara gider.",
+    instr: "Her çöpü doğru kutuya at. Plastik, kağıt ve cam ayrı kutulara gider.",
     bins: [
       { id: "plastik", label: "Plastik", content: e("♻️"), color: "#f9a03f" },
       { id: "kagit", label: "Kağıt", content: e("📄"), color: "#4d96ff" },
@@ -694,7 +694,7 @@ export const LEVELS: Level[] = [
     title: "Pofuduk'la Nefes Al",
     kind: "breathe",
     icon: "🌬️",
-    instr: "Pofuduk'la birlikte nefes alalım. Daire büyürken burnundan nefes al, küçülürken ağzından yavaşça ver.",
+    instr: "Pofuduk'la nefes alalım. Daire büyüyünce burnundan al, küçülünce ağzından ver.",
     breathe: { cycles: 4 },
   },
 
@@ -724,7 +724,7 @@ export const LEVELS: Level[] = [
     title: "İlk Ses Avı",
     kind: "select",
     icon: "🔤",
-    instr: '"a" sesiyle başlayanları bul ve sepete sürükle.',
+    instr: "Aslan gibi, aaa sesiyle başlayanları bul ve sepete sürükle.",
     items: [
       { content: e("🦁"), correct: true },
       { content: e("🚗"), correct: true },
@@ -755,7 +755,7 @@ export const LEVELS: Level[] = [
     title: "Serbest Çizim",
     kind: "draw",
     icon: "🎨",
-    instr: "Parmağınla dilediğini çiz! Bitince Bitti düğmesine dokun.",
+    instr: "Parmağınla istediğini çiz! Bitince Bitti'ye dokun.",
   },
 
   // ---------------- HİKÂYELER (dinleme-anlama + sosyal-duygusal) ----------------
@@ -796,7 +796,7 @@ export const LEVELS: Level[] = [
   {
     id: "hikaye-dene",
     section: "hikaye",
-    title: "Pofuduk Pes Etmiyor",
+    title: "Pofuduk Vazgeçmiyor",
     kind: "story",
     icon: "🧩",
     instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
@@ -804,7 +804,7 @@ export const LEVELS: Level[] = [
       scenes: [
         { bg: "#fff2d6", emoji: "🐤", emoji2: "🧩", text: "Pofuduk bir yapboz yapıyordu." },
         { bg: "#ffe0e6", emoji: "😟", emoji2: "🧩", text: "Bir parça bir türlü yerine oturmadı. Pofuduk üzüldü." },
-        { bg: "#e6faff", emoji: "🐤", emoji2: "💪", text: "Ama pes etmedi. 'Bir daha deneyeceğim!' dedi." },
+        { bg: "#e6faff", emoji: "🐤", emoji2: "💪", text: "Ama vazgeçmedi. 'Bir daha deneyeceğim!' dedi." },
         { bg: "#e6e0ff", emoji: "🧩", emoji2: "✨", text: "Yavaşça tekrar denedi ve parça tam yerine oturdu!" },
         { bg: "#d7f0d0", emoji: "🐤", emoji2: "🎉", text: "Denemeye devam edince başardı. Aferin Pofuduk!" },
       ],

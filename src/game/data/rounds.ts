@@ -120,7 +120,7 @@ const DEPTH_OBJECTS: { e: string; name: string }[] = [
 const DEPTH_RELS = ["front", "behind", "beside", "above"] as const;
 const REL_WORD: Record<(typeof DEPTH_RELS)[number], string> = { front: "önünde", behind: "arkasında", beside: "yanında", above: "üstünde" };
 const depthInstr = (name: string, rel: (typeof DEPTH_RELS)[number]) =>
-  `Pofuduk hangisinde ${name} ${REL_WORD[rel]}? Ona dokun.`;
+  `Pofuduk hangi resimde ${name} ${REL_WORD[rel]}? Ona dokun.`;
 export const DEPTH_INSTRS = DEPTH_OBJECTS.flatMap((o) => DEPTH_RELS.map((r) => depthInstr(o.name, r)));
 export function depthRounds(): Round[] {
   // İlişkileri turlar arasında DÖNGÜYLE geç -> 6 turda 4 konumun (ön/arka/yan/üst) hepsi mutlaka çıkar
@@ -254,7 +254,7 @@ const CAUSES: { instr: string; pool: keyof typeof EMO_POOLS }[] = [
   { instr: "Pofuduk'un balonu patladı. Nasıl hissediyor? Doğru yüzü bul.", pool: "sad" },
   { instr: "Pofuduk oyuncağını kaybetti. Nasıl hissediyor? Doğru yüzü bul.", pool: "sad" },
   { instr: "Biri Pofuduk'un oyuncağını aldı. Nasıl hissediyor? Doğru yüzü bul.", pool: "angry" },
-  { instr: "Pofuduk karanlıktan korktu. Nasıl hissediyor? Doğru yüzü bul.", pool: "scared" },
+  { instr: "Işıklar kapandı, her yer karanlık oldu. Pofuduk nasıl hissediyor? Doğru yüzü bul.", pool: "scared" },
 ];
 export const DUYGU_NEDEN_INSTRS = CAUSES.map((c) => c.instr);
 export function duyguNedenRounds(): Round[] {

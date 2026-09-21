@@ -77,7 +77,7 @@ function drawNumber(ctx: CanvasRenderingContext2D, value: number, color: string)
   ctx.fillStyle = color;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `bold 300px "Comic Sans MS", "Segoe UI", sans-serif`;
+  ctx.font = `bold 300px "Fredoka", "Segoe UI", sans-serif`;
   ctx.fillText(String(value), SIZE / 2, SIZE / 2 + 18);
 }
 
@@ -124,7 +124,7 @@ function drawApple(ctx: CanvasRenderingContext2D, value: number) {
   // rakam (beyaz + koyu kontur -> her zemin uzerinde okunur)
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `bold ${Math.round(SIZE * 0.4)}px "Comic Sans MS", "Segoe UI", sans-serif`;
+  ctx.font = `bold ${Math.round(SIZE * 0.4)}px "Fredoka", "Segoe UI", sans-serif`;
   ctx.lineWidth = 12;
   ctx.strokeStyle = "rgba(110,10,15,0.65)";
   ctx.strokeText(String(value), c, c + R * 0.15);

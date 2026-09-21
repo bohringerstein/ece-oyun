@@ -25,8 +25,9 @@ export function SectionScreen({ section, done, onPlay, onBack }: Props) {
   return (
     <div className="section-screen" style={{ background: section.color + "22" }}>
       <div className="topbar">
-        <button className="round-btn" onClick={onBack}>
-          ⬅
+        <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
+          <span aria-hidden="true">⬅</span>
+          <span className="back-tx">Geri</span>
         </button>
         <h2>
           {section.emoji} {section.title}

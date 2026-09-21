@@ -54,15 +54,17 @@ export function App() {
   // Ebeveyn: tüm ilerlemeyi sıfırla (çıkartmalar + kaldığı tur + kavram kayıtları)
   function resetProgress() {
     try {
-      localStorage.removeItem(PROGRESS_KEY);
+      // TÜM çocuk-verisini temizle (ilerleme, kaldığı tur, beceri, profil, ÇİZİM, onboarding).
+      // Prefix-süpürme -> gelecekte eklenen her "ece-*" anahtarı otomatik kapsanır (KVKK silme hakkı).
+      // Ebeveyn ayarı olan "ece-speech-muted" korunur.
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && (k.startsWith("ece-round-") || k.startsWith("ece-skill-"))) localStorage.removeItem(k);
+        if (k && k.startsWith("ece-") && k !== "ece-speech-muted") localStorage.removeItem(k);
       }
     } catch {
       // yoksay
     }
-    resetProfile(); // kişiselleştirmeyi (ad + Pofuduk görünümü) de sıfırla
+    resetProfile(); // bellek-içi profil önbelleğini de sıfırla
     setDone(new Set());
   }
 

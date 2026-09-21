@@ -431,30 +431,6 @@ export function buildBoard(level: Level): Board {
       });
     });
     win = groups.length;
-  } else if (level.kind === "place" && level.spatial) {
-    // MEKANSAL: kap ortada; 4 konum yuvası (içine/üstüne/altına/yanına). Nesne alttan
-    // sürüklenir; yalnız DOĞRU konum yuvası kabul eder (diğerleri -> yanlış + düzeltici iskele).
-    const sp = level.spatial;
-    const bx = 0, by = 0.6;
-    statics.push({ content: { kind: "emoji", char: sp.container }, pos: [bx, by], w: 3.2, h: 3.2 });
-    const zones: { rel: string; pos: [number, number] }[] = [
-      { rel: "in", pos: [bx, by] },
-      { rel: "on", pos: [bx, by + 2.5] },
-      { rel: "under", pos: [bx, by - 2.7] },
-      { rel: "beside", pos: [bx + 3.0, by] },
-    ];
-    zones.forEach((z) => {
-      slots.push({ id: `z-${z.rel}`, pos: z.pos, expects: `rel-${z.rel}`, basket: false, style: "hole", w: 1.9, h: 1.9 });
-    });
-    tokens.push({
-      id: "obj",
-      content: { kind: "emoji", char: sp.object },
-      home: [-3.4, -4.4],
-      tag: `rel-${sp.rel}`,
-      correct: true,
-      scale: 0.9,
-    });
-    win = 1;
   }
 
   return { tokens, slots, statics, win, pointer, frames };

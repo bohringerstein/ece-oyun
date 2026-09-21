@@ -10,7 +10,10 @@ export function ColoringPage({ onBack }: { onBack: () => void }) {
   return (
     <div className="coloring">
       <div className="topbar floating coloring-bar">
-        <button className="round-btn" onClick={onBack}>⬅</button>
+        <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
+          <span aria-hidden="true">⬅</span>
+          <span className="back-tx">Geri</span>
+        </button>
         <div className="instr-banner">Boyama Sayfası</div>
         <span className="topbar-spacer" aria-hidden="true" />
       </div>

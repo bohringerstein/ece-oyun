@@ -270,19 +270,6 @@ export function duyguNedenRounds(): Round[] {
   });
 }
 
-// EMPATİ ("Nasıl yardım ederiz?"): üzgün Pofuduk'u rahatlatan şeyi seç.
-const COMFORT = ["🧸", "🎈", "🍪", "🤗", "🎁", "🌸"];
-const NOT_COMFORT = ["🥦", "🧦", "🪨", "🗑️", "🧹", "📎"];
-export const DUYGU_YARDIM_INSTR = "Pofuduk üzgün. Onu ne mutlu eder? Doğru olanı bul.";
-export function duyguYardimRounds(): Round[] {
-  return rounds(() => {
-    const items = shuffleArr([
-      { content: e(pick(COMFORT)), correct: true },
-      ...sample(NOT_COMFORT, 2).map((w) => ({ content: e(w), correct: false })),
-    ]);
-    return { items, instr: DUYGU_YARDIM_INSTR };
-  });
-}
 
 // --------- DİL / ERKEN OKURYAZARLIK ---------
 // İLK SES AVI (fonolojik farkındalık): verilen SESLE başlayan nesneleri bul.
@@ -357,7 +344,6 @@ function compareQtyRounds(kind: "more" | "less", band = 1): Round[] {
 }
 export const fazlaRounds = (band?: number) => compareQtyRounds("more", band);
 export const azRounds = (band?: number) => compareQtyRounds("less", band);
-export const cokRounds = (band?: number) => compareQtyRounds("more", band);
 
 // --------- KARŞILAŞTIRMA (boyut) ---------
 const SIZE_POOL = [

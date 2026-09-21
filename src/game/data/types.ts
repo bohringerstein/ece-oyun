@@ -44,8 +44,7 @@ export type GameKind =
   | "seriate" // nesneleri kucukten buyuge sirala (boyut seriation)
   | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
   | "trace" // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
-  | "place" // (eski) nesneyi kabin ICINE/USTUNE... surukle — artik kullanilmiyor, yerini "depth" aldi
-  | "depth" // Pofuduk nesnenin ONUNDE mi ARKASINDA mi? occlusion ile on/arka derinlik
+  | "depth" // Pofuduk nesnenin ONUNDE/ARKASINDA/YANINDA/USTUNDE mi? occlusion ile derinlik
   | "draw" // parmakla serbest cizim/boyama (yaraticilik)
   | "story" // anlatimli resimli hikaye: sahne sahne, dokun-ilerle (dinleme/anlama, sosyal-duygusal)
   | "breathe"; // nefes/oz-duzenleme: buyuyup kuculen daire ile sakinlesme (oz-regulasyon)
@@ -128,9 +127,6 @@ export interface Level {
   // trace (rakam izleme): parmakla rakam sekilli yolun uzerinden gec. path = 0..100 noktalar.
   trace?: { digit: string; path: { x: number; y: number }[] };
 
-  // place (mekansal): nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle. rel = dogru konum.
-  spatial?: { object: string; container: string; rel: "in" | "on" | "under" | "beside" };
-
   // depth (on/arka/yan/ust): sahnede Pofuduk bir nesneyle konumlanir. Cocuk, Pofuduk'un nesnenin
   // ONUNDE / ARKASINDA / YANINDA / USTUNDE oldugu dogru secenegi bulur. rel = sorulan konum.
   depth?: { object: string; rel?: "front" | "behind" | "beside" | "above" };
@@ -174,7 +170,6 @@ export type Round = Partial<Pick<
   | "maze"
   | "seriate"
   | "weight"
-  | "spatial"
   | "depth"
   | "spot"
   | "diffs"

@@ -37,7 +37,10 @@ export function CustomizeScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="customize">
       <div className="topbar floating">
-        <button className="round-btn" onClick={onBack}>⬅</button>
+        <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
+          <span aria-hidden="true">⬅</span>
+          <span className="back-tx">Geri</span>
+        </button>
         <div className="instr-banner">Pofuduk'u Süsle</div>
         <span className="topbar-spacer" aria-hidden="true" />
       </div>

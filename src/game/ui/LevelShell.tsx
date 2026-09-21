@@ -203,8 +203,9 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   return (
     <div className="level-shell">
       <div className="topbar floating">
-        <button className="round-btn" onClick={onBack}>
-          ⬅
+        <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
+          <span aria-hidden="true">⬅</span>
+          <span className="back-tx">Geri</span>
         </button>
         <div className="instr-banner">
           {level.title}
@@ -243,6 +244,18 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
             <span className="hint-bubble">Şuna bak! 👀</span>
           </div>
         )}
+
+        {/* GÖRÜNÜR YÖNERGE: ses kapalı/işitme engelli çocuk + eşlik eden ebeveyn için görevi ekranda göster.
+            Sesle özdeş metin; ikon-öncelikli. Yalnız kendi ekran-içi ipucu OLMAYAN 3D sürükle/seç oyunlarında
+            (DOM oyunlarının zaten kendi başlık/ipuçları var). pointer-events yok -> tahtayı engellemez. */}
+        {ready &&
+          !["spot", "memory", "maze", "seriate", "weight", "trace", "draw", "story", "breathe", "depth"].includes(data.kind) &&
+          data.instr && (
+            <div className="instr-line" aria-live="polite">
+              <span className="instr-line-ic" aria-hidden="true">{data.icon}</span>
+              <span>{data.instr}</span>
+            </div>
+          )}
 
         {showOnboard && (
           <div

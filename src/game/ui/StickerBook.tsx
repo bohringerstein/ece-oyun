@@ -143,8 +143,9 @@ export function StickerBook({ sections, levels, done, onBack }: Props) {
   return (
     <div className="book-screen">
       <div className="topbar">
-        <button className="round-btn" onClick={onBack}>
-          ⬅
+        <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
+          <span aria-hidden="true">⬅</span>
+          <span className="back-tx">Geri</span>
         </button>
         <h2>🎁 Çıkartma Kitabım</h2>
         {/* sayac rozeti kaldirildi: sag ustteki sabit muzik ikonuyla cakisiyordu.

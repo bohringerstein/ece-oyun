@@ -67,7 +67,6 @@ export const VOICE_IDS = new Set<string>([
   "189d54b3",
   "8034d0c5",
   "9ecf309b",
-  "1e80e926",
   "57665cda",
   "bf110c76",
   "cd0141c6",

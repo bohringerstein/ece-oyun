@@ -408,7 +408,7 @@ export function buildBoard(level: Level): Board {
     const groups = level.groups;
     groups.forEach((g, i) => {
       const y = colY(groups.length, i, 4.0, -3.2);
-      statics.push({ content: g.content, pos: [-2.4, y], w: 3.0, h: 2.6 });
+      statics.push({ content: g.content, pos: [-2.3, y], w: 3.5, h: 2.9 }); // daha büyük -> hayvanlar seyrek/sayılabilir
       slots.push({
         id: `g${i}`,
         pos: [1.6, y],

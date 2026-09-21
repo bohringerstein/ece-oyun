@@ -43,8 +43,10 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
   }, [level.id]);
 
   const TOL = (maze?.tol ?? 0.15) * 100;
-  const GRAB = TOL * 2.6;      // parmagin karaktere olmasi gereken azami yakinlik (tut/surukle) - comert
-  const WINDOW = (total || 1) * 0.17; // yol boyunca bir seferde ilerlenebilecek azami ileri mesafe
+  const GRAB = TOL * 1.9;      // parmak karaktere YAKIN olmali (ileriye tiklayip atlatma engellenir)
+  // KUCUK pencere: bir hamlede yalnizca az ilerlenir -> karakter uzaga ATLAMAZ, parmakla
+  // yol boyunca akici yurur. (Onceki 0.17 buyuktu; ileriye dokununca zikzakta atliyordu.)
+  const WINDOW = (total || 1) * 0.06;
 
   function toPct(clientX: number, clientY: number) {
     const r = wrapRef.current!.getBoundingClientRect();

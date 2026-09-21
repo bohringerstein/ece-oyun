@@ -284,7 +284,7 @@ export function GameBoard3D({ board, onWin }: Props) {
     //  - basket: nesne sepetin İÇİNde (ön kopya alt kısmı örter)
     const surface =
       slot.style === "table" ? slot.pos[1] + 1.0 :
-      slot.style === "basket" ? slot.pos[1] + 0.85 :
+      slot.style === "basket" ? slot.pos[1] + 0.3 : // İÇERİ: taban ön duvarın arkasına girsin
       slot.style === "bin" ? slot.pos[1] + 0.4 :
       null;
     // örtüşmeli öbekleme: nesneler tek-tek eşit dizilmesin, hafif üst üste binsin (doğal)
@@ -476,7 +476,7 @@ export function GameBoard3D({ board, onWin }: Props) {
             <mesh raycast={() => null}>
               <planeGeometry args={[s.w, s.h * 1.9]} />
               <meshBasicMaterial
-                map={getContainerTexture(s.style === "table" ? "table" : "basket")}
+                map={getContainerTexture("basketFront")}
                 transparent
                 alphaTest={0.02}
                 toneMapped={false}

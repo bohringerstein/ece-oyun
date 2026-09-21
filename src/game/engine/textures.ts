@@ -222,7 +222,8 @@ function drawGroup(ctx: CanvasRenderingContext2D, char: string, n: number, jar?:
   let s: number;
   if (n <= 6) {
     pts = (jar ? flat : center)[n] || (jar ? flat : center)[6];
-    s = jar ? (n <= 3 ? 120 : 100) : n <= 2 ? 210 : n <= 4 ? 170 : 140;
+    // sayma icin (jar degil): coklu grupta emojiler KUCUK -> aralari acik, sayilabilir
+    s = jar ? (n <= 3 ? 120 : 100) : n <= 2 ? 200 : n <= 4 ? 150 : 104;
   } else {
     // 7-10: duzenli izgara (jar ise alt bolge)
     const cols = n <= 8 ? 4 : 5;
@@ -238,7 +239,7 @@ function drawGroup(ctx: CanvasRenderingContext2D, char: string, n: number, jar?:
       const py = rows === 1 ? (yTop + yBot) / 2 : yTop + ((yBot - yTop) * r) / (rows - 1);
       pts.push([px, py]);
     }
-    s = jar ? 74 : 92;
+    s = jar ? 74 : 76;
   }
   // iOS: emojiden once fillStyle'i OPAK renge sifirla (kavanoz cizimi renkli
   // fillStyle biraktigindan emoji renksiz cikabilir).
@@ -520,16 +521,21 @@ export function getShadowTexture(): THREE.Texture {
   return shadowTex;
 }
 
-export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
+export function getContainerTexture(kind: "basket" | "basketFront" | "table"): THREE.Texture {
   const hit = containerCache.get(kind);
   if (hit) return hit;
   const cv = document.createElement("canvas");
   cv.width = 1024;
   cv.height = 256;
   const ctx = cv.getContext("2d")!;
-  if (kind === "basket") {
-    // ---- ÖRGÜ SEPET: dikey gradient gövde + çift yönlü örgü + eliptik ağız (hacimli) ----
+  if (kind === "basket" || kind === "basketFront") {
+    // İKİ KATMAN: "basket" = ARKA (ağız + koyu iç + gövde); "basketFront" = SADECE ÖN DUVAR.
+    // Nesneler ikisinin ARASINA konur -> alt kısmı ön duvarın arkasına girer (sepetin İÇİNDE),
+    // üst kısmı ağzın koyu içine karşı görünür = gerçek "içine atıldı" hissi. Ön duvarda ağız
+    // YOK (yoksa nesneyi tekrar örter/çiftler); üstü şeffaftır.
+    const front = kind === "basketFront";
     const bTop = 92, bBot = 240;
+    const mx = 512, my = 92, mrx = 348, mry = 42;
     const bodyPath = () => {
       ctx.beginPath();
       ctx.moveTo(176, bTop);
@@ -538,6 +544,16 @@ export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
       ctx.lineTo(224, bBot);
       ctx.closePath();
     };
+    // ARKA: eliptik ağız (dış dudak + koyu iç + üst iç gölge). Gövde bunun alt yarısını kapatır.
+    if (!front) {
+      ctx.fillStyle = "#c98a4a";
+      ctx.beginPath(); ctx.ellipse(mx, my, mrx, mry, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#6b4824";
+      ctx.beginPath(); ctx.ellipse(mx, my, mrx - 22, mry - 14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.32)"; ctx.lineWidth = 12;
+      ctx.beginPath(); ctx.ellipse(mx, my - 2, mrx - 26, mry - 18, 0, Math.PI, Math.PI * 2); ctx.stroke();
+    }
+    // GÖVDE (her iki katmanda): dikey gradient + çift yönlü örgü
     const g = ctx.createLinearGradient(0, bTop, 0, bBot);
     g.addColorStop(0, "#e6b579");
     g.addColorStop(0.5, "#c98a4a");
@@ -545,7 +561,6 @@ export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
     ctx.fillStyle = g;
     bodyPath();
     ctx.fill();
-    // örgü dokusu (çift yönlü çapraz + yatay bantlar), gövdeye kırpılı
     ctx.save();
     bodyPath();
     ctx.clip();
@@ -560,16 +575,7 @@ export function getContainerTexture(kind: "basket" | "table"): THREE.Texture {
     ctx.lineWidth = 7;
     for (const yy of [128, 170, 212]) { ctx.beginPath(); ctx.moveTo(150, yy); ctx.lineTo(874, yy); ctx.stroke(); }
     ctx.restore();
-    // eliptik ağız: dış dudak + hafif iç karanlık + ön highlight (derinlik)
-    const mx = 512, my = 92, mrx = 348, mry = 42;
-    ctx.fillStyle = "#c98a4a";
-    ctx.beginPath(); ctx.ellipse(mx, my, mrx, mry, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#7a5228";
-    ctx.beginPath(); ctx.ellipse(mx, my, mrx - 22, mry - 14, 0, 0, Math.PI * 2); ctx.fill();
-    // iç üst gölge (derinlik)
-    ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 12;
-    ctx.beginPath(); ctx.ellipse(mx, my - 2, mrx - 26, mry - 18, 0, Math.PI, Math.PI * 2); ctx.stroke();
-    // ön dudak highlight (ışık hasır kenarına vuruyor)
+    // ÖN DUDAK highlight (gövde üst kenarı = ön duvarın rim çizgisi)
     ctx.strokeStyle = "rgba(255,245,220,0.6)"; ctx.lineWidth = 6;
     ctx.beginPath(); ctx.ellipse(mx, my + 2, mrx, mry, 0, 0.12, Math.PI - 0.12); ctx.stroke();
   } else {

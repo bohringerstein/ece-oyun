@@ -266,7 +266,8 @@ export function GameBoard3D({ board, onWin }: Props) {
       if (!s.basket && occupied.has(s.id)) continue;
       const dx = Math.abs(x - s.pos[0]);
       const dy = Math.abs(y - s.pos[1]);
-      if (dx < s.w / 2 + 0.4 && dy < s.h / 2 + 0.6) {
+      // 3-4 yas icin cömert birakma toleransi: hedefe TAM birakmasa da yakinsa kabul et
+      if (dx < s.w / 2 + 0.7 && dy < s.h / 2 + 0.9) {
         const ok = s.expects ? token.tag === s.expects : token.correct;
         if (ok) {
           const d = dx + dy;
@@ -344,7 +345,7 @@ export function GameBoard3D({ board, onWin }: Props) {
       if (!g) return;
       const tg = targets.current.get(tok.id) || [tok.home[0], tok.home[1], 0];
       let ty = tg[1];
-      if (dragId.current !== tok.id && !placedRef.current[tok.id]) ty += Math.sin(t * 2 + idx) * 0.06;
+      if (!tok.still && dragId.current !== tok.id && !placedRef.current[tok.id]) ty += Math.sin(t * 2 + idx) * 0.06;
       g.position.x += (tg[0] - g.position.x) * k;
       g.position.y += (ty - g.position.y) * k;
       g.position.z += (tg[2] - g.position.z) * k;
@@ -378,7 +379,7 @@ export function GameBoard3D({ board, onWin }: Props) {
   return (
     <group ref={rootRef}>
       {board.statics.map((s, i) => (
-        <group key={`st${i}`} position={[s.pos[0], s.pos[1], 0]}>
+        <group key={`st${i}`} position={[s.pos[0], s.pos[1], s.z ?? 0]}>
           <Card3D content={s.content} boxW={s.w} boxH={s.h} faint={s.faint} />
         </group>
       ))}

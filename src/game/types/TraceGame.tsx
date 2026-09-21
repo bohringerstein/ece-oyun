@@ -40,9 +40,10 @@ export function TraceGame({ level, onWin }: { level: Level; onWin: () => void })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level.id]);
 
-  const TOL = 14;
-  const GRAB = 30;
-  const WINDOW = (total || 1) * 0.16;
+  // 3-4 yas parmagi icin cömert: cizgiden biraz sapsa da yaziyi tamamlayabilsin
+  const TOL = 20;
+  const GRAB = 42;
+  const WINDOW = (total || 1) * 0.18;
 
   function toPct(cx: number, cy: number) {
     const r = wrapRef.current!.getBoundingClientRect();
@@ -78,7 +79,7 @@ export function TraceGame({ level, onWin }: { level: Level; onWin: () => void })
         dotRef.current = { x: pr.cx, y: pr.cy };
         setDot({ x: pr.cx, y: pr.cy });
       }
-      if (frac >= 0.93 && !wonRef.current) {
+      if (frac >= 0.9 && !wonRef.current) {
         wonRef.current = true;
         setProgress(1);
         const last = pts[pts.length - 1];

@@ -13,6 +13,7 @@ export interface Token {
   scale?: number;
   w?: number; // ozel (kare olmayan) genislik - yapboz parcalari icin
   h?: number;
+  still?: boolean; // true: yukari-asagi salinim (bob) YOK - elma agacindaki elmalar icin
 }
 export interface Slot {
   id: string;
@@ -32,6 +33,7 @@ export interface StaticCard {
   w: number;
   h: number;
   faint?: boolean; // soluk goster (yapboz referans resmi)
+  z?: number; // derinlik (agac arka planini tokenlarin ARKASINA almak icin)
 }
 export interface Board {
   tokens: Token[];
@@ -190,11 +192,11 @@ export function buildBoard(level: Level): Board {
     if (level.appleTree) {
       // ELMA AGACI (sayilar): agac arka plani + tepede RAKAMLI ELMALAR + altta sepet.
       // Cocuk dogru rakamli elmalari agactan koparip sepete surukler.
-      statics.push({ content: { kind: "tree" }, pos: [0, 1.3], w: 8.8, h: 8.8 });
+      statics.push({ content: { kind: "tree" }, pos: [0, 1.5], w: 8.8, h: 8.8, z: -0.6 });
       const APPLE_POS: [number, number][] = [
-        [-2.3, 3.7], [0.1, 4.2], [2.4, 3.6],
-        [-3.1, 2.0], [-0.9, 2.7], [1.2, 2.6], [3.1, 1.9],
-        [0.0, 1.25],
+        [-2.35, 3.75], [0.15, 4.15], [2.45, 3.65],
+        [-3.15, 2.15], [-1.0, 2.75], [1.25, 2.7], [3.15, 2.1],
+        [0.1, 1.6],
       ];
       its.forEach(({ it, i }, k) => {
         const [ax, ay] = APPLE_POS[k % APPLE_POS.length];
@@ -206,6 +208,7 @@ export function buildBoard(level: Level): Board {
           tag: `i${i}`,
           correct: it.correct,
           scale: 0.92,
+          still: true, // agactaki elmalar sabit dursun (bob/titreme yok)
         });
       });
       slots.push({ id: "basket", pos: [0, -4.9], expects: "", basket: true, style: "basket", w: 8.6, h: 2.5 });

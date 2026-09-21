@@ -42,9 +42,9 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level.id]);
 
-  const TOL = (maze?.tol ?? 0.12) * 100;
-  const GRAB = TOL * 2.2;      // parmagin karaktere olmasi gereken azami yakinlik (tut/surukle)
-  const WINDOW = (total || 1) * 0.14; // yol boyunca bir seferde ilerlenebilecek azami ileri mesafe
+  const TOL = (maze?.tol ?? 0.15) * 100;
+  const GRAB = TOL * 2.6;      // parmagin karaktere olmasi gereken azami yakinlik (tut/surukle) - comert
+  const WINDOW = (total || 1) * 0.17; // yol boyunca bir seferde ilerlenebilecek azami ileri mesafe
 
   function toPct(clientX: number, clientY: number) {
     const r = wrapRef.current!.getBoundingClientRect();
@@ -93,7 +93,7 @@ export function MazeGame({ level, onWin }: { level: Level; onWin: () => void }) 
         setProgress(frac);
         setCharBoth(pr.cx, pr.cy);
       }
-      if (frac >= 0.94 && !wonRef.current) {
+      if (frac >= 0.9 && !wonRef.current) {
         wonRef.current = true;
         setProgress(1);
         setCharBoth(pts[pts.length - 1].x, pts[pts.length - 1].y);

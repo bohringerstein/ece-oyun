@@ -56,7 +56,7 @@ export function SpotGame({ level, onWin }: { level: Level; onWin: () => void }) 
     const py = (e.clientY - rect.top) / rect.height;
     diffs.forEach((d, i) => {
       if (foundRef.current[i]) return;
-      if (Math.hypot(d.x - px, d.y - py) < 0.1) {
+      if (Math.hypot(d.x - px, d.y - py) < 0.14) {
         const nf = [...foundRef.current];
         nf[i] = true;
         setFound(nf);

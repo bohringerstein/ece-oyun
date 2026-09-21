@@ -499,7 +499,8 @@ function genMazePath(n: number): { x: number; y: number }[] {
 
 export function mazeRounds(complexity: "easy" | "med" | "hard"): Round[] {
   const n = complexity === "easy" ? 4 : complexity === "med" ? 5 : 6;
-  const tol = complexity === "easy" ? 0.15 : complexity === "med" ? 0.12 : 0.1;
+  // 3-4 yas parmagi icin cömert sapma toleransi (kücük sapmalar affedilir)
+  const tol = complexity === "easy" ? 0.19 : complexity === "med" ? 0.15 : 0.12;
   return rounds(() => {
     const [start, end] = pick(JOURNEYS);
     return { maze: { start, end, path: genMazePath(n), bg: pick(MAZE_BGS), tol } };

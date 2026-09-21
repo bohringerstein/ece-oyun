@@ -1,7 +1,7 @@
 import type { Content, Level, Round, Section } from "./types";
 import {
   shadowRounds, iliskiliRounds, yiyecekRounds, ikiliRounds, puzzleRounds,
-  kareRounds, ucgenRounds, daireRounds, yildizRounds, dikdortgenRounds, ucanlarRounds, duygularRounds,
+  kareRounds, ucgenRounds, daireRounds, dikdortgenRounds, ucanlarRounds, duygularRounds,
   fazlaRounds, azRounds, buyukRounds, kisaRounds, agirRounds, hafifRounds, doluRounds, bosRounds,
   sayEsleRounds, nesneSaymaRounds, hayvanSayRounds, noktaSayRounds, seriateRounds,
   meyveSiraRounds, siraSayRounds, oruntuRounds, oruntuRenkRounds,
@@ -497,23 +497,6 @@ export const LEVELS: Level[] = [
       { content: e("🍊"), correct: false },
     ],
   },
-  {
-    id: "yildiz-benzer",
-    section: "sekiller",
-    title: "Yıldıza Benzeyenler",
-    kind: "select",
-    icon: "⭐",
-    instr: "Bak, bu bir yıldız. Yıldızın sivri köşeleri var. Yıldıza benzeyenleri bul ve sepete sürükle.",
-    refShape: { shape: "star", color: "#ffd23f" },
-    items: [
-      { content: e("⭐"), correct: true },
-      { content: e("🌟"), correct: true },
-      { content: e("✨"), correct: true },
-      { content: e("⚽"), correct: false },
-      { content: shp("triangle", "#3a86ff"), correct: false },
-      { content: shp("square", "#e63946"), correct: false },
-    ],
-  },
 
   // ---------------- DİKKAT ----------------
   {
@@ -741,7 +724,6 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   "ucgen-benzer": ucgenRounds,
   "daire-benzer": daireRounds,
   "dikdortgen-benzer": dikdortgenRounds,
-  "yildiz-benzer": yildizRounds,
   "say-esle": sayEsleRounds,
   "nesne-sayma": nesneSaymaRounds,
   "say-esle-2": hayvanSayRounds,

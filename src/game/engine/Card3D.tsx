@@ -37,13 +37,26 @@ export function Card3D({ content, boxW, boxH, faint, onPointerDown }: Props) {
   const matRef = useRef<THREE.MeshBasicMaterial>(null);
   const isShadow = content.kind === "shadow";
   const isPuzzle = content.kind === "puzzle";
+  // numapple: kendi koyu-kirmizi konturu var; ayrica kaydirmali golge "ikinci elma"
+  // hayaleti yaratiyordu (ozellikle yesil agac uzerinde) -> golgesiz.
+  const noShadow = content.kind === "numapple" || content.kind === "tree";
   return (
     <group onPointerDown={onPointerDown}>
-      {/* siluet gölge: nesnenin şeklini alır - gölge/puzzle parçasında yok (tam otursun) */}
-      {!faint && !isShadow && !isPuzzle && (
-        <mesh position={[0.07, -0.08, -0.05]}>
+      {/* SÜRÜKLENEBİLİR nesnelerde görünmez, nesneden biraz BÜYÜK dokunma alanı:
+          küçük çocuk tam üstüne basamasa da (kenarından da) tutup hareket ettirebilsin.
+          Sadece token'larda (onPointerDown var) eklenir; statik görsellerde eklenmez. */}
+      {onPointerDown && (
+        <mesh position={[0, 0, 0.03]}>
+          <planeGeometry args={[w + 0.6, h + 0.6]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
+      {/* siluet gölge: HAFİF ve az kaydırmalı (eskiden 0.07/-0.08 @0.18 -> "cift gorsel"
+          hissi veriyordu; sepet/masada nesneler amator gorunuyordu). */}
+      {!faint && !isShadow && !isPuzzle && !noShadow && (
+        <mesh position={[0.035, -0.045, -0.05]}>
           <planeGeometry args={[w, h]} />
-          <meshBasicMaterial map={tex} color="#000" transparent opacity={0.18} alphaTest={0.05} depthWrite={false} />
+          <meshBasicMaterial map={tex} color="#000" transparent opacity={0.12} alphaTest={0.06} depthWrite={false} />
         </mesh>
       )}
       {/* görsel (gölge ise siyaha boyanmış siluet) */}

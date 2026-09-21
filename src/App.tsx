@@ -13,7 +13,7 @@ import { ParentArea } from "./game/ui/ParentArea";
 import { CustomizeScreen } from "./game/ui/CustomizeScreen";
 import { ColoringPage } from "./game/ui/ColoringPage";
 import { Mascot } from "./game/ui/Mascot";
-import { getName, resetProfile } from "./game/data/profile";
+import { resetProfile } from "./game/data/profile";
 
 type View =
   | { name: "start" }
@@ -70,9 +70,8 @@ export function App() {
     unlockAudio();
     initSpeech();
     startMusic(); // arka plan muzigi (kullanici dokunusuyla baslar)
-    // ilk konusma kullanici etkilesimi ile tetiklenir. Ad varsa kisisel selamla (dinamik -> Tolga).
-    const nm = getName();
-    speak(nm ? `Merhaba ${nm}! Hadi birlikte oynayalım.` : GREETING);
+    // ilk konusma kullanici etkilesimi ile tetiklenir (sabit, önceden üretilmiş neural ses)
+    speak(GREETING);
     setView({ name: "home" });
   }
 

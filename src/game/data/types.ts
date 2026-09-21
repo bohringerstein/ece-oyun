@@ -44,7 +44,8 @@ export type GameKind =
   | "seriate" // nesneleri kucukten buyuge sirala (boyut seriation)
   | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
   | "trace" // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
-  | "place" // nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle (mekansal kavramlar)
+  | "place" // (eski) nesneyi kabin ICINE/USTUNE... surukle — artik kullanilmiyor, yerini "depth" aldi
+  | "depth" // Pofuduk nesnenin ONUNDE mi ARKASINDA mi? occlusion ile on/arka derinlik
   | "draw" // parmakla serbest cizim/boyama (yaraticilik)
   | "story" // anlatimli resimli hikaye: sahne sahne, dokun-ilerle (dinleme/anlama, sosyal-duygusal)
   | "breathe"; // nefes/oz-duzenleme: buyuyup kuculen daire ile sakinlesme (oz-regulasyon)
@@ -130,6 +131,10 @@ export interface Level {
   // place (mekansal): nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle. rel = dogru konum.
   spatial?: { object: string; container: string; rel: "in" | "on" | "under" | "beside" };
 
+  // depth (on/arka): sahnede Pofuduk bir nesneyle ortusur. Cocuk Pofuduk'un nesnenin
+  // ARKASINDA oldugu (nesnenin Pofuduk'u ortten kapattigi) secenegi bulur. object = nesne emojisi.
+  depth?: { object: string };
+
   // story (hikaye): sahneler. Her sahne: arka plan rengi, buyuk emoji(ler), anlatim metni.
   // Cocuk "Ileri" ile ilerler; son sahnede bitince odul akisina girer. StoryGame her sahneyi seslendirir.
   story?: { scenes: { bg: string; emoji: string; emoji2?: string; text: string }[] };
@@ -170,6 +175,7 @@ export type Round = Partial<Pick<
   | "seriate"
   | "weight"
   | "spatial"
+  | "depth"
   | "spot"
   | "diffs"
   | "instr"

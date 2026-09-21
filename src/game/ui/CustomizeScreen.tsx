@@ -14,18 +14,24 @@ const ACC_LABEL: Record<Accessory, string> = {
 };
 
 export function CustomizeScreen({ onBack }: { onBack: () => void }) {
+  // Seçimler önce yalnızca YEREL state'te tutulur (canlı önizleme). Kalıcı kayıt SADECE
+  // "Tamam"da yapılır; geri (⬅) ile çıkınca değişiklikler iptal olur -> Pofuduk değişmez.
   const [color, setColor] = useState(getMascotColor());
   const [acc, setAcc] = useState<Accessory>(getAccessory());
 
   function pickColor(c: string) {
     popSound();
     setColor(c);
-    setMascotColor(c);
   }
   function pickAcc(a: Accessory) {
     popSound();
     setAcc(a);
-    setAccessory(a);
+  }
+  function confirm() {
+    setMascotColor(color);
+    setAccessory(acc);
+    speak("Çok yakıştı!");
+    onBack();
   }
 
   return (
@@ -71,7 +77,7 @@ export function CustomizeScreen({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      <button className="cz-done" onClick={() => { speak("Çok yakıştı!"); onBack(); }}>
+      <button className="cz-done" onClick={confirm}>
         Tamam ✓
       </button>
     </div>

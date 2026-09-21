@@ -107,21 +107,20 @@ const IKILI: [string, string][] = [
   ["🪥", "🦷"], ["🧼", "🛁"], ["🧣", "❄️"], ["🎧", "🎵"], ["🩴", "🏖️"], ["🍞", "🧈"],
   ["🧢", "☀️"], ["🍼", "👶"],
 ];
-// --------- MEKANSAL KAVRAMLAR ("Nerede?") ---------
-// Kap her zaman kutu (📦) -> yönerge "kutu" der ve tutarlı. Sadece nesne değişir.
-const SPATIAL_OBJECTS = ["⚽", "🍎", "🧸", "🎈", "🚗", "🐱", "🍌", "⭐"];
-const SPATIAL_RELS = ["in", "on", "under", "beside"] as const;
-const SPATIAL_INSTR: Record<(typeof SPATIAL_RELS)[number], string> = {
-  in: "Nesneyi kutunun içine koy.",
-  on: "Nesneyi kutunun üstüne koy.",
-  under: "Nesneyi kutunun altına koy.",
-  beside: "Nesneyi kutunun yanına koy.",
-};
-export const SPATIAL_INSTRS = Object.values(SPATIAL_INSTR);
-export function spatialRounds(): Round[] {
-  return Array.from({ length: ROUNDS }, (_, i) => {
-    const rel = SPATIAL_RELS[i % SPATIAL_RELS.length];
-    return { spatial: { object: pick(SPATIAL_OBJECTS), container: "📦", rel }, instr: SPATIAL_INSTR[rel] };
+// --------- ÖN/ARKA DERİNLİK ("Nerede?") ---------
+// Sahnede Pofuduk bir nesneyle örtüşür. DepthGame seçenekler üretir; çocuk Pofuduk'un nesnenin
+// ARKASINDA olduğu (nesnenin Pofuduk'u örttüğü) sahneyi bulur. Belirgin, tanıdık büyük nesneler.
+const DEPTH_OBJECTS: { e: string; name: string }[] = [
+  { e: "⚽", name: "topun" }, { e: "📦", name: "kutunun" }, { e: "🌳", name: "ağacın" },
+  { e: "🚗", name: "arabanın" }, { e: "🏠", name: "evin" }, { e: "🎁", name: "hediyenin" },
+  { e: "⛄", name: "kardan adamın" }, { e: "🌺", name: "çiçeğin" },
+];
+const depthInstr = (name: string) => `Pofuduk hangisinde ${name} arkasında? Ona dokun.`;
+export const DEPTH_INSTRS = DEPTH_OBJECTS.map((o) => depthInstr(o.name));
+export function depthRounds(): Round[] {
+  return rounds(() => {
+    const o = pick(DEPTH_OBJECTS);
+    return { depth: { object: o.e }, instr: depthInstr(o.name) };
   });
 }
 

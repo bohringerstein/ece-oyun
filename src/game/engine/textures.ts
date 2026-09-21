@@ -553,27 +553,32 @@ export function getContainerTexture(kind: "basket" | "basketFront" | "table"): T
       bodyPath();
       ctx.clip();
       if (clipFromY !== null) { ctx.beginPath(); ctx.rect(0, clipFromY, 1024, 256 - clipFromY); ctx.clip(); }
-      // YATAY yuvarlaklık gradyanı (kenarlar koyu, orta açık -> silindirik hacim)
+      // YATAY yuvarlaklık gradyanı (kenarlar koyu, orta açık -> silindirik hacim), sıcak palet
       const hg = ctx.createLinearGradient(cx - rimRx, 0, cx + rimRx, 0);
-      hg.addColorStop(0, "#6f4c23"); hg.addColorStop(0.5, "#cda069"); hg.addColorStop(1, "#6f4c23");
+      hg.addColorStop(0, "#7c5528"); hg.addColorStop(0.5, "#e0b579"); hg.addColorStop(1, "#7c5528");
       ctx.fillStyle = hg; ctx.fillRect(0, 0, 1024, 256);
       // DİKEY gölge (üst ışık, alt koyu -> zeminde oturma)
       const vg = ctx.createLinearGradient(0, rimCy, 0, baseCy);
-      vg.addColorStop(0, "rgba(255,242,214,0.14)"); vg.addColorStop(0.55, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.34)");
+      vg.addColorStop(0, "rgba(255,244,218,0.18)"); vg.addColorStop(0.55, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.32)");
       ctx.fillStyle = vg; ctx.fillRect(0, 0, 1024, 256);
-      // ÖRÜLÜ HASIR SIRALARI (yatay kavisli bantlar -> gövdeyi sarar)
-      for (let i = 0; i < 8; i++) {
-        const y = rimCy + 24 + i * 26;
-        ctx.lineWidth = 14;
-        ctx.strokeStyle = "rgba(66,42,18,0.42)";
-        ctx.beginPath(); ctx.ellipse(cx, y, rimRx - 10, 22, 0, Math.PI * 0.12, Math.PI * 0.88); ctx.stroke();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "rgba(255,236,202,0.32)";
-        ctx.beginPath(); ctx.ellipse(cx, y - 5, rimRx - 10, 22, 0, Math.PI * 0.18, Math.PI * 0.82); ctx.stroke();
+      // DİKEY ÇITALAR (örgü iskeleti) — önce çizilir; yatay sıralar üstünü örterek OVER-UNDER hissi verir
+      ctx.lineCap = "round";
+      ctx.lineWidth = 9; ctx.strokeStyle = "rgba(120,80,38,0.5)";
+      for (let x = cx - rimRx + 44; x <= cx + rimRx - 44; x += 58) {
+        ctx.beginPath(); ctx.moveTo(x, rimCy + 8); ctx.lineTo(x, baseCy - 4); ctx.stroke();
       }
-      // dikey çıtalar (hasır dokusu)
-      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(58,36,15,0.26)";
-      for (let x = cx - rimRx + 46; x < cx + rimRx; x += 62) { ctx.beginPath(); ctx.moveTo(x, rimCy); ctx.lineTo(x, baseCy); ctx.stroke(); }
+      // YATAY ÖRGÜ SIRALARI — temiz, eşit aralıklı, üç katman (gölge + ana bant + üst ışık)
+      const wRows = 8;
+      for (let i = 0; i < wRows; i++) {
+        const y = rimCy + 22 + i * ((baseCy - rimCy - 18) / wRows);
+        const rx = rimRx - 12 - i * 3; // aşağı indikçe hafif daralır (tabana doğru)
+        ctx.lineWidth = 16; ctx.strokeStyle = "rgba(70,44,18,0.34)";
+        ctx.beginPath(); ctx.ellipse(cx, y + 4, rx, 19, 0, Math.PI * 0.06, Math.PI * 0.94); ctx.stroke();
+        ctx.lineWidth = 13; ctx.strokeStyle = "rgba(206,159,99,0.72)";
+        ctx.beginPath(); ctx.ellipse(cx, y, rx, 19, 0, Math.PI * 0.06, Math.PI * 0.94); ctx.stroke();
+        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,242,212,0.6)";
+        ctx.beginPath(); ctx.ellipse(cx, y - 5, rx, 19, 0, Math.PI * 0.14, Math.PI * 0.86); ctx.stroke();
+      }
       ctx.restore();
     };
 

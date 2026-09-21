@@ -27,10 +27,26 @@ export function HomeMap({ sections, levels, done, onPick, onOpenStickers, onCust
   const currentIdx = status.findIndex((st) => !st.complete);
 
   return (
-    <div className="map">
+    <div className="map" style={{ background: `linear-gradient(180deg, ${season.bg} 0%, rgba(255,255,255,0) 46%)` }}>
+      {/* mevsim dekoru: yavaşça düşen yapraklar/motifler (dekoratif, tıklamayı engellemez) */}
+      <div className="season-fall" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, i) => (
+          <span
+            key={i}
+            style={{
+              left: `${(i * 9.7 + 4) % 100}%`,
+              animationDelay: `${-(i * 1.1)}s`, // negatif -> yükte ekrana yayılmış başlar
+              animationDuration: `${7 + (i % 5)}s`,
+              fontSize: `${16 + (i % 3) * 7}px`,
+            }}
+          >
+            {season.emojis[i % season.emojis.length]}
+          </span>
+        ))}
+      </div>
       <div className="map-head">
         <button className="map-head-mascot" onClick={onCustomize} aria-label="Pofuduk'u süsle">
-          <Mascot mood="happy" size={64} />
+          <Mascot mood="happy" size={90} />
         </button>
         <div className="map-head-txt">
           <h1 className="map-title">Eğlenceli Öğrenme</h1>

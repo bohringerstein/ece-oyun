@@ -6,8 +6,8 @@ import {
   sayEsleRounds, nesneSaymaRounds, hayvanSayRounds, noktaSayRounds, seriateRounds,
   meyveSiraRounds, siraSayRounds, oruntuRounds, oruntuRenkRounds,
   copleriAyirRounds, meyveSebzeRounds, uzgunRounds, kizginRounds, routineRounds,
-  duyguNedenRounds, duyguYardimRounds,
-  farkliRounds, ayniRounds, spotRounds, findAllRounds, spatialRounds, ilkSesRounds, kelimeAviRounds,
+  duyguNedenRounds,
+  farkliRounds, ayniRounds, spotRounds, findAllRounds, depthRounds, ilkSesRounds, kelimeAviRounds,
   jigsawRounds, PICTURES, memoryRounds, mazeRounds,
 } from "./rounds";
 
@@ -553,11 +553,11 @@ export const LEVELS: Level[] = [
   {
     id: "nerede",
     section: "dikkat",
-    title: "Nerede?",
-    kind: "place",
-    icon: "📦",
-    instr: "Nesneyi kutunun içine koy.",
-    spatial: { object: "⚽", container: "📦", rel: "in" },
+    title: "Önde mi Arkada mı?",
+    kind: "depth",
+    icon: "🔭",
+    instr: "Pofuduk hangisinde topun arkasında? Ona dokun.",
+    depth: { object: "⚽" },
   },
 
   // ---------------- GÜNLÜK YAŞAM ----------------
@@ -677,19 +677,6 @@ export const LEVELS: Level[] = [
       { content: e("😄"), correct: true },
       { content: e("😢"), correct: false },
       { content: e("😠"), correct: false },
-    ],
-  },
-  {
-    id: "duygu-yardim",
-    section: "yasam",
-    title: "Nasıl Yardım Ederiz?",
-    kind: "select",
-    icon: "🤗",
-    instr: "Pofuduk üzgün. Onu ne mutlu eder? Doğru olanı bul.",
-    items: [
-      { content: e("🧸"), correct: true },
-      { content: e("🥦"), correct: false },
-      { content: e("🪨"), correct: false },
     ],
   },
   {
@@ -823,6 +810,57 @@ export const LEVELS: Level[] = [
       ],
     },
   },
+  {
+    id: "hikaye-elyika",
+    section: "hikaye",
+    title: "Pofuduk Ellerini Yıkıyor",
+    kind: "story",
+    icon: "🧼",
+    instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#fff2d6", emoji: "🐤", emoji2: "🍪", text: "Pofuduk oyun oynadı, sonra kurabiye yiyecekti." },
+        { bg: "#ffe0e6", emoji: "🐤", emoji2: "🖐️", text: "Ama elleri toz toprak içindeydi." },
+        { bg: "#e6faff", emoji: "🚰", emoji2: "🧼", text: "Musluğu açtı, sabunla ellerini güzelce ovaladı." },
+        { bg: "#e6e0ff", emoji: "🐤", emoji2: "✨", text: "Elleri tertemiz, mis gibi oldu!" },
+        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🍪", text: "Artık kurabiyesini afiyetle yiyebilir. Aferin Pofuduk!" },
+      ],
+    },
+  },
+  {
+    id: "hikaye-arkadas",
+    section: "hikaye",
+    title: "Pofuduk Yeni Arkadaş",
+    kind: "story",
+    icon: "🤝",
+    instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#e6faff", emoji: "🐤", emoji2: "🐢", text: "Pofuduk parkta yalnız oturan bir kaplumbağa gördü." },
+        { bg: "#fff2d6", emoji: "🐤", emoji2: "👋", text: "Yanına gitti ve 'Merhaba, ben Pofuduk!' dedi." },
+        { bg: "#ffe0e6", emoji: "🐢", emoji2: "😊", text: "Kaplumbağa gülümsedi. 'Benimle oynar mısın?' diye sordu." },
+        { bg: "#e6e0ff", emoji: "🐤", emoji2: "⚽", text: "Birlikte top oynadılar, kovalamaca yaptılar." },
+        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🐢", text: "Artık iki iyi arkadaş oldular. Yeni arkadaş çok güzel!" },
+      ],
+    },
+  },
+  {
+    id: "hikaye-doga",
+    section: "hikaye",
+    title: "Pofuduk Sonbaharda",
+    kind: "story",
+    icon: "🍂",
+    instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#fdeede", emoji: "🐤", emoji2: "🍂", text: "Sonbahar geldi. Ağaçların yaprakları sarardı." },
+        { bg: "#fff2d6", emoji: "🍁", emoji2: "🍂", text: "Yapraklar yavaşça, dans ederek yere düştü." },
+        { bg: "#ffe7c9", emoji: "🐤", emoji2: "🍁", text: "Pofuduk yaprakların üstünde hışır hışır yürüdü." },
+        { bg: "#ffe0e6", emoji: "🐤", emoji2: "🌰", text: "Bir de kocaman kestane buldu, cebine koydu." },
+        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🍂", text: "Sonbaharda doğada gezmek çok keyifliydi!" },
+      ],
+    },
+  },
 ];
 
 export const SECTIONS: Section[] = [
@@ -876,13 +914,12 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   duygular: duygularRounds,
   "duygu-uzgun": uzgunRounds,
   "duygu-neden": duyguNedenRounds,
-  "duygu-yardim": duyguYardimRounds,
   "duygu-kizgin": kizginRounds,
   "gunluk-sira": routineRounds,
   "farkli-bul": farkliRounds,
   "ayni-bul": ayniRounds,
   "hepsini-bul": findAllRounds,
-  nerede: spatialRounds,
+  nerede: depthRounds,
   "ilk-ses": ilkSesRounds,
   "kelime-avi": kelimeAviRounds,
   fark: spotRounds,

@@ -2,9 +2,13 @@
 // Bu metinler icin dogal nöral ses dosyalari 'npm run voice' (tools/gen_voice.mjs)
 // ile ElevenLabs'tan uretilir; public/voice/<id>.mp3 olarak oyuna gomulur.
 import { LEVELS, SECTIONS } from "../data/levels";
-import { FINDALL_INSTRS, SPATIAL_INSTRS, DUYGU_NEDEN_INSTRS, DUYGU_YARDIM_INSTR, ILKSES_INSTRS, KELIME_INSTRS } from "../data/rounds";
+import { FINDALL_INSTRS, DEPTH_INSTRS, DUYGU_NEDEN_INSTRS, ILKSES_INSTRS, KELIME_INSTRS } from "../data/rounds";
 
 export const GREETING = "Merhaba! Hadi birlikte oynayalım.";
+
+// Nefes/öz-düzenleme oyununda her evrede söylenen sakin komutlar (BreatheGame)
+export const BREATHE_IN = "Nefes al";
+export const BREATHE_OUT = "Nefes ver";
 
 // SUREC/CABA ovgusu (Dweck/Brummelman): kisi-zeka ovgusu ("akillisin/harikasin")
 // ve abarti yigini yerine yapilan isi/cabayi oven sade, cesitli ovgu.
@@ -53,13 +57,14 @@ export function allVoiceLines(): string[] {
   const set = new Set<string>();
   set.add(GREETING);
   set.add(STICKER_WIN);
+  set.add(BREATHE_IN);
+  set.add(BREATHE_OUT);
   for (const s of [...PRAISE, ...TRY_AGAIN, ...CUES]) set.add(s);
   for (const s of SECTIONS) set.add(s.title);
   for (const l of LEVELS) if (l.instr) set.add(l.instr);
   for (const s of FINDALL_INSTRS) set.add(s); // Hepsini Bul: her turun kendi hedef yönergesi
-  for (const s of SPATIAL_INSTRS) set.add(s); // Nerede?: içine/üstüne/altına/yanına
+  for (const s of DEPTH_INSTRS) set.add(s); // Nerede?: ön/arka (occlusion)
   for (const s of DUYGU_NEDEN_INSTRS) set.add(s); // Duygu nedenselliği
-  set.add(DUYGU_YARDIM_INSTR); // Empati
   for (const s of ILKSES_INSTRS) set.add(s); // İlk ses avı (fonolojik)
   for (const s of KELIME_INSTRS) set.add(s); // Kelime avı (sözcük dağarcığı)
   for (const l of LEVELS) l.story?.scenes.forEach((sc) => set.add(sc.text)); // Hikâye sahne anlatımları

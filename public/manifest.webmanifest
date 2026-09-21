@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Eğlenceli Öğrenme Oyunu",
-  "short_name": "Öğren-Oyna",
+  "name": "Eğlenceli Öğrenme",
+  "short_name": "Eğlenceli Öğrenme",
   "description": "3-5 yaş için sesli, sürükle-bırak eğitici oyunlar: sayılar, şekiller, eşleştirme, örüntü, karşılaştırma, dikkat, yapboz, hafıza ve yol bulma.",
   "lang": "tr",
   "dir": "ltr",

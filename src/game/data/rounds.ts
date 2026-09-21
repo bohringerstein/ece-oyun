@@ -10,7 +10,7 @@ const dots = (n: number, color?: string): Content => ({ kind: "dots", n, color }
 // --------- RASTGELE YARDIMCILARI ---------
 // Her level acilisinda buyuk havuzlardan TAZE, rastgele bölümler uretilir.
 // Boylece oyunu tekrar tekrar oynayan biri levelleri ezberleyemez.
-const ROUNDS = 10; // her oyunda 10 bölüm
+const ROUNDS = 6; // her oyunda 6 bölüm (3-4 yaş dikkat süresi için kısa oturum; eskiden 10)
 
 function shuffleArr<T>(a: T[]): T[] {
   for (let i = a.length - 1; i > 0; i--) {

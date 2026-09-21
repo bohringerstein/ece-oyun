@@ -9,6 +9,7 @@ import { HomeMap } from "./game/ui/HomeMap";
 import { SectionScreen } from "./game/ui/SectionScreen";
 import { LevelShell } from "./game/ui/LevelShell";
 import { StickerBook } from "./game/ui/StickerBook";
+import { ParentArea } from "./game/ui/ParentArea";
 
 type View =
   | { name: "start" }
@@ -42,6 +43,20 @@ export function App() {
       localStorage.setItem(PROGRESS_KEY, JSON.stringify([...next]));
       return next;
     });
+  }
+
+  // Ebeveyn: tüm ilerlemeyi sıfırla (çıkartmalar + kaldığı tur + kavram kayıtları)
+  function resetProgress() {
+    try {
+      localStorage.removeItem(PROGRESS_KEY);
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith("ece-round-") || k.startsWith("ece-skill-"))) localStorage.removeItem(k);
+      }
+    } catch {
+      // yoksay
+    }
+    setDone(new Set());
   }
 
   function start() {
@@ -125,6 +140,13 @@ export function App() {
           }}
         />
         {audioCluster}
+        <ParentArea
+          musicOn={musicOn}
+          onToggleMusic={onToggleMusic}
+          onResetProgress={resetProgress}
+          earned={done.size}
+          total={LEVELS.length}
+        />
       </>
     );
   }

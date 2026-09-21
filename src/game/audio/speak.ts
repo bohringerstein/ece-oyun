@@ -57,6 +57,27 @@ const TONES: Record<Tone, { rate: number; pitch: number }> = {
 };
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
+// =============== Ses kisma (ebeveyn ayari) ===============
+let speechMuted = (() => {
+  try {
+    return localStorage.getItem("ece-speech-muted") === "1";
+  } catch {
+    return false;
+  }
+})();
+export function isSpeechMuted() {
+  return speechMuted;
+}
+export function setSpeechMuted(m: boolean) {
+  speechMuted = m;
+  try {
+    localStorage.setItem("ece-speech-muted", m ? "1" : "0");
+  } catch {
+    // yoksay
+  }
+  if (m) stopSpeak();
+}
+
 // =============== Oynatma ===============
 let lastText = ""; // en son SESLENDIRILEN metin (ovgu dahil her sey)
 let lastInstruction = ""; // en son YONERGE (Tekrar Dinle bunu calar, ovguyu degil)
@@ -110,6 +131,11 @@ export function speak(
   opts?: { rate?: number; pitch?: number; tone?: Tone; onEnd?: () => void }
 ) {
   lastText = text;
+  // 0) Ebeveyn sesi kapattiysa: hic calma ama akis takilmasin (onEnd cagir)
+  if (speechMuted) {
+    opts?.onEnd?.();
+    return;
+  }
   // 1) Dogal kayit varsa onu cal (ve olasi Web Speech'i iptal et)
   if (playPrerecorded(text, opts?.onEnd)) {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();

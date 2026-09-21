@@ -142,7 +142,9 @@ export interface Level {
 
   // derinlik (rastgele): her level acilisinda buyuk havuzdan TAZE bölümler uretir.
   // Varsa 'rounds' yerine bu kullanilir; boylece her oyun farkli/ezberlenemez olur.
-  makeRounds?: () => Round[];
+  // band: uyarlanir zorluk (0=kolay,1=orta,2=zor) — skills.ts difficultyBand'inden gelir.
+  // Bandi kullanmayan ureticiler argumani yoksayar.
+  makeRounds?: (band?: number) => Round[];
 }
 
 // Bir ek bölümün içeriği (level ile aynı içerik alanlarının bir alt kümesi, hepsi opsiyonel)

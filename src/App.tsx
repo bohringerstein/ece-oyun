@@ -11,6 +11,7 @@ import { LevelShell } from "./game/ui/LevelShell";
 import { StickerBook } from "./game/ui/StickerBook";
 import { ParentArea } from "./game/ui/ParentArea";
 import { CustomizeScreen } from "./game/ui/CustomizeScreen";
+import { ColoringPage } from "./game/ui/ColoringPage";
 import { Mascot } from "./game/ui/Mascot";
 import { getName, resetProfile } from "./game/data/profile";
 
@@ -20,6 +21,7 @@ type View =
   | { name: "section"; sectionId: string }
   | { name: "stickers" }
   | { name: "customize" }
+  | { name: "coloring" }
   | { name: "play"; levelId: string };
 
 const PROGRESS_KEY = "ece-oyun-progress";
@@ -148,6 +150,10 @@ export function App() {
             stopSpeak();
             setView({ name: "customize" });
           }}
+          onColoring={() => {
+            stopSpeak();
+            setView({ name: "coloring" });
+          }}
         />
         {audioCluster}
         <ParentArea
@@ -173,6 +179,10 @@ export function App() {
 
   if (view.name === "customize") {
     return <CustomizeScreen onBack={() => setView({ name: "home" })} />;
+  }
+
+  if (view.name === "coloring") {
+    return <ColoringPage onBack={() => setView({ name: "home" })} />;
   }
 
   if (view.name === "section") {

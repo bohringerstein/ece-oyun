@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { isSpeechMuted, setSpeechMuted } from "../audio/speak";
-import { loadSkill } from "../data/skills";
+import { loadSkill, difficultyBand } from "../data/skills";
 import { getName, setName } from "../data/profile";
 import type { Section } from "../data/types";
 
@@ -13,13 +13,24 @@ interface Props {
   sections: Section[];
 }
 
-function skillLabel(section: string): { txt: string; color: string } {
+interface SkillView {
+  played: boolean;
+  attempts: number;
+  pct: number; // başarı yüzdesi (0..100)
+  txt: string; // etiket
+  color: string;
+  band: string; // seviye etiketi (oyunun çocuğa verdiği zorluk)
+}
+function skillView(section: string): SkillView {
   const r = loadSkill(section);
-  if (r.attempts < 3) return { txt: "yeni", color: "#98a2b3" };
+  if (r.attempts < 3) return { played: r.attempts > 0, attempts: r.attempts, pct: 0, txt: "yeni", color: "#98a2b3", band: "" };
   const rate = r.correct / r.attempts;
-  if (rate >= 0.8) return { txt: "çok iyi 💪", color: "#2f9e5e" };
-  if (rate >= 0.55) return { txt: "gelişiyor", color: "#e08a2b" };
-  return { txt: "biraz zor 🤏", color: "#d64545" };
+  const pct = Math.round(rate * 100);
+  const b = difficultyBand(section);
+  const band = b === 2 ? "ileri seviye" : b === 0 ? "kolay seviye" : "orta seviye";
+  if (rate >= 0.8) return { played: true, attempts: r.attempts, pct, txt: "çok iyi 💪", color: "#2f9e5e", band };
+  if (rate >= 0.55) return { played: true, attempts: r.attempts, pct, txt: "gelişiyor", color: "#e08a2b", band };
+  return { played: true, attempts: r.attempts, pct, txt: "biraz zor 🤏", color: "#d64545", band };
 }
 
 // Ebeveyn Kapısı + basit ayar paneli.
@@ -166,19 +177,50 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, to
               ><span style={knob(!speechOff)} /></span>
             </div>
 
-            {/* Gelişim özeti (kavram kaydı) */}
-            <div style={{ textAlign: "left", margin: "10px 0", maxHeight: 200, overflowY: "auto" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#8894aa", margin: "4px 6px" }}>Gelişim</div>
-              {sections.map((s) => {
-                const l = skillLabel(s.id);
-                return (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 12px", fontSize: 15 }}>
-                    <span>{s.emoji} {s.title}</span>
-                    <span style={{ color: l.color, fontWeight: 700, fontSize: 13 }}>{l.txt}</span>
+            {/* Gelişim panosu (kavram kaydı): bölüm bazında deneme, başarı %, çubuk ve seviye */}
+            {(() => {
+              const views = sections.map((s) => ({ s, v: skillView(s.id) }));
+              const playedViews = views.filter(({ v }) => v.played);
+              const weak = playedViews.filter(({ v }) => v.pct > 0 && v.pct < 55).map(({ s }) => s.title);
+              const strong = playedViews.filter(({ v }) => v.pct >= 80).map(({ s }) => s.title);
+              const tip =
+                playedViews.length === 0
+                  ? "Birlikte birkaç bölüm oynayın; gelişim burada görünecek."
+                  : weak.length
+                  ? `${weak[0]} bölümünde biraz zorlanıyor — acele etmeden, birlikte oynayın. Oyun bu bölümü otomatik kolaylaştırır.`
+                  : strong.length
+                  ? `${strong[0]} bölümünde çok iyi! Oyun ona zorluğu kademeli artırıyor.`
+                  : "Güzel gidiyor — her gün kısa oturumlar en iyisidir.";
+              return (
+                <div style={{ textAlign: "left", margin: "10px 0", maxHeight: 240, overflowY: "auto" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#8894aa", margin: "4px 6px" }}>Gelişim</div>
+                  {views.map(({ s, v }) => (
+                    <div key={s.id} style={{ padding: "8px 10px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 15, marginBottom: 5 }}>
+                        <span style={{ fontWeight: 600 }}>{s.emoji} {s.title}</span>
+                        <span style={{ color: v.color, fontWeight: 700, fontSize: 13 }}>
+                          {v.played ? v.txt : "henüz oynanmadı"}
+                        </span>
+                      </div>
+                      {v.played && v.attempts >= 3 && (
+                        <>
+                          <div style={{ height: 8, borderRadius: 999, background: "#e8edf6", overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${v.pct}%`, background: v.color, borderRadius: 999, transition: "width .3s" }} />
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#8894aa", marginTop: 3 }}>
+                            <span>%{v.pct} başarı · {v.attempts} deneme</span>
+                            <span>{v.band}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  <div style={{ margin: "8px 6px 2px", padding: "10px 12px", borderRadius: 12, background: "#eef4ff", fontSize: 13, color: "#3b4761", lineHeight: 1.4 }}>
+                    💡 {tip}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })()}
 
             {!confirmReset ? (
               <button onClick={() => setConfirmReset(true)}

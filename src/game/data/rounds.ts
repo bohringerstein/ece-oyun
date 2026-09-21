@@ -32,6 +32,18 @@ function rounds(make: () => Round): Round[] {
   return Array.from({ length: ROUNDS }, make);
 }
 
+// UYARLANIR ZORLUK: aktif bölümün difficultyBand'i (0=kolay,1=orta,2=zor) üreticilere
+// geçirilir. Sayma/nicelik oyunlarında band, sayı aralığını belirler -> iyi giden çocuk
+// zamanla 10'a kadar sayar; zorlanan çocuk küçük sayılarda kalır. (Faz 4)
+function countRange(band = 1): number[] {
+  if (band <= 0) return [1, 2, 3, 4];
+  if (band >= 2) return [4, 5, 6, 7, 8, 9, 10]; // sayı tavanı 10 (ileri seviye)
+  return [1, 2, 3, 4, 5, 6, 7];
+}
+function qtyMax(band = 1): number {
+  return band <= 0 ? 4 : band >= 2 ? 9 : 6;
+}
+
 // =====================================================================
 //  HAVUZLAR (buyuk)  +  URETICILER (rastgele)
 // =====================================================================
@@ -318,21 +330,22 @@ export function routineRounds(): Round[] {
 
 // --------- KARŞILAŞTIRMA (nicelik) ---------
 const QTY = ["🍎","🍬","⭐","🐟","🎈","🌸","🍓","🐥","🍇","🚗","🐝","🍒","🌼","🐞","🍊","🐤","🎁","🐙","🍄","🐚"];
-function compareQtyRounds(kind: "more" | "less"): Round[] {
+function compareQtyRounds(kind: "more" | "less", band = 1): Round[] {
+  const max = qtyMax(band); // band ile üst sınır: kolay 4, orta 6, zor 9
   return rounds(() => ({
     compareRows: sample(QTY, 3).map((emoji) => {
-      const a = randInt(1, 6);
-      let b = randInt(1, 6);
-      while (b === a) b = randInt(1, 6);
+      const a = randInt(1, max);
+      let b = randInt(1, max);
+      while (b === a) b = randInt(1, max);
       const correctIndex = kind === "more" ? (a > b ? 0 : 1) : a < b ? 0 : 1;
       return { items: [grp(emoji, a), grp(emoji, b)], correctIndex };
     }),
     compareBySize: false,
   }));
 }
-export const fazlaRounds = () => compareQtyRounds("more");
-export const azRounds = () => compareQtyRounds("less");
-export const cokRounds = () => compareQtyRounds("more");
+export const fazlaRounds = (band?: number) => compareQtyRounds("more", band);
+export const azRounds = (band?: number) => compareQtyRounds("less", band);
+export const cokRounds = (band?: number) => compareQtyRounds("more", band);
 
 // --------- KARŞILAŞTIRMA (boyut) ---------
 const SIZE_POOL = [
@@ -381,9 +394,11 @@ export const bosRounds = () => fillRounds("empty");
 // --------- NOKTA SAY (subitizing) ---------
 // Zar benzeri nokta desenine bakip (saymadan) dogru rakami esle.
 const DOT_COLORS = ["#e63946", "#3a86ff", "#2a9d8f", "#f77f00", "#8338ec", "#ff006e"];
-export function noktaSayRounds(): Round[] {
+export function noktaSayRounds(band = 1): Round[] {
+  // subitizing: nokta deseni saymadan tanınır -> üst sınır 6'da kalır; band alt/üst tabanı kaydırır
+  const pool = band <= 0 ? [1, 2, 3, 4] : band >= 2 ? [3, 4, 5, 6] : [1, 2, 3, 4, 5, 6];
   return rounds(() => {
-    const cnts = sample([1, 2, 3, 4, 5, 6], 3);
+    const cnts = sample(pool, 3);
     return {
       groups: cnts.map((c, i) => ({ content: dots(c, DOT_COLORS[i % DOT_COLORS.length]), n: c })),
       numbers: cnts,
@@ -395,25 +410,29 @@ export function noktaSayRounds(): Round[] {
 const SERIATE_POOL = [
   "⭐", "🍎", "🎈", "🐟", "🌸", "🐻", "🚗", "🍰", "🌵", "🐰", "🦋", "🍄", "🎁", "🌙", "🐝", "🐘", "🌻", "🍦",
 ];
-export function seriateRounds(): Round[] {
-  return rounds(() => ({ seriate: { emoji: pick(SERIATE_POOL), n: randInt(3, 4) } }));
+export function seriateRounds(band = 1): Round[] {
+  // band ile sıralanacak nesne sayısı: kolay 3, orta 3-4, zor 4-5
+  const n = () => (band <= 0 ? 3 : band >= 2 ? randInt(4, 5) : randInt(3, 4));
+  return rounds(() => ({ seriate: { emoji: pick(SERIATE_POOL), n: n() } }));
 }
 
 // --------- SAYMA ---------
-function countRounds(pool: string[], jar: boolean): Round[] {
+// band ile sayı aralığı uyarlanır (bkz. countRange): kolay 1-4, orta 1-7, zor 4-10.
+function countRounds(pool: string[], jar: boolean, band = 1): Round[] {
+  const range = countRange(band);
   return rounds(() => {
-    const cnts = sample([1, 2, 3, 4, 5, 6, 7, 8, 9], 3); // 1-9 arasi 3 farkli sayi
+    const cnts = sample(range, 3); // aralıktan 3 farklı sayı
     const emojis = sample(pool, 3);
     const groups = cnts.map((cnt, g) => ({ content: grp(emojis[g], cnt, jar), n: cnt }));
     return { groups, numbers: cnts };
   });
 }
-export const sayEsleRounds = () =>
-  countRounds(["🍁","🌰","🍄","🍂","🌸","🌻","🍀","🌼","🌷","🍎","🐚","⭐","🍒","🌺","🍇","🐞"], false);
-export const nesneSaymaRounds = () =>
-  countRounds(["🔵","🔴","🟢","🟡","🟣","🟠","🟤","⚫","⚪","🔶","🔷","🟩"], true);
-export const hayvanSayRounds = () =>
-  countRounds(["🐥","🐟","🐝","🐞","🦋","🐛","🐌","🐢","🐙","🦀","🐠","🐧","🐤","🦆","🐰","🐱"], false);
+export const sayEsleRounds = (band?: number) =>
+  countRounds(["🍁","🌰","🍄","🍂","🌸","🌻","🍀","🌼","🌷","🍎","🐚","⭐","🍒","🌺","🍇","🐞"], false, band);
+export const nesneSaymaRounds = (band?: number) =>
+  countRounds(["🔵","🔴","🟢","🟡","🟣","🟠","🟤","⚫","⚪","🔶","🔷","🟩"], true, band);
+export const hayvanSayRounds = (band?: number) =>
+  countRounds(["🐥","🐟","🐝","🐞","🦋","🐛","🐌","🐢","🐙","🦀","🐠","🐧","🐤","🦆","🐰","🐱"], false, band);
 
 // --------- SIRALAMA ---------
 const FRUIT_SEQS = [
@@ -684,11 +703,12 @@ const FINDALL_SETS: { target: string; instr: string; distractors: string[] }[] =
 ];
 // voiceLines bu yönergeleri seslendirilecek metinler listesine ekler (mp3 uretilsin)
 export const FINDALL_INSTRS = FINDALL_SETS.map((s) => s.instr);
-export function findAllRounds(): Round[] {
+export function findAllRounds(band = 1): Round[] {
   return Array.from({ length: ROUNDS }, (_, i) => {
     const set = i === 0 ? FINDALL_SETS[0] : pick(FINDALL_SETS);
-    const nTarget = randInt(2, 3);
-    const nDist = randInt(3, 4);
+    // band ile görsel arama yoğunluğu: zor bandda daha çok hedef + daha çok çeldirici
+    const nTarget = band <= 0 ? 2 : band >= 2 ? randInt(3, 4) : randInt(2, 3);
+    const nDist = band <= 0 ? randInt(2, 3) : band >= 2 ? randInt(4, 5) : randInt(3, 4);
     const items = [
       ...Array.from({ length: nTarget }, () => ({ content: e(set.target), correct: true })),
       ...sample(set.distractors, nDist).map((d) => ({ content: e(d), correct: false })),

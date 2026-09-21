@@ -19,8 +19,18 @@ function Slot({ id, done }: { id: string; done: boolean }) {
   );
 }
 
-// Kapak sayfasi (yaldiz baslik + susler)
+// KOLEKSİYON KİLOMETRE TAŞLARI (streak DEĞİL): belirli çıkartma sayılarına ulaşınca kupa kazanılır.
+// Günlük dönüş baskısı yok — tamamen toplama-temelli, pedagojik "dark pattern" uyarısına uygun.
+const MILESTONES: { at: number; icon: string; name: string }[] = [
+  { at: 5, icon: "🥉", name: "Başlangıç" },
+  { at: 15, icon: "🥈", name: "Toplayıcı" },
+  { at: 30, icon: "🥇", name: "Usta" },
+  { at: 50, icon: "🏆", name: "Şampiyon" },
+];
+
+// Kapak sayfasi (yaldiz baslik + susler + kilometre taslari)
 function Cover({ earned, total }: { earned: number; total: number }) {
+  const next = MILESTONES.find((m) => earned < m.at);
   return (
     <div className="bk-page bk-cover">
       <span className="bk-spark s1">✨</span>
@@ -31,7 +41,18 @@ function Cover({ earned, total }: { earned: number; total: number }) {
       <div className="bk-cover-title">Çıkartma Kitabım</div>
       <div className="bk-cover-rule" />
       <div className="bk-cover-count">⭐ {earned} / {total} çıkartma</div>
-      <div className="bk-cover-hint">Sayfaları çevir →</div>
+
+      <div className="bk-milestones">
+        {MILESTONES.map((m) => (
+          <div key={m.at} className={`bk-ms ${earned >= m.at ? "got" : "locked"}`}>
+            <span className="bk-ms-icon">{m.icon}</span>
+            <span className="bk-ms-at">{m.at}</span>
+          </div>
+        ))}
+      </div>
+      <div className="bk-cover-hint">
+        {next ? `${next.icon} ${next.name} için ${next.at - earned} çıkartma daha!` : "🏆 Tüm kupalar senin!"}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import { StoryGame } from "../types/StoryGame";
 import { BreatheGame } from "../types/BreatheGame";
 import { StickerReward } from "./StickerReward";
 import { Mascot } from "./Mascot";
-import { setActiveSection, recordCorrect } from "../data/skills";
+import { setActiveSection, recordCorrect, difficultyBand } from "../data/skills";
 import { preloadImageAspect, clearTextureCache } from "../engine/textures";
 import { speak, speakInstruction, stopSpeak, randomPraise } from "../audio/speak";
 import { CUES, STICKER_WIN } from "../audio/voiceLines";
@@ -49,8 +49,13 @@ function collectImages(level: Level): string[] {
 }
 
 export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
-  // rastgele bölümler: her level acilisinda (LevelShell key=level.id ile remount) taze uret
-  const sessionRounds = useMemo(() => (level.makeRounds ? level.makeRounds() : null), [level.id]);
+  // rastgele bölümler: her level acilisinda (LevelShell key=level.id ile remount) taze uret.
+  // UYARLANIR ZORLUK: bölümün difficultyBand'ini üreticiye geçir (sayma/nicelik oyunları buna göre
+  // sayı aralığını 10'a kadar açar ya da küçültür). Bandı kullanmayan üreticiler yoksayar.
+  const sessionRounds = useMemo(
+    () => (level.makeRounds ? level.makeRounds(difficultyBand(level.section)) : null),
+    [level.id]
+  );
   const total = sessionRounds ? sessionRounds.length : (level.rounds?.length ?? 0) + 1;
   // KALDIGI BÖLÜMDEN DEVAM: cocuk cikip tekrar girince ayni turdan baslasin (hep 1/10 degil).
   // Level tamamen bitince kayit temizlenir (asagida), boylece bir dahaki sefere bastan baslar.

@@ -6,7 +6,8 @@ import {
   sayEsleRounds, nesneSaymaRounds, hayvanSayRounds, noktaSayRounds, seriateRounds,
   meyveSiraRounds, siraSayRounds, oruntuRounds, oruntuRenkRounds,
   copleriAyirRounds, meyveSebzeRounds, uzgunRounds, kizginRounds, routineRounds,
-  farkliRounds, ayniRounds, spotRounds, findAllRounds,
+  duyguNedenRounds, duyguYardimRounds,
+  farkliRounds, ayniRounds, spotRounds, findAllRounds, spatialRounds,
   jigsawRounds, PICTURES, memoryRounds, mazeRounds,
 } from "./rounds";
 
@@ -549,6 +550,15 @@ export const LEVELS: Level[] = [
       { content: e("🌸"), correct: false },
     ],
   },
+  {
+    id: "nerede",
+    section: "dikkat",
+    title: "Nerede?",
+    kind: "place",
+    icon: "📦",
+    instr: "Nesneyi kutunun içine koy.",
+    spatial: { object: "⚽", container: "📦", rel: "in" },
+  },
 
   // ---------------- GÜNLÜK YAŞAM ----------------
   {
@@ -657,6 +667,32 @@ export const LEVELS: Level[] = [
     ],
   },
   {
+    id: "duygu-neden",
+    section: "yasam",
+    title: "Nasıl Hissediyor?",
+    kind: "select",
+    icon: "💭",
+    instr: "Pofuduk'a hediye geldi. Nasıl hissediyor? Doğru yüzü bul.",
+    items: [
+      { content: e("😄"), correct: true },
+      { content: e("😢"), correct: false },
+      { content: e("😠"), correct: false },
+    ],
+  },
+  {
+    id: "duygu-yardim",
+    section: "yasam",
+    title: "Nasıl Yardım Ederiz?",
+    kind: "select",
+    icon: "🤗",
+    instr: "Pofuduk üzgün. Onu ne mutlu eder? Doğru olanı bul.",
+    items: [
+      { content: e("🧸"), correct: true },
+      { content: e("🥦"), correct: false },
+      { content: e("🪨"), correct: false },
+    ],
+  },
+  {
     id: "gunluk-sira",
     section: "yasam",
     title: "Günlük Sıra",
@@ -733,11 +769,14 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   "meyve-sebze": meyveSebzeRounds,
   duygular: duygularRounds,
   "duygu-uzgun": uzgunRounds,
+  "duygu-neden": duyguNedenRounds,
+  "duygu-yardim": duyguYardimRounds,
   "duygu-kizgin": kizginRounds,
   "gunluk-sira": routineRounds,
   "farkli-bul": farkliRounds,
   "ayni-bul": ayniRounds,
   "hepsini-bul": findAllRounds,
+  nerede: spatialRounds,
   fark: spotRounds,
   "yapboz-3": () => jigsawRounds(JIGSAW_LAYOUTS[3]),
   "yapboz-4": () => jigsawRounds(JIGSAW_LAYOUTS[4]),

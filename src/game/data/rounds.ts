@@ -95,6 +95,24 @@ const IKILI: [string, string][] = [
   ["🪥", "🦷"], ["🧼", "🛁"], ["🧣", "❄️"], ["🎧", "🎵"], ["🩴", "🏖️"], ["🍞", "🧈"],
   ["🧢", "☀️"], ["🍼", "👶"],
 ];
+// --------- MEKANSAL KAVRAMLAR ("Nerede?") ---------
+// Kap her zaman kutu (📦) -> yönerge "kutu" der ve tutarlı. Sadece nesne değişir.
+const SPATIAL_OBJECTS = ["⚽", "🍎", "🧸", "🎈", "🚗", "🐱", "🍌", "⭐"];
+const SPATIAL_RELS = ["in", "on", "under", "beside"] as const;
+const SPATIAL_INSTR: Record<(typeof SPATIAL_RELS)[number], string> = {
+  in: "Nesneyi kutunun içine koy.",
+  on: "Nesneyi kutunun üstüne koy.",
+  under: "Nesneyi kutunun altına koy.",
+  beside: "Nesneyi kutunun yanına koy.",
+};
+export const SPATIAL_INSTRS = Object.values(SPATIAL_INSTR);
+export function spatialRounds(): Round[] {
+  return Array.from({ length: ROUNDS }, (_, i) => {
+    const rel = SPATIAL_RELS[i % SPATIAL_RELS.length];
+    return { spatial: { object: pick(SPATIAL_OBJECTS), container: "📦", rel }, instr: SPATIAL_INSTR[rel] };
+  });
+}
+
 export const iliskiliRounds = () => pairRounds(ILISKILI);
 export const yiyecekRounds = () => pairRounds(YIYECEK);
 export const ikiliRounds = () => pairRounds(IKILI, 3);
@@ -204,6 +222,44 @@ export const uzgunRounds = () =>
   selectRounds(SAD_FACES, [...HAPPY_FACES, ...ANGRY_FACES], 3, 3);
 export const kizginRounds = () =>
   selectRounds(ANGRY_FACES, [...HAPPY_FACES, ...SAD_FACES], 3, 3);
+
+// DUYGU NEDENSELLİĞİ ("Pofuduk'un Duyguları"): olayı duyguya bağla (tanımanın ötesi).
+const EMO_POOLS = { happy: HAPPY_FACES, sad: SAD_FACES, angry: ANGRY_FACES, scared: SCARED_FACES };
+const CAUSES: { instr: string; pool: keyof typeof EMO_POOLS }[] = [
+  { instr: "Pofuduk'a hediye geldi. Nasıl hissediyor? Doğru yüzü bul.", pool: "happy" },
+  { instr: "Pofuduk pastasını yedi. Nasıl hissediyor? Doğru yüzü bul.", pool: "happy" },
+  { instr: "Pofuduk'un balonu patladı. Nasıl hissediyor? Doğru yüzü bul.", pool: "sad" },
+  { instr: "Pofuduk oyuncağını kaybetti. Nasıl hissediyor? Doğru yüzü bul.", pool: "sad" },
+  { instr: "Biri Pofuduk'un oyuncağını aldı. Nasıl hissediyor? Doğru yüzü bul.", pool: "angry" },
+  { instr: "Pofuduk karanlıktan korktu. Nasıl hissediyor? Doğru yüzü bul.", pool: "scared" },
+];
+export const DUYGU_NEDEN_INSTRS = CAUSES.map((c) => c.instr);
+export function duyguNedenRounds(): Round[] {
+  return rounds(() => {
+    const c = pick(CAUSES);
+    const correct = pick(EMO_POOLS[c.pool]);
+    const wrongPool = Object.entries(EMO_POOLS).filter(([k]) => k !== c.pool).flatMap(([, v]) => v);
+    const items = shuffleArr([
+      { content: e(correct), correct: true },
+      ...sample(wrongPool, 2).map((w) => ({ content: e(w), correct: false })),
+    ]);
+    return { items, instr: c.instr };
+  });
+}
+
+// EMPATİ ("Nasıl yardım ederiz?"): üzgün Pofuduk'u rahatlatan şeyi seç.
+const COMFORT = ["🧸", "🎈", "🍪", "🤗", "🎁", "🌸"];
+const NOT_COMFORT = ["🥦", "🧦", "🪨", "🗑️", "🧹", "📎"];
+export const DUYGU_YARDIM_INSTR = "Pofuduk üzgün. Onu ne mutlu eder? Doğru olanı bul.";
+export function duyguYardimRounds(): Round[] {
+  return rounds(() => {
+    const items = shuffleArr([
+      { content: e(pick(COMFORT)), correct: true },
+      ...sample(NOT_COMFORT, 2).map((w) => ({ content: e(w), correct: false })),
+    ]);
+    return { items, instr: DUYGU_YARDIM_INSTR };
+  });
+}
 
 // GUNLUK RUTIN (yasam becerisi): gunluk isleri dogru siraya diz (sequence).
 const ROUTINES: string[][] = [

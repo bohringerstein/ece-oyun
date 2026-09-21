@@ -11,6 +11,7 @@ import { recordWrong } from "../data/skills";
 interface Props {
   board: Board;
   onWin: () => void;
+  onHint?: () => void; // 2. yanlışta çağrılır -> LevelShell maskotla cesaret verir
 }
 
 const PLANE = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -204,7 +205,7 @@ function SlotView({ slot }: { slot: Slot }) {
   return <Container kind={s.style === "table" ? "table" : "basket"} w={s.w} h={s.h} />;
 }
 
-export function GameBoard3D({ board, onWin }: Props) {
+export function GameBoard3D({ board, onWin, onHint }: Props) {
   const { camera, gl } = useThree();
   const groupRefs = useRef<Map<string, THREE.Group>>(new Map());
   const slotRefs = useRef<Map<string, THREE.Group>>(new Map());
@@ -212,6 +213,8 @@ export function GameBoard3D({ board, onWin }: Props) {
   const pulse = useRef<Map<string, number>>(new Map());
   const rots = useRef<Map<string, number>>(new Map()); // sepete/masaya konunca hafif eğim
   const placeScale = useRef<Map<string, number>>(new Map()); // sepete konunca küçült (sığsın)
+  const wrongStreak = useRef(0); // üst üste yanlış sayısı (düzeltici iskele için)
+  const hintRef = useRef<string | null>(null); // ipucu verilen (titreşen) doğru token
   const dragId = useRef<string | null>(null);
   const [placed, setPlaced] = useState<Record<string, string>>({});
   const placedRef = useRef(placed);
@@ -225,6 +228,8 @@ export function GameBoard3D({ board, onWin }: Props) {
     board.tokens.forEach((t) => targets.current.set(t.id, [t.home[0], t.home[1], 0]));
     setPlaced({});
     wonRef.current = false;
+    wrongStreak.current = 0;
+    hintRef.current = null;
     setBoardStamp((s) => s + 1);
   }, [board]);
 
@@ -380,6 +385,9 @@ export function GameBoard3D({ board, onWin }: Props) {
           pulse.current.set(slot.id, performance.now());
         }
         popSound();
+        // doğru yerleşme: ipucu/yanlış-serisi sıfırla
+        wrongStreak.current = 0;
+        if (hintRef.current === id) hintRef.current = null;
         const done = Object.keys(next).length;
         if (done >= board.win && !wonRef.current) {
           wonRef.current = true;
@@ -390,6 +398,16 @@ export function GameBoard3D({ board, onWin }: Props) {
         wrongSound();
         speakEncourage();
         recordWrong();
+        // DÜZELTİCİ İSKELE: 2. yanlıştan sonra doğru bir öğeyi titret (ipucu) + maskot
+        wrongStreak.current++;
+        if (wrongStreak.current >= 2) {
+          const help = board.tokens.find((t) => t.correct && !placedRef.current[t.id]);
+          if (help) {
+            hintRef.current = help.id;
+            onHint?.();
+          }
+          wrongStreak.current = 0;
+        }
       }
     }
     window.addEventListener("pointermove", onMove);
@@ -416,7 +434,11 @@ export function GameBoard3D({ board, onWin }: Props) {
       const baseScale = tok.scale ?? 1;
       // sepete konunca placeScale ile küçül (sığsın); sürüklerken/gridde tam boy
       const ps = placedRef.current[tok.id] ? placeScale.current.get(tok.id) : undefined;
-      const targetScale = dragId.current === tok.id ? baseScale * 1.18 : (ps ?? baseScale);
+      let targetScale = dragId.current === tok.id ? baseScale * 1.18 : (ps ?? baseScale);
+      // DÜZELTİCİ İSKELE ipucu: doğru öğe belirgin şekilde nabız atsın (dikkat çek)
+      if (hintRef.current === tok.id && !placedRef.current[tok.id] && dragId.current !== tok.id) {
+        targetScale = baseScale * (1.12 + Math.abs(Math.sin(t * 5)) * 0.22);
+      }
       g.scale.x += (targetScale - g.scale.x) * k;
       g.scale.y = g.scale.x;
       g.scale.z = g.scale.x;

@@ -43,7 +43,8 @@ export type GameKind =
   | "maze" // hayvani parmakla yol boyunca surukleyip hedefe goturme (yol takibi)
   | "seriate" // nesneleri kucukten buyuge sirala (boyut seriation)
   | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
-  | "trace"; // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
+  | "trace" // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
+  | "place"; // nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle (mekansal kavramlar)
 
 // Farkli bul (spot): bir sahnedeki tek bir nesne (emoji + konum + boyut)
 export interface SpotItem {
@@ -123,6 +124,9 @@ export interface Level {
   // trace (rakam izleme): parmakla rakam sekilli yolun uzerinden gec. path = 0..100 noktalar.
   trace?: { digit: string; path: { x: number; y: number }[] };
 
+  // place (mekansal): nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle. rel = dogru konum.
+  spatial?: { object: string; container: string; rel: "in" | "on" | "under" | "beside" };
+
   // derinlik: ek bölümler (ilk bölüm level'in kendi alanlarıdır, bunlar sonrakiler)
   rounds?: Round[];
 
@@ -153,6 +157,7 @@ export type Round = Partial<Pick<
   | "maze"
   | "seriate"
   | "weight"
+  | "spatial"
   | "spot"
   | "diffs"
   | "instr"

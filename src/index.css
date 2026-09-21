@@ -41,6 +41,30 @@ h2 {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6%); }
 }
+/* Düzeltici iskele: köşede cesaret veren maskot + konuşma balonu */
+.hint-mascot {
+  position: fixed;
+  left: calc(10px + env(safe-area-inset-left));
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: hintPop 0.3s ease;
+}
+.hint-bubble {
+  background: #fff;
+  color: #3b4761;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+@keyframes hintPop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 button {
   font-family: inherit;
   cursor: pointer;
@@ -181,6 +205,12 @@ button {
   gap: 12px;
   width: 100%;
   margin: 16px 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
 }
 .map-stop.left { justify-content: flex-start; }
 .map-stop.right { justify-content: flex-end; flex-direction: row-reverse; }

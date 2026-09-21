@@ -64,6 +64,7 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   const [won, setWon] = useState(false);
   const [winPhase, setWinPhase] = useState<"announce" | "reward" | "card">("announce");
   const [flash, setFlash] = useState(false);
+  const [hintMascot, setHintMascot] = useState(false); // 2. yanlışta cesaret veren Pofuduk
 
   // o anki bölümün verisi
   const data = useMemo<Level>(() => {
@@ -183,8 +184,21 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
         {ready && data.kind === "trace" && <TraceGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && board && (
           <Scene3D>
-            <GameBoard3D board={board} onWin={handleWin} />
+            <GameBoard3D
+              board={board}
+              onWin={handleWin}
+              onHint={() => {
+                setHintMascot(true);
+                setTimeout(() => setHintMascot(false), 2600);
+              }}
+            />
           </Scene3D>
+        )}
+        {hintMascot && (
+          <div className="hint-mascot">
+            <Mascot mood="encourage" size={74} />
+            <span className="hint-bubble">Şuna bak! 👀</span>
+          </div>
         )}
       </div>
 

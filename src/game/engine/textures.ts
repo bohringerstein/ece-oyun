@@ -529,73 +529,76 @@ export function getContainerTexture(kind: "basket" | "basketFront" | "table"): T
   cv.height = 256;
   const ctx = cv.getContext("2d")!;
   if (kind === "basket" || kind === "basketFront") {
-    // FİLELİ (ağ örgülü) SEPET, iki katman:
-    //  - "basket" = ARKA: dolu derin kâse (gradient) + koyu iç + üst çember (rim).
-    //  - "basketFront" = ÖN: yarı saydam ELMAS AĞ (file) + ön çember. Nesneler ikisinin
-    //    ARASINA (tamamen içeri) konur; file'nin gözlerinden görünür = "fileli sepete atıldı".
+    // PROFESYONEL 3B HASIR SEPET, iki katman:
+    //  - "basket" = ARKA: fıçı gövde (yatay ışık gradyanı=yuvarlaklık) + örülü hasır sıraları
+    //    + koyu iç ağız. "basketFront" = ÖN duvar (alt gövde) + 3B çember. Nesneler ARASINA girer.
     const front = kind === "basketFront";
-    const bTop = 74, bBot = 250;
-    const mx = 512, my = 74, mrx = 372, mry = 40;
-    // derin kâse yolu (üst geniş -> alta doğru hafif daralan, yuvarlak taban)
-    const bowlPath = () => {
+    const cx = 512;
+    const rimCy = 74, rimRx = 386, rimRy = 40;   // üst ağız elipsi
+    const baseCy = 250, halfBase = 300;          // taban (daha dar)
+    const wallTop = rimCy + rimRy - 10;          // ön duvarın başladığı çizgi
+    // fıçı gövde silueti: yanlar hafif şişkin, taban yuvarlak
+    const bodyPath = () => {
       ctx.beginPath();
-      ctx.moveTo(mx - mrx, my);
-      ctx.lineTo(mx - mrx + 40, bBot - 26);
-      ctx.quadraticCurveTo(mx - mrx + 60, bBot, mx - mrx + 110, bBot);
-      ctx.lineTo(mx + mrx - 110, bBot);
-      ctx.quadraticCurveTo(mx + mrx - 60, bBot, mx + mrx - 40, bBot - 26);
-      ctx.lineTo(mx + mrx, my);
+      ctx.moveTo(cx - rimRx, rimCy);
+      ctx.bezierCurveTo(cx - rimRx - 16, rimCy + 80, cx - halfBase - 12, baseCy - 66, cx - halfBase, baseCy - 26);
+      ctx.quadraticCurveTo(cx - halfBase, baseCy, cx - halfBase + 46, baseCy);
+      ctx.lineTo(cx + halfBase - 46, baseCy);
+      ctx.quadraticCurveTo(cx + halfBase, baseCy, cx + halfBase, baseCy - 26);
+      ctx.bezierCurveTo(cx + halfBase + 12, baseCy - 66, cx + rimRx + 16, rimCy + 80, cx + rimRx, rimCy);
       ctx.closePath();
     };
+    const drawBody = (clipFromY: number | null) => {
+      ctx.save();
+      bodyPath();
+      ctx.clip();
+      if (clipFromY !== null) { ctx.beginPath(); ctx.rect(0, clipFromY, 1024, 256 - clipFromY); ctx.clip(); }
+      // YATAY yuvarlaklık gradyanı (kenarlar koyu, orta açık -> silindirik hacim)
+      const hg = ctx.createLinearGradient(cx - rimRx, 0, cx + rimRx, 0);
+      hg.addColorStop(0, "#6f4c23"); hg.addColorStop(0.5, "#cda069"); hg.addColorStop(1, "#6f4c23");
+      ctx.fillStyle = hg; ctx.fillRect(0, 0, 1024, 256);
+      // DİKEY gölge (üst ışık, alt koyu -> zeminde oturma)
+      const vg = ctx.createLinearGradient(0, rimCy, 0, baseCy);
+      vg.addColorStop(0, "rgba(255,242,214,0.14)"); vg.addColorStop(0.55, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.34)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, 1024, 256);
+      // ÖRÜLÜ HASIR SIRALARI (yatay kavisli bantlar -> gövdeyi sarar)
+      for (let i = 0; i < 8; i++) {
+        const y = rimCy + 24 + i * 26;
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = "rgba(66,42,18,0.42)";
+        ctx.beginPath(); ctx.ellipse(cx, y, rimRx - 10, 22, 0, Math.PI * 0.12, Math.PI * 0.88); ctx.stroke();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(255,236,202,0.32)";
+        ctx.beginPath(); ctx.ellipse(cx, y - 5, rimRx - 10, 22, 0, Math.PI * 0.18, Math.PI * 0.82); ctx.stroke();
+      }
+      // dikey çıtalar (hasır dokusu)
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(58,36,15,0.26)";
+      for (let x = cx - rimRx + 46; x < cx + rimRx; x += 62) { ctx.beginPath(); ctx.moveTo(x, rimCy); ctx.lineTo(x, baseCy); ctx.stroke(); }
+      ctx.restore();
+    };
+
     if (!front) {
-      // ARKA KÂSE: gradient gövde
-      const g = ctx.createLinearGradient(0, my, 0, bBot);
-      g.addColorStop(0, "#caa06a");
-      g.addColorStop(0.5, "#b07f45");
-      g.addColorStop(1, "#8a5f30");
-      ctx.fillStyle = g;
-      bowlPath();
-      ctx.fill();
-      // iç derinlik: üstte koyu gölge (nesneler buna karşı belirginleşir)
-      ctx.save();
-      bowlPath();
-      ctx.clip();
-      const sh = ctx.createLinearGradient(0, my, 0, my + 120);
-      sh.addColorStop(0, "rgba(50,32,14,0.55)");
-      sh.addColorStop(1, "rgba(50,32,14,0)");
-      ctx.fillStyle = sh;
-      ctx.fillRect(0, my, 1024, 140);
-      ctx.restore();
+      drawBody(null);
+      // KOYU İÇ AĞIZ (nesneler buna karşı belirginleşir)
+      const ig = ctx.createLinearGradient(0, rimCy - rimRy, 0, rimCy + rimRy);
+      ig.addColorStop(0, "#2a1a0a"); ig.addColorStop(1, "#5c3e1f");
+      ctx.fillStyle = ig;
+      ctx.beginPath(); ctx.ellipse(cx, rimCy, rimRx - 30, rimRy - 6, 0, 0, Math.PI * 2); ctx.fill();
+      // iç üst gölge yayı
+      ctx.strokeStyle = "rgba(0,0,0,0.45)"; ctx.lineWidth = 16;
+      ctx.beginPath(); ctx.ellipse(cx, rimCy - 2, rimRx - 34, rimRy - 12, 0, Math.PI, Math.PI * 2); ctx.stroke();
     } else {
-      // ÖN FİLE: elmas ağ (çift yönlü çapraz ince çizgiler), kâseye kırpılı
-      ctx.save();
-      bowlPath();
-      ctx.clip();
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = "rgba(105,70,34,0.5)";
-      const step = 52;
-      for (let x = -300; x < 1200; x += step) {
-        ctx.beginPath(); ctx.moveTo(x, my - 20); ctx.lineTo(x + 240, bBot + 20); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x, my - 20); ctx.lineTo(x - 240, bBot + 20); ctx.stroke();
-      }
-      // ipliklerin üstünde ince açık highlight (hasır dokusu)
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(255,244,220,0.3)";
-      for (let x = -300; x < 1200; x += step) {
-        ctx.beginPath(); ctx.moveTo(x + 2, my - 20); ctx.lineTo(x + 242, bBot + 20); ctx.stroke();
-      }
-      ctx.restore();
+      drawBody(wallTop); // sadece ÖN alt duvar (nesnelerin altını örter)
     }
-    // ÜST ÇEMBER (rim) — her iki katmanda (ön kopyada nesne üstlerini örter -> içeride kalır)
-    ctx.strokeStyle = "#a9793f";
-    ctx.lineWidth = 24;
-    ctx.beginPath(); ctx.ellipse(mx, my, mrx, mry, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = "#c99a58";
-    ctx.lineWidth = 10;
-    ctx.beginPath(); ctx.ellipse(mx, my, mrx, mry, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = "rgba(255,245,220,0.6)";
-    ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.ellipse(mx, my + 2, mrx, mry, 0, 0.15, Math.PI - 0.15); ctx.stroke();
+    // 3B ÇEMBER (rim torus): koyu dış kenar + ana bant + üst highlight + alt gölge
+    ctx.strokeStyle = "#5f3f1e"; ctx.lineWidth = 30;
+    ctx.beginPath(); ctx.ellipse(cx, rimCy, rimRx, rimRy, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "#b98a4e"; ctx.lineWidth = 22;
+    ctx.beginPath(); ctx.ellipse(cx, rimCy, rimRx, rimRy, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,244,214,0.72)"; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.ellipse(cx, rimCy - 5, rimRx - 2, rimRy - 2, 0, Math.PI + 0.2, Math.PI * 2 - 0.2); ctx.stroke();
+    ctx.strokeStyle = "rgba(50,32,14,0.5)"; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.ellipse(cx, rimCy + 5, rimRx - 2, rimRy - 2, 0, 0.2, Math.PI - 0.2); ctx.stroke();
   } else {
     // ---- AHŞAP MASA: gradient tabla + ahşap damarı + iki tonlu ön kenar ----
     const tw = ctx.createLinearGradient(0, 70, 0, 118);

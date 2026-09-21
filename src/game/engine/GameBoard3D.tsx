@@ -282,8 +282,8 @@ export function GameBoard3D({ board, onWin }: Props) {
       const sc = n <= 4 ? 0.6 : n <= 6 ? 0.52 : 0.46; // sığsın diye küçült
       const cols = n <= 3 ? Math.max(1, n) : n <= 8 ? 3 : 4;
       const rowsN = Math.ceil(n / cols);
-      const cellW = 1.15, cellH = 0.82;
-      const cx = slot.pos[0], cy = slot.pos[1] - 0.05; // kâse iç merkezi
+      const cellW = 1.15, cellH = 0.8;
+      const cx = slot.pos[0], cy = slot.pos[1] + 0.45; // ağzın içi (görünür), tabana doğru gömülü
       ids.forEach((id, i) => {
         const r = Math.floor(i / cols), c = i % cols;
         const inRow = Math.min(cols, n - r * cols);

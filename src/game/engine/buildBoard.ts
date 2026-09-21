@@ -268,14 +268,15 @@ export function buildBoard(level: Level): Board {
       );
     }
     rows.forEach((row, r) => {
-      const y = 4.0 - r * 3.0;
+      // satirlar yukari cekildi: masaya konan nesne en alttaki sirayi KESMESIN
+      const y = 4.3 - r * 2.65;
       // satir icindeki ogeleri karistir (dogru cevap hep ayni tarafta olmasin)
       const shuffled = shuffle(
         row.items.map((c, i) => ({ c, correct: i === row.correctIndex, sc: row.itemScales?.[i] }))
       );
-      // karsilastirilan her grup ESIT boyutlu bir kutuyla cevrilir -> cocuk gruplari
-      // (ve hangisinin daha cok/buyuk oldugunu) net gorur.
-      const fw = Math.min(2.3, (7.2 / shuffled.length) * 0.9);
+      // KARSILASTIRILAN GRUP = yataydaki seceneklerin TAMAMI; tek bir kutuyla cevrelenir
+      // (her nesne ayri degil). Cocuk "bu grupta hangisi daha cok/buyuk" olarak bakar.
+      frames.push({ pos: [0, y], w: 7.6, h: 2.6 });
       shuffled.forEach(({ c, correct, sc }, i) => {
         let scale: number | undefined;
         if (level.compareBySize) {
@@ -283,7 +284,6 @@ export function buildBoard(level: Level): Board {
           else if (c.kind === "image") scale = Math.max(0.45, imageNaturalHeight(c.src) / maxH);
         }
         const x = cellX(shuffled.length, i, 7.2);
-        frames.push({ pos: [x, y], w: fw, h: fw });
         tokens.push({
           id: `r${r}i${i}`,
           content: c,

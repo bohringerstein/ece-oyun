@@ -242,10 +242,13 @@ export function GameBoard3D({ board, onWin }: Props) {
     const n = ids.length;
     // kabin grafiginin ust YUZEY cizgisi (dunya y): nesneler bunun ustune "otursun",
     // grafigin ortasina binmesin. Boylece masada/sepette 3B duruyormus gibi gorunur.
+    // yuzey cizgisi: nesnenin TABANI buraya otursun. Deger, nesnelerin kabin ON
+    // kopyasinin (asagida z=0.55 overlay) ARKASINA girip "icine/uzerine kondu" gorunmesi
+    // icin ayarlandi.
     const surface =
-      slot.style === "table" ? slot.pos[1] + 0.95 :
-      slot.style === "basket" ? slot.pos[1] + 1.15 :
-      slot.style === "bin" ? slot.pos[1] + 0.55 :
+      slot.style === "table" ? slot.pos[1] + 0.55 :
+      slot.style === "basket" ? slot.pos[1] + 0.85 :
+      slot.style === "bin" ? slot.pos[1] + 0.4 :
       null;
     ids.forEach((id, i) => {
       const tok = board.tokens.find((t) => t.id === id)!;
@@ -423,6 +426,25 @@ export function GameBoard3D({ board, onWin }: Props) {
           <Card3D content={tok.content} boxW={tok.w ?? 1.9} boxH={tok.h ?? 1.9} onPointerDown={(e: any) => startDrag(tok, e)} />
         </group>
       ))}
+
+      {/* KABIN ÖN KOPYASI: nesnelerin ÖNÜNDE çizilir -> sepete/masaya konan nesnenin ALT
+          kısmı ön kenarın arkasına girer = "gerçekten içine/üstüne kondu" 3B hissi.
+          raycast kapalı: dokunmayı engellemesin. */}
+      {board.slots
+        .filter((s) => s.style === "basket" || s.style === "table")
+        .map((s) => (
+          <group key={`front-${s.id}`} position={[s.pos[0], s.pos[1], 0.55]}>
+            <mesh raycast={() => null}>
+              <planeGeometry args={[s.w, s.h * 1.9]} />
+              <meshBasicMaterial
+                map={getContainerTexture(s.style === "table" ? "table" : "basket")}
+                transparent
+                alphaTest={0.02}
+                toneMapped={false}
+              />
+            </mesh>
+          </group>
+        ))}
     </group>
   );
 }

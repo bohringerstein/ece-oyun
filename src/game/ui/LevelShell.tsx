@@ -74,6 +74,15 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   const [winPhase, setWinPhase] = useState<"announce" | "reward" | "card">("announce");
   const [flash, setFlash] = useState(false);
   const [hintMascot, setHintMascot] = useState(false); // 2. yanlışta cesaret veren Pofuduk
+  // ONBOARDING: ilk kez oynayan çocuğa sürükle-bırak metaforunu tek seferlik sessiz "hayalet el" ile
+  // göster (localStorage "ece-onboarded"). Yalnız sürükleme oyunlarının 0. turunda, ~4.5 sn, atlanabilir.
+  const [onboard, setOnboard] = useState(() => {
+    try {
+      return !localStorage.getItem("ece-onboarded");
+    } catch {
+      return false;
+    }
+  });
 
   // o anki bölümün verisi
   const data = useMemo<Level>(() => {
@@ -131,6 +140,23 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   }, [level.id, round]);
 
   const board = useMemo(() => (ready ? buildBoard(data) : null), [ready, level.id, round]);
+
+  // onboarding: yalnız sürükleme oyunlarının ilk turunda, bir kez
+  const DRAG_KINDS = ["match", "select", "sort", "sequence", "pattern", "count", "compare", "puzzle", "jigsaw"];
+  const showOnboard = onboard && ready && round === 0 && DRAG_KINDS.includes(data.kind);
+  useEffect(() => {
+    if (!showOnboard) return;
+    const dismiss = () => {
+      setOnboard(false);
+      try {
+        localStorage.setItem("ece-onboarded", "1");
+      } catch {
+        // yoksay
+      }
+    };
+    const t = setTimeout(dismiss, 4500);
+    return () => clearTimeout(t);
+  }, [showOnboard]);
 
   function handleWin() {
     if (won || flash) return;
@@ -215,6 +241,23 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
           <div className="hint-mascot">
             <Mascot mood="encourage" size={74} />
             <span className="hint-bubble">Şuna bak! 👀</span>
+          </div>
+        )}
+
+        {showOnboard && (
+          <div
+            className="onboard-hint"
+            onPointerDown={() => {
+              setOnboard(false);
+              try {
+                localStorage.setItem("ece-onboarded", "1");
+              } catch {
+                // yoksay
+              }
+            }}
+          >
+            <span className="onboard-hand">👆</span>
+            <span className="onboard-cap">Parmağınla sürükle!</span>
           </div>
         )}
       </div>

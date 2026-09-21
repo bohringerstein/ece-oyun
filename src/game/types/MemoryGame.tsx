@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Level } from "../data/types";
 import { flipSound, popSound, wrongSound } from "../audio/sfx";
+import { recordWrong } from "../data/skills";
 
 interface Card {
   id: string;
@@ -90,6 +91,7 @@ export function MemoryGame({ level, onWin }: { level: Level; onWin: () => void }
       }, 550);
     } else {
       // yanlis: her iki karti goster, sonra geri kapat
+      recordWrong();
       setBusy(true);
       wrongSound();
       setTimeout(() => {

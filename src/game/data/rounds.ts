@@ -82,8 +82,10 @@ function samplePairsUnique(pool: [string, string][], k: number): [string, string
   }
   return out;
 }
-function pairRounds(pool: [string, string][], per = 4): Round[] {
-  return rounds(() => ({ pairs: samplePairsUnique(pool, per).map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
+// band ile eşleştirilecek ÇİFT sayısı uyarlanır (kolay az, zor çok), [3,5] aralığında.
+function pairRounds(pool: [string, string][], per = 4, band = 1): Round[] {
+  const cnt = Math.max(3, Math.min(per + (band - 1), 5));
+  return rounds(() => ({ pairs: samplePairsUnique(pool, cnt).map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
 }
 
 // ILISKILI = "birbiriyle ilgili": aitlik / neden-sonuç (hayvan-ürün, sebep-sonuç).
@@ -128,9 +130,9 @@ export function depthRounds(): Round[] {
   });
 }
 
-export const iliskiliRounds = () => pairRounds(ILISKILI);
-export const yiyecekRounds = () => pairRounds(YIYECEK);
-export const ikiliRounds = () => pairRounds(IKILI, 3);
+export const iliskiliRounds = (band?: number) => pairRounds(ILISKILI, 4, band);
+export const yiyecekRounds = (band?: number) => pairRounds(YIYECEK, 4, band);
+export const ikiliRounds = (band?: number) => pairRounds(IKILI, 3, band);
 
 // AYNILARI EŞLE (dikkat) - ayni emojiyi ayni ile esle
 const AYNI_POOL: string[] = [
@@ -145,10 +147,11 @@ const FARKLI_POOL: string[] = [
   "🐶","🐱","🐰","🐻","🐼","🦊","🐯","🦁","🐷","🐮","🐸","🐵","🦄","🐔","🐧","🦉","🐢","🐝","🦋","🐞",
   "🍎","🍊","🍌","🍓","🍇","🍉","🍒","🥕","🌽","🌸","🌻","⭐","🚗","🚌","✈️","⚽","🎈","🎁","🌈","🚀",
 ];
-export const farkliRounds = () =>
+export const farkliRounds = (band?: number) =>
   rounds(() => {
     const [same, diff] = sample(FARKLI_POOL, 2);
-    const n = randInt(3, 4);
+    // band ile "aynı" (çeldirici) sayısı: kolay 3, orta 3-4, zor 5 -> farklıyı bulmak zorlaşır
+    const n = (band ?? 1) <= 0 ? 3 : (band ?? 1) >= 2 ? 5 : randInt(3, 4);
     const items = Array.from({ length: n - 1 }, () => ({ content: e(same), correct: false }));
     items.push({ content: e(diff), correct: true });
     return { items };
@@ -171,11 +174,13 @@ export function puzzleRounds(): Round[] {
 }
 
 // --------- SEÇME (şekiller / uçanlar / duygular) ---------
-function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?: string): Round[] {
+// band ile ÇELDİRİCİ sayısı uyarlanır: kolay az, zor fazla çeldirici (görsel ayırt etme yükü).
+function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?: string, band = 1): Round[] {
+  const w = Math.max(2, nw + (band - 1)); // band0: nw-1, band1: nw, band2: nw+1
   return rounds(() => {
     const items = [
       ...sample(correct, nc).map((c) => ({ content: e(c), correct: true })),
-      ...sample(wrong, nw).map((c) => ({ content: e(c), correct: false })),
+      ...sample(wrong, w).map((c) => ({ content: e(c), correct: false })),
     ];
     return instr ? { items, instr } : { items };
   });

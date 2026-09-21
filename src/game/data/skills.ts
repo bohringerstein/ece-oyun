@@ -10,8 +10,13 @@ export interface SkillRec {
 }
 
 let activeSection = "";
+// İLK-DENEME DOĞRULUĞU: her tur = 1 deneme. Tur içinde herhangi bir yanlış olduysa bayrak true olur;
+// tur tamamlanınca (recordCorrect) yalnız bayrak temizse "doğru" sayılır. Böylece çeldirici/şans
+// başarıyı şişirmez ve difficultyBand gerçek yeterliğe dayanır (uzman paneli kök-sorun düzeltmesi).
+let roundHadWrong = false;
 export function setActiveSection(section: string) {
   activeSection = section;
+  roundHadWrong = false;
 }
 
 const KEY = (section: string) => `ece-skill-${section}`;
@@ -37,19 +42,20 @@ function save(section: string, r: SkillRec) {
   }
 }
 
+// Tur tamamlandı (LevelShell.handleWin) = 1 deneme. Doğru = tur boyunca hiç yanlış olmadıysa.
 export function recordCorrect() {
   if (!activeSection) return;
   const r = loadSkill(activeSection);
   r.attempts++;
-  r.correct++;
+  if (!roundHadWrong) r.correct++;
   save(activeSection, r);
+  roundHadWrong = false; // sonraki tur için sıfırla
 }
 
+// Tur içinde yanlış: sadece bayrağı işaretler (deneme sayısını artırmaz; tur sonunda değerlendirilir).
+// TÜM oyun tipleri bunu çağırmalı (yalnız 3D değil) ki ölçüm geçerli olsun.
 export function recordWrong() {
-  if (!activeSection) return;
-  const r = loadSkill(activeSection);
-  r.attempts++;
-  save(activeSection, r);
+  roundHadWrong = true;
 }
 
 export function successRate(section: string): number {
@@ -57,11 +63,11 @@ export function successRate(section: string): number {
   return r.attempts ? r.correct / r.attempts : 1;
 }
 
-// Zorluk bandı: 0=kolay, 1=orta, 2=zor. Yeterli veri yoksa orta.
-// (İleride üreticilere geçirilecek; şu an veri modeli + ebeveyn panosu için.)
+// Zorluk bandı: 0=kolay, 1=orta, 2=zor. Yeterli veri yokken KOLAY başla (en küçük yaş korunur,
+// ilk deneyim asla "zor" hissettirmez; veri geldikçe yükselir) — uzman paneli önerisi.
 export function difficultyBand(section: string): 0 | 1 | 2 {
   const r = loadSkill(section);
-  if (r.attempts < 6) return 1;
+  if (r.attempts < 6) return 0;
   const rate = r.correct / r.attempts;
   if (rate > 0.85) return 2;
   if (rate < 0.5) return 0;

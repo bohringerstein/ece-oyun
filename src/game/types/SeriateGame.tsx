@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Level } from "../data/types";
 import { popSound, wrongSound } from "../audio/sfx";
 import { speakEncourage } from "../audio/speak";
+import { recordWrong } from "../data/skills";
 
 interface Obj {
   id: number;
@@ -52,6 +53,7 @@ export function SeriateGame({ level, onWin }: { level: Level; onWin: () => void 
         setTimeout(onWin, 600); // ovgu sesi tek kaynaktan (LevelShell handleWin) gelir
       }
     } else {
+      recordWrong();
       wrongSound();
       speakEncourage();
       setShake(o.id);

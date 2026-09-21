@@ -7,6 +7,7 @@ interface Props {
   musicOn: boolean;
   onToggleMusic: () => void;
   onResetProgress: () => void;
+  onColoring: () => void;
   earned: number;
   total: number;
   sections: Section[];
@@ -36,7 +37,7 @@ function skillView(section: string): SkillView {
 // Kapı: düğmeyi ~1.4 sn BASILI TUT (küçük çocuk açamaz; okuma gerekmez).
 // Panel (iskelet): müzik, yönerge sesi, ilerlemeyi sıfırla + ilerleme özeti.
 // (Zengin ilerleme panosu/çoklu profil sonraki fazlarda.)
-export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, total, sections }: Props) {
+export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections }: Props) {
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
   const [hold, setHold] = useState(0); // 0..1 basılı tutma ilerlemesi
   const [speechOff, setSpeechOff] = useState(isSpeechMuted());
@@ -170,6 +171,14 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, to
                 role="switch" aria-checked={!speechOff}
               ><span style={knob(!speechOff)} /></span>
             </div>
+
+            {/* Yazdırılabilir boyama sayfası (yazdırma = yetişkin işi -> çocuk ekranından buraya taşındı) */}
+            <button
+              onClick={onColoring}
+              style={{ ...row, width: "100%", border: "none", cursor: "pointer", justifyContent: "center", gap: 8, background: "#eef7ee", color: "#2f7d4f" }}
+            >
+              🖨️ Boyama Sayfası (Yazdır)
+            </button>
 
             {/* Gelişim panosu (kavram kaydı): bölüm bazında deneme, başarı %, çubuk ve seviye */}
             {(() => {

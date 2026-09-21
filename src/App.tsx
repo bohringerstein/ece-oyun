@@ -149,16 +149,16 @@ export function App() {
             stopSpeak();
             setView({ name: "customize" });
           }}
-          onColoring={() => {
-            stopSpeak();
-            setView({ name: "coloring" });
-          }}
         />
         {audioCluster}
         <ParentArea
           musicOn={musicOn}
           onToggleMusic={onToggleMusic}
           onResetProgress={resetProgress}
+          onColoring={() => {
+            stopSpeak();
+            setView({ name: "coloring" });
+          }}
           earned={done.size}
           total={LEVELS.length}
           sections={SECTIONS}

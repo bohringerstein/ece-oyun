@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Level, SpotItem } from "../data/types";
 import { popSound } from "../audio/sfx";
+import { recordWrong } from "../data/skills";
 
 const RES = 560; // canvas cozunurlugu (kare panel)
 
@@ -54,9 +55,11 @@ export function SpotGame({ level, onWin }: { level: Level; onWin: () => void }) 
     const rect = e.currentTarget.getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width;
     const py = (e.clientY - rect.top) / rect.height;
+    let hit = false;
     diffs.forEach((d, i) => {
       if (foundRef.current[i]) return;
       if (Math.hypot(d.x - px, d.y - py) < 0.14) {
+        hit = true;
         const nf = [...foundRef.current];
         nf[i] = true;
         setFound(nf);
@@ -64,6 +67,7 @@ export function SpotGame({ level, onWin }: { level: Level; onWin: () => void }) 
         if (nf.every(Boolean)) setTimeout(onWin, 500);
       }
     });
+    if (!hit) recordWrong(); // ıskalama = ilk-deneme bayrağını düşürür (ölçüm geçerliliği)
   }
 
   const remaining = found.filter((f) => !f).length;

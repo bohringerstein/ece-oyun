@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Level } from "../data/types";
 import { popSound, wrongSound } from "../audio/sfx";
 import { speakEncourage } from "../audio/speak";
+import { recordWrong } from "../data/skills";
 
 // Terazi: iki nesne kefelerde. Cocuk mode'a gore (agir/hafif) olani secer.
 // Dogruysa AGIR kefe ASAGI iner (nedensel gorsel) -> agirlik kavrami somutlasir.
@@ -36,6 +37,7 @@ export function WeightGame({ level, onWin }: { level: Level; onWin: () => void }
       popSound(); // ovgu sesi tilt animasyonundan SONRA tek kaynaktan (handleWin) gelir
       setTimeout(onWin, 1300);
     } else {
+      recordWrong();
       wrongSound();
       speakEncourage();
       setPicked(side);

@@ -10,12 +10,11 @@ interface Props {
   onPick: (id: string) => void;
   onOpenStickers: () => void;
   onCustomize: () => void;
-  onColoring: () => void;
 }
 
 // MACERA HARİTASI: bölümler bir patika üzerinde zigzag duraklar; Pofuduk mevcut ilerlemede durur.
 // Tüm duraklar açık (keşif serbest); tamamlananlar yıldızlı, sıradaki durakta maskot bekler.
-export function HomeMap({ sections, levels, done, onPick, onOpenStickers, onCustomize, onColoring }: Props) {
+export function HomeMap({ sections, levels, done, onPick, onOpenStickers, onCustomize }: Props) {
   const earned = levels.filter((l) => done.has(l.id)).length;
   const season = getSeason();
   const status = sections.map((s) => {
@@ -60,9 +59,6 @@ export function HomeMap({ sections, levels, done, onPick, onOpenStickers, onCust
         </button>
         <button className="sticker-btn map-customize" onClick={onCustomize}>
           ✨ Pofuduk'u Süsle
-        </button>
-        <button className="sticker-btn map-coloring" onClick={onColoring}>
-          🖨️ Boyama Sayfası
         </button>
       </div>
 

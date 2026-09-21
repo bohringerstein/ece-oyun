@@ -10,6 +10,7 @@ import { SectionScreen } from "./game/ui/SectionScreen";
 import { LevelShell } from "./game/ui/LevelShell";
 import { StickerBook } from "./game/ui/StickerBook";
 import { ParentArea } from "./game/ui/ParentArea";
+import { Mascot } from "./game/ui/Mascot";
 
 type View =
   | { name: "start" }
@@ -115,9 +116,9 @@ export function App() {
     return (
       <div className="start-screen">
         <div className="start-card">
-          <div className="start-emoji">🎈🧸🌈</div>
+          <Mascot mood="happy" size={150} style={{ marginBottom: 4 }} />
           <h1>Eğlenceli Öğrenme</h1>
-          <p>Oyunlarla öğrenmeye hazır mısın?</p>
+          <p>Ben Pofuduk! Birlikte oynayalım mı?</p>
           <button className="big-btn" onClick={start}>
             ▶ Başla
           </button>
@@ -146,6 +147,7 @@ export function App() {
           onResetProgress={resetProgress}
           earned={done.size}
           total={LEVELS.length}
+          sections={SECTIONS}
         />
       </>
     );

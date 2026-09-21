@@ -11,6 +11,8 @@ import { SeriateGame } from "../types/SeriateGame";
 import { WeightGame } from "../types/WeightGame";
 import { TraceGame } from "../types/TraceGame";
 import { StickerReward } from "./StickerReward";
+import { Mascot } from "./Mascot";
+import { setActiveSection, recordCorrect } from "../data/skills";
 import { preloadImageAspect, clearTextureCache } from "../engine/textures";
 import { speak, speakInstruction, stopSpeak, randomPraise } from "../audio/speak";
 import { CUES, STICKER_WIN } from "../audio/voiceLines";
@@ -75,6 +77,7 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   useEffect(() => {
     setWon(false);
     setWinPhase("announce");
+    setActiveSection(level.section); // adaptivite: bu bölümün kavram kaydına yaz
     return () => clearTextureCache();
   }, [level.id]);
 
@@ -117,6 +120,7 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
 
   function handleWin() {
     if (won || flash) return;
+    recordCorrect(); // her tamamlanan tur = bir doğru (kavram kaydı)
     if (round < total - 1) {
       // ara bölüm bitti: mini kutlama, sıradaki bölüm.
       // ÖVGÜ SESİ TAM BİTİNCE geç (sabit süreyle kesme). round degisince bu effect'in
@@ -186,13 +190,16 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
 
       {flash && (
         <div className="round-flash">
-          <div className="round-flash-card">🎉 Aferin! Sıradaki bölüm…</div>
+          <div className="round-flash-card">
+            <Mascot mood="happy" size={72} bob={false} />
+            <span>Aferin! Sıradaki bölüm…</span>
+          </div>
         </div>
       )}
 
       {won && winPhase === "announce" && (
         <div className="announce-overlay">
-          <div className="announce-emoji">🎉⭐🎉</div>
+          <Mascot mood="happy" size={140} />
           <div className="announce-title">Tebrikler!</div>
         </div>
       )}

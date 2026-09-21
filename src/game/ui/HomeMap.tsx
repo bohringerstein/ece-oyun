@@ -1,5 +1,6 @@
 import type { Level, Section } from "../data/types";
 import { speak } from "../audio/speak";
+import { Mascot } from "./Mascot";
 
 interface Props {
   sections: Section[];
@@ -9,37 +10,55 @@ interface Props {
   onOpenStickers: () => void;
 }
 
+// MACERA HARİTASI: bölümler bir patika üzerinde zigzag duraklar; Pofuduk mevcut ilerlemede durur.
+// Tüm duraklar açık (keşif serbest); tamamlananlar yıldızlı, sıradaki durakta maskot bekler.
 export function HomeMap({ sections, levels, done, onPick, onOpenStickers }: Props) {
   const earned = levels.filter((l) => done.has(l.id)).length;
+  const status = sections.map((s) => {
+    const total = levels.filter((l) => l.section === s.id).length;
+    const finished = s.levels.filter((id) => done.has(id)).length;
+    return { total, finished, complete: total > 0 && finished === total };
+  });
+  // ilk tamamlanmamış bölüm = maskotun bulunduğu "şu anki" durak
+  const currentIdx = status.findIndex((st) => !st.complete);
+
   return (
-    <div className="home">
-      <h1 className="home-title">🌈 Oyun Bahçesi 🌈</h1>
-      <p className="home-sub">Bir oyun bölümü seç!</p>
-      <button className="sticker-btn" onClick={onOpenStickers}>
+    <div className="map">
+      <div className="map-head">
+        <Mascot mood="happy" size={64} />
+        <div className="map-head-txt">
+          <h1 className="map-title">Eğlenceli Öğrenme</h1>
+          <p className="map-sub">Pofuduk'la maceraya çık!</p>
+        </div>
+      </div>
+      <button className="sticker-btn map-sticker" onClick={onOpenStickers}>
         🎁 Çıkartmalarım <span className="sticker-btn-count">{earned} / {levels.length}</span>
       </button>
-      <div className="section-grid">
-        {sections.map((s) => {
-          const total = levels.filter((l) => l.section === s.id).length;
-          const finished = s.levels.filter((id) => done.has(id)).length;
+
+      <div className="map-path">
+        {sections.map((s, i) => {
+          const st = status[i];
+          const side = i % 2 === 0 ? "left" : "right";
+          const isCurrent = i === currentIdx;
           return (
-            <button
-              key={s.id}
-              className="section-card"
-              style={{ background: s.color }}
-              onClick={() => {
-                speak(s.title);
-                onPick(s.id);
-              }}
-            >
-              <span className="section-emoji">{s.emoji}</span>
-              <span className="section-name">{s.title}</span>
-              <span className="section-progress">
-                {finished === total ? "⭐ Tamam!" : `${finished} / ${total}`}
-              </span>
-            </button>
+            <div key={s.id} className={`map-stop ${side}`}>
+              <button
+                className={`map-node ${st.complete ? "done" : ""}`}
+                style={{ background: `linear-gradient(160deg, ${s.color}, ${s.color})` }}
+                onClick={() => { speak(s.title); onPick(s.id); }}
+              >
+                <span className="map-node-emoji">{s.emoji}</span>
+                {st.complete && <span className="map-node-star">⭐</span>}
+                {isCurrent && <span className="map-node-here"><Mascot mood="idle" size={54} bob={false} /></span>}
+              </button>
+              <div className="map-stop-label">
+                <span className="map-stop-name">{s.title}</span>
+                <span className="map-stop-prog">{st.complete ? "⭐ Tamam" : `${st.finished}/${st.total}`}</span>
+              </div>
+            </div>
           );
         })}
+        <div className="map-end">🏁</div>
       </div>
     </div>
   );

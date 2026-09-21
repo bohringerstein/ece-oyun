@@ -6,6 +6,7 @@ import { Card3D } from "./Card3D";
 import { getTextTexture, getContainerTexture, getTexture, getShadowTexture } from "./textures";
 import { popSound, wrongSound } from "../audio/sfx";
 import { speakEncourage } from "../audio/speak";
+import { recordWrong } from "../data/skills";
 
 interface Props {
   board: Board;
@@ -388,6 +389,7 @@ export function GameBoard3D({ board, onWin }: Props) {
         targets.current.set(id, [token.home[0], token.home[1], 0]);
         wrongSound();
         speakEncourage();
+        recordWrong();
       }
     }
     window.addEventListener("pointermove", onMove);

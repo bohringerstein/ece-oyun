@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { isSpeechMuted, setSpeechMuted } from "../audio/speak";
+import { loadSkill } from "../data/skills";
+import type { Section } from "../data/types";
 
 interface Props {
   musicOn: boolean;
@@ -7,13 +9,23 @@ interface Props {
   onResetProgress: () => void;
   earned: number;
   total: number;
+  sections: Section[];
+}
+
+function skillLabel(section: string): { txt: string; color: string } {
+  const r = loadSkill(section);
+  if (r.attempts < 3) return { txt: "yeni", color: "#98a2b3" };
+  const rate = r.correct / r.attempts;
+  if (rate >= 0.8) return { txt: "çok iyi 💪", color: "#2f9e5e" };
+  if (rate >= 0.55) return { txt: "gelişiyor", color: "#e08a2b" };
+  return { txt: "biraz zor 🤏", color: "#d64545" };
 }
 
 // Ebeveyn Kapısı + basit ayar paneli.
 // Kapı: düğmeyi ~1.4 sn BASILI TUT (küçük çocuk açamaz; okuma gerekmez).
 // Panel (iskelet): müzik, yönerge sesi, ilerlemeyi sıfırla + ilerleme özeti.
 // (Zengin ilerleme panosu/çoklu profil sonraki fazlarda.)
-export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, total }: Props) {
+export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, total, sections }: Props) {
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
   const [hold, setHold] = useState(0); // 0..1 basılı tutma ilerlemesi
   const [speechOff, setSpeechOff] = useState(isSpeechMuted());
@@ -134,6 +146,20 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, to
                 onClick={() => { const next = !speechOff; setSpeechOff(next); setSpeechMuted(next); }}
                 role="switch" aria-checked={!speechOff}
               ><span style={knob(!speechOff)} /></span>
+            </div>
+
+            {/* Gelişim özeti (kavram kaydı) */}
+            <div style={{ textAlign: "left", margin: "10px 0", maxHeight: 200, overflowY: "auto" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#8894aa", margin: "4px 6px" }}>Gelişim</div>
+              {sections.map((s) => {
+                const l = skillLabel(s.id);
+                return (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 12px", fontSize: 15 }}>
+                    <span>{s.emoji} {s.title}</span>
+                    <span style={{ color: l.color, fontWeight: 700, fontSize: 13 }}>{l.txt}</span>
+                  </div>
+                );
+              })}
             </div>
 
             {!confirmReset ? (

@@ -36,6 +36,11 @@ h1,
 h2 {
   margin: 0;
 }
+/* Maskot (Pofuduk) hafif zıplama */
+@keyframes mascotBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6%); }
+}
 button {
   font-family: inherit;
   cursor: pointer;
@@ -132,6 +137,81 @@ button {
   overflow-y: auto;
   height: 100%;
 }
+
+/* ---------- MACERA HARİTASI ---------- */
+.map {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(14px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+}
+.map-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding-right: 64px; /* sağ üstteki sabit Müzik düğmesine yer bırak */
+}
+.map-head-txt { flex: 1; min-width: 0; }
+.map-title { font-size: 25px; font-weight: 700; color: #ff5c7a; line-height: 1.05; }
+.map-sub { font-size: 14px; font-weight: 500; color: #55627a; margin-top: 2px; }
+.map-sticker { margin: 12px auto 4px; }
+.map-path {
+  position: relative;
+  max-width: 520px;
+  margin: 6px auto 0;
+  padding: 12px 0 0;
+}
+.map-path::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px dashed rgba(120, 140, 180, 0.35);
+  z-index: 0;
+}
+.map-stop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 16px 0;
+}
+.map-stop.left { justify-content: flex-start; }
+.map-stop.right { justify-content: flex-end; flex-direction: row-reverse; }
+.map-node {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.12), 0 12px 20px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.map-node-emoji { font-size: 44px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2)); }
+.map-node.done { border-color: #ffd23f; }
+.map-node-star { position: absolute; top: -12px; right: -8px; font-size: 30px; }
+.map-node-here { position: absolute; top: -42px; left: 50%; transform: translateX(-50%); }
+.map-stop-label {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.map-stop-name { font-size: 16px; font-weight: 700; color: #3b4761; }
+.map-stop-prog { font-size: 14px; font-weight: 600; color: #f2913b; }
+.map-end { text-align: center; font-size: 40px; margin-top: 2px; position: relative; z-index: 1; }
 .home-title {
   text-align: center;
   font-size: 42px;

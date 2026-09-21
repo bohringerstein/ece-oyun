@@ -373,7 +373,11 @@ export function GameBoard3D({ board, onWin }: Props) {
             0.2;
           targets.current.set(id, [slot.pos[0], slot.pos[1], z]);
         }
-        pulse.current.set(slot.id, performance.now());
+        // pulse (büyü-küçül) sadece KÜÇÜK hedef slotlarda. Sepet/masa/bin gibi kaplarda YOK:
+        // arka kap ölçeklenip ön sabit kopyanın arkasından "çıkıyor/zıplıyor" gibi görünüyordu.
+        if (slot.style !== "basket" && slot.style !== "table" && slot.style !== "bin") {
+          pulse.current.set(slot.id, performance.now());
+        }
         popSound();
         const done = Object.keys(next).length;
         if (done >= board.win && !wonRef.current) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { isSpeechMuted, setSpeechMuted } from "../audio/speak";
 import { loadSkill } from "../data/skills";
+import { getName, setName } from "../data/profile";
 import type { Section } from "../data/types";
 
 interface Props {
@@ -29,6 +30,7 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, to
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
   const [hold, setHold] = useState(0); // 0..1 basılı tutma ilerlemesi
   const [speechOff, setSpeechOff] = useState(isSpeechMuted());
+  const [childName, setChildName] = useState(getName());
   const [confirmReset, setConfirmReset] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -134,6 +136,22 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, earned, to
           <div style={card} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ margin: "0 0 6px" }}>Ebeveyn Ayarları</h2>
             <p style={{ opacity: 0.7, margin: "0 0 16px", fontSize: 15 }}>⭐ {earned} / {total} çıkartma toplandı</p>
+
+            <div style={{ ...row, flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🧒 Çocuğun adı</span>
+              <input
+                type="text"
+                value={childName}
+                maxLength={16}
+                placeholder="Örn. Ece"
+                onChange={(e) => { setChildName(e.target.value); setName(e.target.value); }}
+                style={{
+                  padding: "12px 14px", borderRadius: 12, border: "2px solid #dbe3f0",
+                  fontSize: 17, fontWeight: 600, color: "#3b4761", outline: "none", background: "#fff",
+                }}
+              />
+              <span style={{ fontSize: 13, opacity: 0.6, fontWeight: 500 }}>Pofuduk çocuğa adıyla seslenir.</span>
+            </div>
 
             <div style={row}>
               <span>🎵 Müzik</span>

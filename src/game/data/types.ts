@@ -45,7 +45,9 @@ export type GameKind =
   | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
   | "trace" // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
   | "place" // nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle (mekansal kavramlar)
-  | "draw"; // parmakla serbest cizim/boyama (yaraticilik)
+  | "draw" // parmakla serbest cizim/boyama (yaraticilik)
+  | "story" // anlatimli resimli hikaye: sahne sahne, dokun-ilerle (dinleme/anlama, sosyal-duygusal)
+  | "breathe"; // nefes/oz-duzenleme: buyuyup kuculen daire ile sakinlesme (oz-regulasyon)
 
 // Farkli bul (spot): bir sahnedeki tek bir nesne (emoji + konum + boyut)
 export interface SpotItem {
@@ -127,6 +129,13 @@ export interface Level {
 
   // place (mekansal): nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle. rel = dogru konum.
   spatial?: { object: string; container: string; rel: "in" | "on" | "under" | "beside" };
+
+  // story (hikaye): sahneler. Her sahne: arka plan rengi, buyuk emoji(ler), anlatim metni.
+  // Cocuk "Ileri" ile ilerler; son sahnede bitince odul akisina girer. StoryGame her sahneyi seslendirir.
+  story?: { scenes: { bg: string; emoji: string; emoji2?: string; text: string }[] };
+
+  // breathe (nefes/oz-duzenleme): kac nefes dongusu. Gorsel + metin; ust uste ses YOK ([[single-voice-source]]).
+  breathe?: { cycles: number };
 
   // derinlik: ek bölümler (ilk bölüm level'in kendi alanlarıdır, bunlar sonrakiler)
   rounds?: Round[];

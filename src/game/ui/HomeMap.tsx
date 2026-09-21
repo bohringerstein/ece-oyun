@@ -8,11 +8,12 @@ interface Props {
   done: Set<string>;
   onPick: (id: string) => void;
   onOpenStickers: () => void;
+  onCustomize: () => void;
 }
 
 // MACERA HARİTASI: bölümler bir patika üzerinde zigzag duraklar; Pofuduk mevcut ilerlemede durur.
 // Tüm duraklar açık (keşif serbest); tamamlananlar yıldızlı, sıradaki durakta maskot bekler.
-export function HomeMap({ sections, levels, done, onPick, onOpenStickers }: Props) {
+export function HomeMap({ sections, levels, done, onPick, onOpenStickers, onCustomize }: Props) {
   const earned = levels.filter((l) => done.has(l.id)).length;
   const status = sections.map((s) => {
     const total = levels.filter((l) => l.section === s.id).length;
@@ -25,15 +26,22 @@ export function HomeMap({ sections, levels, done, onPick, onOpenStickers }: Prop
   return (
     <div className="map">
       <div className="map-head">
-        <Mascot mood="happy" size={64} />
+        <button className="map-head-mascot" onClick={onCustomize} aria-label="Pofuduk'u süsle">
+          <Mascot mood="happy" size={64} />
+        </button>
         <div className="map-head-txt">
           <h1 className="map-title">Eğlenceli Öğrenme</h1>
           <p className="map-sub">Pofuduk'la maceraya çık!</p>
         </div>
       </div>
-      <button className="sticker-btn map-sticker" onClick={onOpenStickers}>
-        🎁 Çıkartmalarım <span className="sticker-btn-count">{earned} / {levels.length}</span>
-      </button>
+      <div className="map-actions">
+        <button className="sticker-btn map-sticker" onClick={onOpenStickers}>
+          🎁 Çıkartmalarım <span className="sticker-btn-count">{earned} / {levels.length}</span>
+        </button>
+        <button className="sticker-btn map-customize" onClick={onCustomize}>
+          ✨ Pofuduk'u Süsle
+        </button>
+      </div>
 
       <div className="map-path">
         {sections.map((s, i) => {

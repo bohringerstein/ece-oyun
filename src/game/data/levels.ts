@@ -701,6 +701,15 @@ export const LEVELS: Level[] = [
     instr: "Üstteki sıraya bak. Aynı sırayla alta sürükle.",
     order: [e("🛏️"), e("🪥"), e("👕"), e("🥣")],
   },
+  {
+    id: "nefes-al",
+    section: "yasam",
+    title: "Pofuduk'la Nefes Al",
+    kind: "breathe",
+    icon: "🌬️",
+    instr: "Pofuduk'la birlikte nefes alalım. Daire büyürken burnundan nefes al, küçülürken ağzından yavaşça ver.",
+    breathe: { cycles: 4 },
+  },
 
   // ---------------- YAPBOZ ----------------
   jigsawLevel(3, 0),
@@ -761,6 +770,59 @@ export const LEVELS: Level[] = [
     icon: "🎨",
     instr: "Parmağınla dilediğini çiz! Bitince Bitti düğmesine dokun.",
   },
+
+  // ---------------- HİKÂYELER (dinleme-anlama + sosyal-duygusal) ----------------
+  {
+    id: "hikaye-paylas",
+    section: "hikaye",
+    title: "Pofuduk Paylaşıyor",
+    kind: "story",
+    icon: "🍎",
+    instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#d7f0d0", emoji: "🐤", text: "Pofuduk parkta oynuyordu. Hava çok güzeldi!" },
+        { bg: "#fdeecf", emoji: "🐤", emoji2: "🍎", text: "Pofuduk'un kırmızı, kocaman bir elması vardı." },
+        { bg: "#ffe0e6", emoji: "🐰", emoji2: "🐤", text: "Arkadaşı Tavşan geldi. Tavşan'ın karnı çok açtı." },
+        { bg: "#e6e0ff", emoji: "🐤", emoji2: "🍎", text: "Pofuduk elmasını ikiye böldü ve Tavşan'la paylaştı." },
+        { bg: "#d7f0d0", emoji: "🐰", emoji2: "🥰", text: "İkisi birlikte yediler. Paylaşmak çok mutlu ediyor!" },
+      ],
+    },
+  },
+  {
+    id: "hikaye-uyku",
+    section: "hikaye",
+    title: "Pofuduk Uyku Vakti",
+    kind: "story",
+    icon: "🌙",
+    instr: "Pofuduk'un uyku vaktini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#dfe7ff", emoji: "🌙", emoji2: "⭐", text: "Akşam oldu. Gökyüzünde ay ve yıldızlar çıktı." },
+        { bg: "#e6faff", emoji: "🐤", emoji2: "🪥", text: "Pofuduk dişlerini güzelce fırçaladı." },
+        { bg: "#fff2d6", emoji: "🐤", emoji2: "📖", text: "Annesi ona uyumadan önce bir masal okudu." },
+        { bg: "#e9e2ff", emoji: "🐤", emoji2: "🛏️", text: "Pofuduk yatağına uzandı ve gözlerini kapattı." },
+        { bg: "#cdd6f5", emoji: "😴", emoji2: "💤", text: "İyi geceler Pofuduk! Mışıl mışıl uyudu." },
+      ],
+    },
+  },
+  {
+    id: "hikaye-dene",
+    section: "hikaye",
+    title: "Pofuduk Pes Etmiyor",
+    kind: "story",
+    icon: "🧩",
+    instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
+    story: {
+      scenes: [
+        { bg: "#fff2d6", emoji: "🐤", emoji2: "🧩", text: "Pofuduk bir yapboz yapıyordu." },
+        { bg: "#ffe0e6", emoji: "😟", emoji2: "🧩", text: "Bir parça bir türlü yerine oturmadı. Pofuduk üzüldü." },
+        { bg: "#e6faff", emoji: "🐤", emoji2: "💪", text: "Ama pes etmedi. 'Bir daha deneyeceğim!' dedi." },
+        { bg: "#e6e0ff", emoji: "🧩", emoji2: "✨", text: "Yavaşça tekrar denedi ve parça tam yerine oturdu!" },
+        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🎉", text: "Denemeye devam edince başardı. Aferin Pofuduk!" },
+      ],
+    },
+  },
 ];
 
 export const SECTIONS: Section[] = [
@@ -776,6 +838,7 @@ export const SECTIONS: Section[] = [
   { id: "labirent", title: "Yol Bul", emoji: "🐾", color: "#f4845f", levels: [] },
   { id: "sesler", title: "Sesler ve Kelimeler", emoji: "🔤", color: "#00b8a9", levels: [] },
   { id: "cizim", title: "Çizim", emoji: "🎨", color: "#ff8fab", levels: [] },
+  { id: "hikaye", title: "Hikâyeler", emoji: "📖", color: "#b892ff", levels: [] },
 ];
 
 // derinlik: her uygun oyuna 10 rastgele bölüm (rakam bulma ve görsel-fark oyunu hariç).

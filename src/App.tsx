@@ -10,13 +10,16 @@ import { SectionScreen } from "./game/ui/SectionScreen";
 import { LevelShell } from "./game/ui/LevelShell";
 import { StickerBook } from "./game/ui/StickerBook";
 import { ParentArea } from "./game/ui/ParentArea";
+import { CustomizeScreen } from "./game/ui/CustomizeScreen";
 import { Mascot } from "./game/ui/Mascot";
+import { getName, resetProfile } from "./game/data/profile";
 
 type View =
   | { name: "start" }
   | { name: "home" }
   | { name: "section"; sectionId: string }
   | { name: "stickers" }
+  | { name: "customize" }
   | { name: "play"; levelId: string };
 
 const PROGRESS_KEY = "ece-oyun-progress";
@@ -57,6 +60,7 @@ export function App() {
     } catch {
       // yoksay
     }
+    resetProfile(); // kişiselleştirmeyi (ad + Pofuduk görünümü) de sıfırla
     setDone(new Set());
   }
 
@@ -64,8 +68,9 @@ export function App() {
     unlockAudio();
     initSpeech();
     startMusic(); // arka plan muzigi (kullanici dokunusuyla baslar)
-    // ilk konusma kullanici etkilesimi ile tetiklenir
-    speak(GREETING);
+    // ilk konusma kullanici etkilesimi ile tetiklenir. Ad varsa kisisel selamla (dinamik -> Tolga).
+    const nm = getName();
+    speak(nm ? `Merhaba ${nm}! Hadi birlikte oynayalım.` : GREETING);
     setView({ name: "home" });
   }
 
@@ -139,6 +144,10 @@ export function App() {
             stopSpeak();
             setView({ name: "stickers" });
           }}
+          onCustomize={() => {
+            stopSpeak();
+            setView({ name: "customize" });
+          }}
         />
         {audioCluster}
         <ParentArea
@@ -160,6 +169,10 @@ export function App() {
         {audioCluster}
       </>
     );
+  }
+
+  if (view.name === "customize") {
+    return <CustomizeScreen onBack={() => setView({ name: "home" })} />;
   }
 
   if (view.name === "section") {

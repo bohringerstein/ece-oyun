@@ -11,6 +11,8 @@ import { SeriateGame } from "../types/SeriateGame";
 import { WeightGame } from "../types/WeightGame";
 import { TraceGame } from "../types/TraceGame";
 import { DrawGame } from "../types/DrawGame";
+import { StoryGame } from "../types/StoryGame";
+import { BreatheGame } from "../types/BreatheGame";
 import { StickerReward } from "./StickerReward";
 import { Mascot } from "./Mascot";
 import { setActiveSection, recordCorrect } from "../data/skills";
@@ -107,10 +109,14 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     // kelebek/balık/yıldız...). Varsa her turda onu seslendir ki çocuk ne arayacağını
     // bilsin; yoksa (görev her tur aynı) kısa bir devam ipucu (CUE) çal.
     const roundHasOwnInstr = !!(sessionRounds && sessionRounds[round] && "instr" in sessionRounds[round]);
-    const t = setTimeout(
-      () => speakInstruction(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
-      550
-    );
+    // Hikâye kendi sahnelerini seslendirir -> otomatik yönerge okuma ([[single-voice-source]])
+    const t =
+      data.kind === "story"
+        ? undefined
+        : setTimeout(
+            () => speakInstruction(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
+            550
+          );
     return () => {
       alive = false;
       clearTimeout(t);
@@ -184,7 +190,9 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
         {ready && data.kind === "weight" && <WeightGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "trace" && <TraceGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "draw" && <DrawGame key={round} onWin={handleWin} />}
-        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && data.kind !== "draw" && board && (
+        {ready && data.kind === "story" && <StoryGame key={round} level={data} onWin={handleWin} />}
+        {ready && data.kind === "breathe" && <BreatheGame key={round} level={data} onWin={handleWin} />}
+        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && data.kind !== "draw" && data.kind !== "story" && data.kind !== "breathe" && board && (
           <Scene3D>
             <GameBoard3D
               board={board}

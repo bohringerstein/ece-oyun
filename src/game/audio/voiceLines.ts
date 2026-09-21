@@ -62,5 +62,7 @@ export function allVoiceLines(): string[] {
   set.add(DUYGU_YARDIM_INSTR); // Empati
   for (const s of ILKSES_INSTRS) set.add(s); // İlk ses avı (fonolojik)
   for (const s of KELIME_INSTRS) set.add(s); // Kelime avı (sözcük dağarcığı)
+  for (const l of LEVELS) l.story?.scenes.forEach((sc) => set.add(sc.text)); // Hikâye sahne anlatımları
+  set.add("Çok yakıştı!"); // Pofuduk'u süsle onayı
   return [...set];
 }

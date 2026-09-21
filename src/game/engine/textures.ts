@@ -81,6 +81,82 @@ function drawNumber(ctx: CanvasRenderingContext2D, value: number, color: string)
   ctx.fillText(String(value), SIZE / 2, SIZE / 2 + 18);
 }
 
+// Uzerinde rakam yazan kirmizi elma (sayilar: elma agaci oyunu)
+function drawApple(ctx: CanvasRenderingContext2D, value: number) {
+  const c = SIZE / 2;
+  const R = SIZE * 0.32;
+  // KOYU KIRMIZI KONTUR (yesil agac uzerinde elma one ciksin)
+  ctx.fillStyle = "#9e222a";
+  ctx.beginPath();
+  ctx.arc(c - R * 0.48, c - R * 0.22, R * 0.92, 0, Math.PI * 2);
+  ctx.arc(c + R * 0.48, c - R * 0.22, R * 0.92, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(c, c + R * 0.18, R * 1.12, R * 1.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // govde: iki ust lob + govde elipsi -> klasik elma silueti
+  ctx.fillStyle = "#e23b44";
+  ctx.beginPath();
+  ctx.arc(c - R * 0.48, c - R * 0.22, R * 0.82, 0, Math.PI * 2);
+  ctx.arc(c + R * 0.48, c - R * 0.22, R * 0.82, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(c, c + R * 0.18, R * 1.02, R * 1.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // parlaklik
+  ctx.fillStyle = "rgba(255,255,255,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(c - R * 0.42, c - R * 0.35, R * 0.26, R * 0.16, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  // sap
+  ctx.strokeStyle = "#7b4a2a";
+  ctx.lineWidth = 22;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(c, c - R * 0.95);
+  ctx.lineTo(c + 12, c - R * 1.35);
+  ctx.stroke();
+  // yaprak
+  ctx.fillStyle = "#4aa85c";
+  ctx.beginPath();
+  ctx.ellipse(c + R * 0.5, c - R * 1.2, R * 0.36, R * 0.18, -0.7, 0, Math.PI * 2);
+  ctx.fill();
+  // rakam (beyaz + koyu kontur -> her zemin uzerinde okunur)
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `bold ${Math.round(SIZE * 0.4)}px "Comic Sans MS", "Segoe UI", sans-serif`;
+  ctx.lineWidth = 12;
+  ctx.strokeStyle = "rgba(110,10,15,0.65)";
+  ctx.strokeText(String(value), c, c + R * 0.15);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(String(value), c, c + R * 0.15);
+}
+
+// Elma agaci arka plani: govde + bol yaprakli tepe (elmalar tepenin uzerine saclir)
+function drawTree(ctx: CanvasRenderingContext2D) {
+  // govde
+  ctx.fillStyle = "#a5713f";
+  roundRect(ctx, SIZE * 0.44, SIZE * 0.54, SIZE * 0.12, SIZE * 0.42, 24);
+  ctx.fill();
+  ctx.strokeStyle = "#8a5c30";
+  ctx.lineWidth = 8;
+  roundRect(ctx, SIZE * 0.44, SIZE * 0.54, SIZE * 0.12, SIZE * 0.42, 24);
+  ctx.stroke();
+  // tepe: ust uste yesil daireler
+  const greens = ["#5cb85c", "#4aa050", "#6cc46f", "#43974a"];
+  const blobs: [number, number, number][] = [
+    [0.5, 0.3, 0.3], [0.31, 0.4, 0.24], [0.69, 0.4, 0.24],
+    [0.4, 0.22, 0.19], [0.6, 0.22, 0.19], [0.5, 0.47, 0.26],
+    [0.24, 0.52, 0.15], [0.76, 0.52, 0.15],
+  ];
+  blobs.forEach(([x, y, r], i) => {
+    ctx.fillStyle = greens[i % greens.length];
+    ctx.beginPath();
+    ctx.arc(x * SIZE, y * SIZE, r * SIZE, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
 function drawJar(ctx: CanvasRenderingContext2D) {
   // basit kavanoz: cam govde + kapak
   const x0 = SIZE * 0.2,
@@ -509,6 +585,8 @@ export function getTexture(c: Content): THREE.Texture {
   } else if (c.kind === "emoji") drawEmoji(ctx, c.char);
   else if (c.kind === "shape") drawShape(ctx, c.shape, c.color);
   else if (c.kind === "number") drawNumber(ctx, c.value, c.color || "#ff7a00");
+  else if (c.kind === "numapple") drawApple(ctx, c.value);
+  else if (c.kind === "tree") drawTree(ctx);
   else if (c.kind === "group") drawGroup(ctx, c.char, c.n, c.jar);
   else if (c.kind === "dots") drawDots(ctx, c.n, c.color);
   else if (c.kind === "puzzle") drawPuzzle(ctx, c.shape, c.color, c.missing, c.piece);

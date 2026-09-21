@@ -58,7 +58,8 @@ const TONES: Record<Tone, { rate: number; pitch: number }> = {
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
 // =============== Oynatma ===============
-let lastText = "";
+let lastText = ""; // en son SESLENDIRILEN metin (ovgu dahil her sey)
+let lastInstruction = ""; // en son YONERGE (Tekrar Dinle bunu calar, ovguyu degil)
 let curAudio: HTMLAudioElement | null = null;
 
 function stopAudio() {
@@ -135,8 +136,16 @@ export function speak(
   window.speechSynthesis.speak(u);
 }
 
+// Yonerge seslendir + "Tekrar Dinle" icin hatirla. LevelShell her turun basinda bunu cagirir.
+export function speakInstruction(text: string, opts?: { rate?: number; pitch?: number; tone?: Tone; onEnd?: () => void }) {
+  lastInstruction = text;
+  speak(text, opts);
+}
+
+// "Tekrar Dinle": son OVGUYU degil, o turun YONERGESINI tekrar calar.
 export function repeatLast() {
-  if (lastText) speak(lastText);
+  if (lastInstruction) speak(lastInstruction);
+  else if (lastText) speak(lastText);
 }
 
 export function stopSpeak() {

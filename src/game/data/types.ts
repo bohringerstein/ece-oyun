@@ -6,6 +6,8 @@ export type Content =
   | { kind: "emoji"; char: string }
   | { kind: "shape"; shape: "circle" | "square" | "triangle" | "star" | "rectangle"; color: string }
   | { kind: "number"; value: number; color?: string }
+  | { kind: "numapple"; value: number } // uzerinde rakam yazan elma (sayilar: elma agaci oyunu)
+  | { kind: "tree" } // elma agaci arka plan gorseli
   | { kind: "group"; char: string; n: number; jar?: boolean } // n adet emoji; jar=kavanoz icinde
   | { kind: "dots"; n: number; color?: string } // zar benzeri nokta deseni (subitizing / nokta say)
   | {
@@ -67,6 +69,8 @@ export interface Level {
   items?: { content: Content; correct: boolean }[];
   // sekiller: turun ustunde gosterilecek SAF sekil referansi (cihaz bagimsiz, canvas cizim)
   refShape?: { shape: "circle" | "square" | "triangle" | "star" | "rectangle"; color: string };
+  // sayilar: select ogelerini bir ELMA AGACI uzerinde rakamli elmalar olarak goster
+  appleTree?: boolean;
 
   // compare (her satirda bir dogru)
   compareRows?: { items: Content[]; correctIndex: number; itemScales?: number[] }[];

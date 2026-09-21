@@ -12,7 +12,7 @@ import { WeightGame } from "../types/WeightGame";
 import { TraceGame } from "../types/TraceGame";
 import { StickerReward } from "./StickerReward";
 import { preloadImageAspect, clearTextureCache } from "../engine/textures";
-import { speak, stopSpeak, randomPraise } from "../audio/speak";
+import { speak, speakInstruction, stopSpeak, randomPraise } from "../audio/speak";
 import { CUES, STICKER_WIN } from "../audio/voiceLines";
 import { bigCelebration, celebrateSound, fireConfetti } from "../audio/sfx";
 
@@ -47,7 +47,17 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
   // rastgele bölümler: her level acilisinda (LevelShell key=level.id ile remount) taze uret
   const sessionRounds = useMemo(() => (level.makeRounds ? level.makeRounds() : null), [level.id]);
   const total = sessionRounds ? sessionRounds.length : (level.rounds?.length ?? 0) + 1;
-  const [round, setRound] = useState(0);
+  // KALDIGI BÖLÜMDEN DEVAM: cocuk cikip tekrar girince ayni turdan baslasin (hep 1/10 degil).
+  // Level tamamen bitince kayit temizlenir (asagida), boylece bir dahaki sefere bastan baslar.
+  const roundKey = `ece-round-${level.id}`;
+  const [round, setRound] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(roundKey));
+      return Number.isFinite(saved) && saved > 0 && saved < total ? saved : 0;
+    } catch {
+      return 0;
+    }
+  });
   const [ready, setReady] = useState(false);
   const [won, setWon] = useState(false);
   const [winPhase, setWinPhase] = useState<"announce" | "reward" | "card">("announce");
@@ -60,14 +70,22 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     return { ...level, ...level.rounds[round - 1] };
   }, [level, round, sessionRounds]);
 
-  // level degisince sifirla + onceki level'in GPU dokularini serbest birak
-  // (iOS bellek hijyeni; yeni level dokularini talep uzerine yeniden uretir)
+  // level degisince onceki level'in GPU dokularini serbest birak (iOS bellek hijyeni).
+  // NOT: round'u SIFIRLAMIYORUZ - lazy init (yukarida) kaldigi turdan basliyor.
   useEffect(() => {
-    setRound(0);
     setWon(false);
     setWinPhase("announce");
     return () => clearTextureCache();
   }, [level.id]);
+
+  // kaldigi turu kaydet (cikip tekrar girince devam etsin)
+  useEffect(() => {
+    try {
+      localStorage.setItem(roundKey, String(round));
+    } catch {
+      // yoksay
+    }
+  }, [roundKey, round]);
 
   // her bölümde: görselleri + FONTLARI yükle, sonra yönergeyi söyle.
   // document.fonts.ready: iOS'ta emoji/yazi glyph'leri canvas'a cizilmeden once
@@ -85,7 +103,7 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     // bilsin; yoksa (görev her tur aynı) kısa bir devam ipucu (CUE) çal.
     const roundHasOwnInstr = !!(sessionRounds && sessionRounds[round] && "instr" in sessionRounds[round]);
     const t = setTimeout(
-      () => speak(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
+      () => speakInstruction(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
       550
     );
     return () => {
@@ -120,6 +138,12 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
       // son bölüm: büyük kutlama + sesli anons. YAPISTIRMA animasyonu ANONS BITINCE baslar.
       setWon(true);
       setWinPhase("announce");
+      // level tamamlandi: devam kaydini temizle -> bir dahaki acilista bastan baslasin
+      try {
+        localStorage.removeItem(roundKey);
+      } catch {
+        // yoksay
+      }
       onWin();
       bigCelebration();
       const startReward = () => setWinPhase((p) => (p === "announce" ? "reward" : p));

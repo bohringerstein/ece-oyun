@@ -385,6 +385,20 @@ export function GameBoard3D({ board, onWin }: Props) {
 
       {board.pointer && <PointerHand key={boardStamp} pos={board.pointer} />}
 
+      {/* karsilastirma gruplarini cevreleyen esit kutular (tokenlarin arkasinda) */}
+      {board.frames?.map((f, i) => (
+        <group key={`fr${i}`} position={[f.pos[0], f.pos[1], -0.25]}>
+          <mesh>
+            <planeGeometry args={[f.w, f.h]} />
+            <meshBasicMaterial color="#ffb84d" transparent opacity={0.9} />
+          </mesh>
+          <mesh position={[0, 0, 0.01]}>
+            <planeGeometry args={[f.w - 0.16, f.h - 0.16]} />
+            <meshBasicMaterial color="#fffdf7" transparent opacity={0.92} />
+          </mesh>
+        </group>
+      ))}
+
       {board.slots.map((s) => (
         <group
           key={s.id}

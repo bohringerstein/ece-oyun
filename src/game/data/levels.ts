@@ -32,6 +32,7 @@ function rakamBul(id: string, target: number, distractor: number): Level {
     kind: "select",
     icon: KEYCAPS[target] ?? "🔢",
     instr: `${target} rakamlarını bul ve sepete sürükle.`,
+    appleTree: true, // rakamlar agactaki elmalarin uzerinde; cocuk dogru elmalari sepete surukler
     items: pattern.map((v, i) => ({ content: num(v, colors[i % colors.length]), correct: v === target })),
   };
 }

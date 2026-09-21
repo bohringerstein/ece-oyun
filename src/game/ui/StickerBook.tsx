@@ -126,7 +126,8 @@ export function StickerBook({ sections, levels, done, onBack }: Props) {
           ⬅
         </button>
         <h2>🎁 Çıkartma Kitabım</h2>
-        <span className="sticker-count-badge">{earned} / {total}</span>
+        {/* sayac rozeti kaldirildi: sag ustteki sabit muzik ikonuyla cakisiyordu.
+            Toplam sayi zaten kapak sayfasinda ve her bolum altinda gosteriliyor. */}
       </div>
 
       <div className="book-stage">

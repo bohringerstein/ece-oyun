@@ -151,21 +151,24 @@ function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?
 // (fis, dosya dolabi, kredi karti, bilgisayar gibi soyut/ofis nesneleri ayiklandi)
 export const kareRounds = () =>
   selectRounds(
-    // 🧱🍫📺 cikarildi: bunlar DIKDORTGEN (dik/uzun) ve dikdortgen havuzunda da vardi -> celiski
-    ["🎁","🪟","🧇","📦","🖼️","🧊","📚","🧀"],
+    // Sadece NET kare/kup nesneler. Cikarilanlar: 🧇 (yuvarlak waffle), 🧀 (ucgen dilim),
+    // 📚 (egik yigin), 🖼️ (yatay dikdortgen). 🟦🟩 saf kareler -> sekil rengi degil, BICIMI ogretir.
+    ["🎁","🪟","📦","🧊","🟦","🟩"],
     ["🏀","⚽","🍦","🍩","🌙","🍊","🎈","🕐","🍉","🥎","🌕","🍪","🎾","🪀"],
     3, 3
   );
 export const ucgenRounds = () =>
   selectRounds(
-    ["🍕","🍉","⛺","🏔️","🎄","🍦","⛰️","🚩","🗻","🎪","🏕️"],
+    // 🍦 cikarildi: ustu yuvarlak dondurma topu -> ucgen algisini bozuyor. 🔺 saf ucgen eklendi.
+    ["🍕","🍉","⛺","🏔️","🎄","⛰️","🚩","🗻","🎪","🏕️","🔺"],
     ["🏀","🍎","📦","⚽","🕐","🍩","🎁","🪟","📺","🍊","🎈","🍪"],
     3, 3
   );
 export const daireRounds = () =>
   selectRounds(
     ["⚽","🏀","🍊","🕐","🌕","🍩","🎯","🥎","🪙","🍪","🎡","⏰","🍅","🥯"],
-    ["📕","🍕","🪟","📦","🎁","🧇","📺","🚪","🧱","🎄"],
+    // 🧇 cikarildi: yuvarlakms gorunuyor -> daire icin kotu celdirici
+    ["📕","🍕","🪟","📦","🎁","📺","🚪","🧱","🎄"],
     3, 3
   );
 export const yildizRounds = () =>

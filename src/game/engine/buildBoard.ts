@@ -40,6 +40,8 @@ export interface Board {
   win: number;
   // opsiyonel: bir noktayi gosteren animasyonlu parmak (sekiller: ust referansi isaret eder)
   pointer?: [number, number];
+  // opsiyonel: karsilastirilan gruplari cevreleyen esit kutular (compare oyunlari)
+  frames?: { pos: [number, number]; w: number; h: number }[];
 }
 
 const key = (c: Content) => JSON.stringify(c);
@@ -64,6 +66,7 @@ export function buildBoard(level: Level): Board {
   const statics: StaticCard[] = [];
   let win = 0;
   let pointer: [number, number] | undefined;
+  const frames: { pos: [number, number]; w: number; h: number }[] = [];
 
   const noShuffle =
     typeof window !== "undefined" && new URLSearchParams(window.location.search).has("noshuffle");
@@ -184,6 +187,30 @@ export function buildBoard(level: Level): Board {
     win = pieces.length;
   } else if (level.kind === "select" && level.items) {
     const its = shuffle(level.items.map((it, i) => ({ it, i })));
+    if (level.appleTree) {
+      // ELMA AGACI (sayilar): agac arka plani + tepede RAKAMLI ELMALAR + altta sepet.
+      // Cocuk dogru rakamli elmalari agactan koparip sepete surukler.
+      statics.push({ content: { kind: "tree" }, pos: [0, 1.3], w: 8.8, h: 8.8 });
+      const APPLE_POS: [number, number][] = [
+        [-2.3, 3.7], [0.1, 4.2], [2.4, 3.6],
+        [-3.1, 2.0], [-0.9, 2.7], [1.2, 2.6], [3.1, 1.9],
+        [0.0, 1.25],
+      ];
+      its.forEach(({ it, i }, k) => {
+        const [ax, ay] = APPLE_POS[k % APPLE_POS.length];
+        const value = it.content.kind === "number" ? it.content.value : 0;
+        tokens.push({
+          id: `i${i}`,
+          content: { kind: "numapple", value },
+          home: [ax, ay],
+          tag: `i${i}`,
+          correct: it.correct,
+          scale: 0.92,
+        });
+      });
+      slots.push({ id: "basket", pos: [0, -4.9], expects: "", basket: true, style: "basket", w: 8.6, h: 2.5 });
+      win = level.items.filter((it) => it.correct).length;
+    } else {
     const n = its.length;
     const cols = n <= 4 ? 2 : n <= 6 ? 3 : 4; // az/geniş öğelerde üst üste binmesin
     const rows = Math.ceil(n / cols);
@@ -226,6 +253,7 @@ export function buildBoard(level: Level): Board {
       h: 2.5,
     });
     win = level.items.filter((it) => it.correct).length;
+    }
   } else if (level.kind === "compare" && level.compareRows) {
     const rows = level.compareRows;
     let maxH = 1;
@@ -242,16 +270,21 @@ export function buildBoard(level: Level): Board {
       const shuffled = shuffle(
         row.items.map((c, i) => ({ c, correct: i === row.correctIndex, sc: row.itemScales?.[i] }))
       );
+      // karsilastirilan her grup ESIT boyutlu bir kutuyla cevrilir -> cocuk gruplari
+      // (ve hangisinin daha cok/buyuk oldugunu) net gorur.
+      const fw = Math.min(2.3, (7.2 / shuffled.length) * 0.9);
       shuffled.forEach(({ c, correct, sc }, i) => {
         let scale: number | undefined;
         if (level.compareBySize) {
           if (sc !== undefined) scale = sc;
           else if (c.kind === "image") scale = Math.max(0.45, imageNaturalHeight(c.src) / maxH);
         }
+        const x = cellX(shuffled.length, i, 7.2);
+        frames.push({ pos: [x, y], w: fw, h: fw });
         tokens.push({
           id: `r${r}i${i}`,
           content: c,
-          home: [cellX(shuffled.length, i, 7.2), y],
+          home: [x, y],
           tag: `r${r}i${i}`,
           correct,
           scale,
@@ -397,5 +430,5 @@ export function buildBoard(level: Level): Board {
     win = groups.length;
   }
 
-  return { tokens, slots, statics, win, pointer };
+  return { tokens, slots, statics, win, pointer, frames };
 }

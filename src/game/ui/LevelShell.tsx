@@ -226,17 +226,30 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
         {ready && data.kind === "story" && <StoryGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "breathe" && <BreatheGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "depth" && <DepthGame key={round} level={data} onWin={handleWin} />}
+        {/* 3D SÜRÜKLE/SEÇ oyunları: AKIŞ-TABANLI kolon -> görünür yönerge kendi yerini ayırır (tahtayı/başlığı
+            kesmez), altında canvas kalan alana OTURUR ve içerik yeniden kadrajlanır. Yönerge ortalı; ses kapalı/
+            işitme engelli çocuk + eşlik eden ebeveyn görevi okuyabilir (DOM oyunlarının kendi ipuçları var). */}
         {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && data.kind !== "draw" && data.kind !== "story" && data.kind !== "breathe" && data.kind !== "depth" && board && (
-          <Scene3D>
-            <GameBoard3D
-              board={board}
-              onWin={handleWin}
-              onHint={() => {
-                setHintMascot(true);
-                setTimeout(() => setHintMascot(false), 2600);
-              }}
-            />
-          </Scene3D>
+          <div className="board-3d">
+            {data.instr && (
+              <div className="instr-line" aria-live="polite">
+                <span className="instr-line-ic" aria-hidden="true">{data.icon}</span>
+                <span>{data.instr}</span>
+              </div>
+            )}
+            <div className="board-3d-canvas">
+              <Scene3D>
+                <GameBoard3D
+                  board={board}
+                  onWin={handleWin}
+                  onHint={() => {
+                    setHintMascot(true);
+                    setTimeout(() => setHintMascot(false), 2600);
+                  }}
+                />
+              </Scene3D>
+            </div>
+          </div>
         )}
         {hintMascot && (
           <div className="hint-mascot">
@@ -244,18 +257,6 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
             <span className="hint-bubble">Şuna bak! 👀</span>
           </div>
         )}
-
-        {/* GÖRÜNÜR YÖNERGE: ses kapalı/işitme engelli çocuk + eşlik eden ebeveyn için görevi ekranda göster.
-            Sesle özdeş metin; ikon-öncelikli. Yalnız kendi ekran-içi ipucu OLMAYAN 3D sürükle/seç oyunlarında
-            (DOM oyunlarının zaten kendi başlık/ipuçları var). pointer-events yok -> tahtayı engellemez. */}
-        {ready &&
-          !["spot", "memory", "maze", "seriate", "weight", "trace", "draw", "story", "breathe", "depth"].includes(data.kind) &&
-          data.instr && (
-            <div className="instr-line" aria-live="polite">
-              <span className="instr-line-ic" aria-hidden="true">{data.icon}</span>
-              <span>{data.instr}</span>
-            </div>
-          )}
 
         {showOnboard && (
           <div

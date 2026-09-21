@@ -44,7 +44,8 @@ export type GameKind =
   | "seriate" // nesneleri kucukten buyuge sirala (boyut seriation)
   | "weight" // terazide agir/hafif olani sec, kefe iner (agirlik kavrami)
   | "trace" // parmakla rakamin uzerinden gecerek yaz (rakam izleme)
-  | "place"; // nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle (mekansal kavramlar)
+  | "place" // nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle (mekansal kavramlar)
+  | "draw"; // parmakla serbest cizim/boyama (yaraticilik)
 
 // Farkli bul (spot): bir sahnedeki tek bir nesne (emoji + konum + boyut)
 export interface SpotItem {

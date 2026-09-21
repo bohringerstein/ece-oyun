@@ -10,6 +10,7 @@ import { MazeGame } from "../types/MazeGame";
 import { SeriateGame } from "../types/SeriateGame";
 import { WeightGame } from "../types/WeightGame";
 import { TraceGame } from "../types/TraceGame";
+import { DrawGame } from "../types/DrawGame";
 import { StickerReward } from "./StickerReward";
 import { Mascot } from "./Mascot";
 import { setActiveSection, recordCorrect } from "../data/skills";
@@ -182,7 +183,8 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
         {ready && data.kind === "seriate" && <SeriateGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "weight" && <WeightGame key={round} level={data} onWin={handleWin} />}
         {ready && data.kind === "trace" && <TraceGame key={round} level={data} onWin={handleWin} />}
-        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && board && (
+        {ready && data.kind === "draw" && <DrawGame key={round} onWin={handleWin} />}
+        {ready && data.kind !== "spot" && data.kind !== "memory" && data.kind !== "maze" && data.kind !== "seriate" && data.kind !== "weight" && data.kind !== "trace" && data.kind !== "draw" && board && (
           <Scene3D>
             <GameBoard3D
               board={board}

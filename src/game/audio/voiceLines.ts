@@ -2,7 +2,7 @@
 // Bu metinler icin dogal nöral ses dosyalari 'npm run voice' (tools/gen_voice.mjs)
 // ile ElevenLabs'tan uretilir; public/voice/<id>.mp3 olarak oyuna gomulur.
 import { LEVELS, SECTIONS } from "../data/levels";
-import { FINDALL_INSTRS, SPATIAL_INSTRS, DUYGU_NEDEN_INSTRS, DUYGU_YARDIM_INSTR } from "../data/rounds";
+import { FINDALL_INSTRS, SPATIAL_INSTRS, DUYGU_NEDEN_INSTRS, DUYGU_YARDIM_INSTR, ILKSES_INSTRS, KELIME_INSTRS } from "../data/rounds";
 
 export const GREETING = "Merhaba! Hadi birlikte oynayalım.";
 
@@ -60,5 +60,7 @@ export function allVoiceLines(): string[] {
   for (const s of SPATIAL_INSTRS) set.add(s); // Nerede?: içine/üstüne/altına/yanına
   for (const s of DUYGU_NEDEN_INSTRS) set.add(s); // Duygu nedenselliği
   set.add(DUYGU_YARDIM_INSTR); // Empati
+  for (const s of ILKSES_INSTRS) set.add(s); // İlk ses avı (fonolojik)
+  for (const s of KELIME_INSTRS) set.add(s); // Kelime avı (sözcük dağarcığı)
   return [...set];
 }

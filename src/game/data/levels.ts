@@ -7,7 +7,7 @@ import {
   meyveSiraRounds, siraSayRounds, oruntuRounds, oruntuRenkRounds,
   copleriAyirRounds, meyveSebzeRounds, uzgunRounds, kizginRounds, routineRounds,
   duyguNedenRounds, duyguYardimRounds,
-  farkliRounds, ayniRounds, spotRounds, findAllRounds, spatialRounds,
+  farkliRounds, ayniRounds, spotRounds, findAllRounds, spatialRounds, ilkSesRounds, kelimeAviRounds,
   jigsawRounds, PICTURES, memoryRounds, mazeRounds,
 } from "./rounds";
 
@@ -720,6 +720,47 @@ export const LEVELS: Level[] = [
   mazeLevel("yol-1", "Kolay Yol", "🐰", "easy"),
   mazeLevel("yol-2", "Orta Yol", "🐢", "med"),
   mazeLevel("yol-3", "Zor Yol", "🐌", "hard"),
+
+  // ---------------- SESLER VE KELİMELER (dil / erken okuryazarlık) ----------------
+  {
+    id: "ilk-ses",
+    section: "sesler",
+    title: "İlk Ses Avı",
+    kind: "select",
+    icon: "🔤",
+    instr: '"a" sesiyle başlayanları bul ve sepete sürükle.',
+    items: [
+      { content: e("🦁"), correct: true },
+      { content: e("🚗"), correct: true },
+      { content: e("🐱"), correct: false },
+      { content: e("🍌"), correct: false },
+      { content: e("⚽"), correct: false },
+    ],
+  },
+  {
+    id: "kelime-avi",
+    section: "sesler",
+    title: "Kelime Avı",
+    kind: "select",
+    icon: "💬",
+    instr: "Elma hangisi? Ona dokun ve sepete koy.",
+    items: [
+      { content: e("🍎"), correct: true },
+      { content: e("🚗"), correct: false },
+      { content: e("🐱"), correct: false },
+      { content: e("🐟"), correct: false },
+    ],
+  },
+
+  // ---------------- ÇİZİM (yaratıcılık) ----------------
+  {
+    id: "serbest-cizim",
+    section: "cizim",
+    title: "Serbest Çizim",
+    kind: "draw",
+    icon: "🎨",
+    instr: "Parmağınla dilediğini çiz! Bitince Bitti düğmesine dokun.",
+  },
 ];
 
 export const SECTIONS: Section[] = [
@@ -733,6 +774,8 @@ export const SECTIONS: Section[] = [
   { id: "yapboz", title: "Yapboz", emoji: "🖼️", color: "#ef6f6c", levels: [] },
   { id: "hafiza", title: "Hafıza", emoji: "🧠", color: "#00c2a8", levels: [] },
   { id: "labirent", title: "Yol Bul", emoji: "🐾", color: "#f4845f", levels: [] },
+  { id: "sesler", title: "Sesler ve Kelimeler", emoji: "🔤", color: "#00b8a9", levels: [] },
+  { id: "cizim", title: "Çizim", emoji: "🎨", color: "#ff8fab", levels: [] },
 ];
 
 // derinlik: her uygun oyuna 10 rastgele bölüm (rakam bulma ve görsel-fark oyunu hariç).
@@ -777,6 +820,8 @@ const MAKE_ROUNDS_BY_ID: Record<string, () => Round[]> = {
   "ayni-bul": ayniRounds,
   "hepsini-bul": findAllRounds,
   nerede: spatialRounds,
+  "ilk-ses": ilkSesRounds,
+  "kelime-avi": kelimeAviRounds,
   fark: spotRounds,
   "yapboz-3": () => jigsawRounds(JIGSAW_LAYOUTS[3]),
   "yapboz-4": () => jigsawRounds(JIGSAW_LAYOUTS[4]),

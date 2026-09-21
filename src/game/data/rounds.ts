@@ -261,6 +261,50 @@ export function duyguYardimRounds(): Round[] {
   });
 }
 
+// --------- DİL / ERKEN OKURYAZARLIK ---------
+// İLK SES AVI (fonolojik farkındalık): verilen SESLE başlayan nesneleri bul.
+// Türkçe harf = ses olduğundan bu yaş için verimli. Nesneler adı o sesle başlayan emojiler.
+const ILK_SES: { instr: string; pool: string[] }[] = [
+  { instr: '"a" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🦁", "🚗", "🐻", "🌳", "🍍", "🌙"] }, // aslan araba ayı ağaç ananas ay
+  { instr: '"e" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🍎", "🏠", "🍞", "✋", "🧤"] }, // elma ev ekmek el eldiven
+  { instr: '"k" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🐱", "🐦", "✏️", "🚪", "📚", "🐶", "🍰"] }, // kedi kuş kalem kapı kitap köpek kek
+  { instr: '"b" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🐟", "🎈", "🐞", "☁️", "🚩"] }, // balık balon böcek bulut bayrak
+  { instr: '"m" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🍌", "🕯️", "🍄", "🐵", "🌽"] }, // muz mum mantar maymun mısır
+  { instr: '"t" sesiyle başlayanları bul ve sepete sürükle.', pool: ["⚽", "🐰", "🚂", "🐔", "👑"] }, // top tavşan tren tavuk taç
+];
+export const ILKSES_INSTRS = ILK_SES.map((s) => s.instr);
+export function ilkSesRounds(): Round[] {
+  return rounds(() => {
+    const s = pick(ILK_SES);
+    const others = ILK_SES.filter((x) => x !== s).flatMap((x) => x.pool);
+    const items = shuffleArr([
+      ...sample(s.pool, 2).map((c) => ({ content: e(c), correct: true })),
+      ...sample(others, 3).map((w) => ({ content: e(w), correct: false })),
+    ]);
+    return { items, instr: s.instr };
+  });
+}
+
+// KELİME AVI (sözcük dağarcığı): söylenen kelimenin nesnesini bul (kelime-nesne eşleme).
+const KELIMELER: { word: string; emoji: string }[] = [
+  { word: "Elma", emoji: "🍎" }, { word: "Top", emoji: "⚽" }, { word: "Kedi", emoji: "🐱" },
+  { word: "Balık", emoji: "🐟" }, { word: "Araba", emoji: "🚗" }, { word: "Muz", emoji: "🍌" },
+  { word: "Ev", emoji: "🏠" }, { word: "Çiçek", emoji: "🌸" }, { word: "Köpek", emoji: "🐶" }, { word: "Ağaç", emoji: "🌳" },
+];
+const kelimeInstr = (w: string) => `${w} hangisi? Ona dokun ve sepete koy.`;
+export const KELIME_INSTRS = KELIMELER.map((k) => kelimeInstr(k.word));
+export function kelimeAviRounds(): Round[] {
+  return rounds(() => {
+    const k = pick(KELIMELER);
+    const others = KELIMELER.filter((x) => x.emoji !== k.emoji);
+    const items = shuffleArr([
+      { content: e(k.emoji), correct: true },
+      ...sample(others, 3).map((o) => ({ content: e(o.emoji), correct: false })),
+    ]);
+    return { items, instr: kelimeInstr(k.word) };
+  });
+}
+
 // GUNLUK RUTIN (yasam becerisi): gunluk isleri dogru siraya diz (sequence).
 const ROUTINES: string[][] = [
   ["🛏️", "🪥", "👕", "🥣"],   // uyan → diş fırçala → giyin → kahvaltı

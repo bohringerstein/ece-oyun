@@ -13,12 +13,32 @@ export function DrawGame({ onWin }: { onWin: () => void }) {
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
 
+  // SON ÇİZİM KALICI: her fırça bitişinde localStorage'a kaydedilir; oyuna girince geri yüklenir.
+  const KEY = "ece-draw";
+  function save() {
+    try {
+      localStorage.setItem(KEY, ref.current!.toDataURL("image/png"));
+    } catch {
+      // yoksay (kota/erişim)
+    }
+  }
+
   useEffect(() => {
     const c = ref.current;
-    if (c) {
-      const ctx = c.getContext("2d")!;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, c.width, c.height);
+    if (!c) return;
+    const ctx = c.getContext("2d")!;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, c.width, c.height);
+    // kayıtlı son çizimi geri yükle
+    try {
+      const data = localStorage.getItem(KEY);
+      if (data) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0, c.width, c.height);
+        img.src = data;
+      }
+    } catch {
+      // yoksay
     }
   }, []);
 
@@ -51,6 +71,7 @@ export function DrawGame({ onWin }: { onWin: () => void }) {
     last.current = p;
   }
   function up() {
+    if (drawing.current) save(); // fırça bitince son hali kaydet
     drawing.current = false;
     last.current = null;
   }
@@ -60,6 +81,7 @@ export function DrawGame({ onWin }: { onWin: () => void }) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, c.width, c.height);
     popSound();
+    save(); // temizlenmiş hali de kalıcı olsun
   }
 
   return (
@@ -86,7 +108,7 @@ export function DrawGame({ onWin }: { onWin: () => void }) {
           />
         ))}
         <button className="draw-tool" onClick={clearCanvas} aria-label="Temizle">🧽</button>
-        <button className="draw-done" onClick={onWin}>Bitti ✓</button>
+        <button className="draw-done" onClick={() => { save(); onWin(); }}>Bitti ✓</button>
       </div>
     </div>
   );

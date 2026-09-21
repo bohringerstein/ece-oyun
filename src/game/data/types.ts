@@ -131,9 +131,9 @@ export interface Level {
   // place (mekansal): nesneyi kabin ICINE/USTUNE/ALTINA/YANINA surukle. rel = dogru konum.
   spatial?: { object: string; container: string; rel: "in" | "on" | "under" | "beside" };
 
-  // depth (on/arka): sahnede Pofuduk bir nesneyle ortusur. Cocuk Pofuduk'un nesnenin
-  // ARKASINDA oldugu (nesnenin Pofuduk'u ortten kapattigi) secenegi bulur. object = nesne emojisi.
-  depth?: { object: string };
+  // depth (on/arka/yan): sahnede Pofuduk bir nesneyle konumlanir. Cocuk, Pofuduk'un nesnenin
+  // ONUNDE / ARKASINDA / YANINDA oldugu dogru secenegi bulur. rel = sorulan konum. object = emoji.
+  depth?: { object: string; rel?: "front" | "behind" | "beside" };
 
   // story (hikaye): sahneler. Her sahne: arka plan rengi, buyuk emoji(ler), anlatim metni.
   // Cocuk "Ileri" ile ilerler; son sahnede bitince odul akisina girer. StoryGame her sahneyi seslendirir.

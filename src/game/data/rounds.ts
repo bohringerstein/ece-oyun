@@ -115,12 +115,16 @@ const DEPTH_OBJECTS: { e: string; name: string }[] = [
   { e: "🚗", name: "arabanın" }, { e: "🏠", name: "evin" }, { e: "🎁", name: "hediyenin" },
   { e: "⛄", name: "kardan adamın" }, { e: "🌺", name: "çiçeğin" },
 ];
-const depthInstr = (name: string) => `Pofuduk hangisinde ${name} arkasında? Ona dokun.`;
-export const DEPTH_INSTRS = DEPTH_OBJECTS.map((o) => depthInstr(o.name));
+const DEPTH_RELS = ["front", "behind", "beside"] as const;
+const REL_WORD: Record<(typeof DEPTH_RELS)[number], string> = { front: "önünde", behind: "arkasında", beside: "yanında" };
+const depthInstr = (name: string, rel: (typeof DEPTH_RELS)[number]) =>
+  `Pofuduk hangisinde ${name} ${REL_WORD[rel]}? Ona dokun.`;
+export const DEPTH_INSTRS = DEPTH_OBJECTS.flatMap((o) => DEPTH_RELS.map((r) => depthInstr(o.name, r)));
 export function depthRounds(): Round[] {
   return rounds(() => {
     const o = pick(DEPTH_OBJECTS);
-    return { depth: { object: o.e }, instr: depthInstr(o.name) };
+    const rel = pick(DEPTH_RELS);
+    return { depth: { object: o.e, rel }, instr: depthInstr(o.name, rel) };
   });
 }
 
@@ -274,14 +278,13 @@ export function duyguYardimRounds(): Round[] {
 
 // --------- DİL / ERKEN OKURYAZARLIK ---------
 // İLK SES AVI (fonolojik farkındalık): verilen SESLE başlayan nesneleri bul.
-// Türkçe harf = ses olduğundan bu yaş için verimli. Nesneler adı o sesle başlayan emojiler.
+// SADECE ÜNLÜ sesler (a, e, o, u): Türkçede ünlüler tek başına doğru/net okunur; ünsüzlerin
+// yalın Latin harfi TTS'te yanlış (harf adı) okunuyordu -> ünlülerle oynuyoruz (kullanıcı kararı).
 const ILK_SES: { instr: string; pool: string[] }[] = [
-  { instr: '"a" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🦁", "🚗", "🐻", "🌳", "🍍", "🌙"] }, // aslan araba ayı ağaç ananas ay
+  { instr: '"a" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🦁", "🚗", "🐻", "🌳", "🍍", "🌙", "🐝"] }, // aslan araba ayı ağaç ananas ay arı
   { instr: '"e" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🍎", "🏠", "🍞", "✋", "🧤"] }, // elma ev ekmek el eldiven
-  { instr: '"k" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🐱", "🐦", "✏️", "🚪", "📚", "🐶", "🍰"] }, // kedi kuş kalem kapı kitap köpek kek
-  { instr: '"b" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🐟", "🎈", "🐞", "☁️", "🚩"] }, // balık balon böcek bulut bayrak
-  { instr: '"m" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🍌", "🕯️", "🍄", "🐵", "🌽"] }, // muz mum mantar maymun mısır
-  { instr: '"t" sesiyle başlayanları bul ve sepete sürükle.', pool: ["⚽", "🐰", "🚂", "🐔", "👑"] }, // top tavşan tren tavuk taç
+  { instr: '"o" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🚌", "🏹", "🏫", "🧸", "🎣"] }, // otobüs ok okul oyuncak olta
+  { instr: '"u" sesiyle başlayanları bul ve sepete sürükle.', pool: ["✈️", "🪁", "😴", "🛸"] }, // uçak uçurtma uyku uzay gemisi
 ];
 export const ILKSES_INSTRS = ILK_SES.map((s) => s.instr);
 export function ilkSesRounds(): Round[] {

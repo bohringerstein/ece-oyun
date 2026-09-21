@@ -553,11 +553,11 @@ export const LEVELS: Level[] = [
   {
     id: "nerede",
     section: "dikkat",
-    title: "Önde mi Arkada mı?",
+    title: "Nerede? Ön, Arka, Yan",
     kind: "depth",
     icon: "🔭",
     instr: "Pofuduk hangisinde topun arkasında? Ona dokun.",
-    depth: { object: "⚽" },
+    depth: { object: "⚽", rel: "behind" },
   },
 
   // ---------------- GÜNLÜK YAŞAM ----------------

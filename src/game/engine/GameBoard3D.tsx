@@ -210,6 +210,7 @@ export function GameBoard3D({ board, onWin }: Props) {
   const targets = useRef<Map<string, [number, number, number]>>(new Map());
   const pulse = useRef<Map<string, number>>(new Map());
   const rots = useRef<Map<string, number>>(new Map()); // sepete/masaya konunca hafif eğim
+  const placeScale = useRef<Map<string, number>>(new Map()); // sepete konunca küçült (sığsın)
   const dragId = useRef<string | null>(null);
   const [placed, setPlaced] = useState<Record<string, string>>({});
   const placedRef = useRef(placed);
@@ -274,30 +275,43 @@ export function GameBoard3D({ board, onWin }: Props) {
     const slot = board.slots.find((s) => s.id === slotId)!;
     const ids = board.tokens.filter((t) => placedRef.current[t.id] === slotId).map((t) => t.id);
     const n = ids.length;
-    // kabin grafiginin ust YUZEY cizgisi (dunya y): nesneler bunun ustune "otursun",
-    // grafigin ortasina binmesin. Boylece masada/sepette 3B duruyormus gibi gorunur.
-    // yuzey cizgisi: nesnenin TABANI buraya otursun. Deger, nesnelerin kabin ON
-    // kopyasinin (asagida z=0.55 overlay) ARKASINA girip "icine/uzerine kondu" gorunmesi
-    // icin ayarlandi.
-    // yuzey: nesnenin TABANI buraya otursun.
-    //  - table: nesne masanin ÜSTÜNde tam görünür (ön kopya yok) -> taban masa yüzeyinde
-    //  - basket: nesne sepetin İÇİNde (ön kopya alt kısmı örter)
+    const seedOf = (id: string) => id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+
+    if (slot.style === "basket") {
+      // FİLELİ SEPET: nesneler tamamen İÇERİ; küçültülüp KÜMELENİR (yan yana + üst üste).
+      const sc = n <= 4 ? 0.6 : n <= 6 ? 0.52 : 0.46; // sığsın diye küçült
+      const cols = n <= 3 ? Math.max(1, n) : n <= 8 ? 3 : 4;
+      const rowsN = Math.ceil(n / cols);
+      const cellW = 1.15, cellH = 0.82;
+      const cx = slot.pos[0], cy = slot.pos[1] - 0.05; // kâse iç merkezi
+      ids.forEach((id, i) => {
+        const r = Math.floor(i / cols), c = i % cols;
+        const inRow = Math.min(cols, n - r * cols);
+        const seed = seedOf(id);
+        const jx = (((seed % 7) - 3) / 3) * 0.14;
+        const jy = (((seed % 5) - 2) / 2) * 0.1;
+        const x = cx + (c - (inRow - 1) / 2) * cellW + jx;
+        const y = cy + ((rowsN - 1) / 2 - r) * cellH + jy;
+        targets.current.set(id, [x, y, 0.24 + i * 0.03]); // sonra gelen üstte (üst üste); file'nin (0.55) arkasında kalır
+        placeScale.current.set(id, sc);
+        rots.current.set(id, (((seed % 19) - 9) / 9) * 0.22);
+      });
+      return;
+    }
+
+    // table / bin: nesne yüzeyin üstüne oturur (taban yüzey çizgisinde)
     const surface =
       slot.style === "table" ? slot.pos[1] + 1.0 :
-      slot.style === "basket" ? slot.pos[1] + 0.3 : // İÇERİ: taban ön duvarın arkasına girsin
       slot.style === "bin" ? slot.pos[1] + 0.4 :
       null;
-    // örtüşmeli öbekleme: nesneler tek-tek eşit dizilmesin, hafif üst üste binsin (doğal)
     const spread = Math.min(slot.w - 1.8, n * 1.25);
     ids.forEach((id, i) => {
       const tok = board.tokens.find((t) => t.id === id)!;
       const x = n === 1 ? slot.pos[0] : slot.pos[0] - spread / 2 + (spread * i) / Math.max(1, n - 1);
       const half = 0.9 * (tok.scale ?? 1);
       const y = surface !== null ? surface + half : slot.pos[1] + 0.2;
-      // artan z: sonra gelen üstte kalir
       targets.current.set(id, [x, y, 0.3 + i * 0.04]);
-      // deterministik hafif eğim (±~9°) -> "atılmış/konmuş" doğallığı
-      const seed = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+      const seed = seedOf(id);
       rots.current.set(id, (((seed % 19) - 9) / 9) * 0.16);
     });
   }
@@ -394,7 +408,9 @@ export function GameBoard3D({ board, onWin }: Props) {
       g.position.y += (ty - g.position.y) * k;
       g.position.z += (tg[2] - g.position.z) * k;
       const baseScale = tok.scale ?? 1;
-      const targetScale = dragId.current === tok.id ? baseScale * 1.18 : baseScale;
+      // sepete konunca placeScale ile küçül (sığsın); sürüklerken/gridde tam boy
+      const ps = placedRef.current[tok.id] ? placeScale.current.get(tok.id) : undefined;
+      const targetScale = dragId.current === tok.id ? baseScale * 1.18 : (ps ?? baseScale);
       g.scale.x += (targetScale - g.scale.x) * k;
       g.scale.y = g.scale.x;
       g.scale.z = g.scale.x;

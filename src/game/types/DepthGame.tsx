@@ -10,9 +10,9 @@ import { Mascot } from "../ui/Mascot";
 //  - behind (arkasında): nesne Pofuduk'u örter (nesne üstte)
 //  - beside (yanında): örtüşme yok, yan yana
 // Tur bir konum sorar; çocuk o konumdaki sahneyi bulur. Üç seçenek = üç farklı konum (kontrast).
-type Rel = "front" | "behind" | "beside";
-const REL_WORD: Record<Rel, string> = { front: "önünde", behind: "arkasında", beside: "yanında" };
-const ALL: Rel[] = ["front", "behind", "beside"];
+type Rel = "front" | "behind" | "beside" | "above";
+const REL_WORD: Record<Rel, string> = { front: "önünde", behind: "arkasında", beside: "yanında", above: "üstünde" };
+const ALL: Rel[] = ["front", "behind", "beside", "above"];
 
 function shuffled<T>(a: T[]): T[] {
   const r = a.slice();
@@ -24,16 +24,18 @@ function shuffled<T>(a: T[]): T[] {
 }
 
 function Scene({ rel, obj }: { rel: Rel; obj: string }) {
-  if (rel === "beside") {
+  // örtüşmesiz konumlar: yan yana / alt-üst
+  if (rel === "beside" || rel === "above") {
     return (
       <span className="depth-scene">
         <span className="depth-shadow" />
-        <span className="depth-pofuduk beside"><Mascot mood="happy" size={62} bob={false} /></span>
-        <span className="depth-object beside">{obj}</span>
+        <span className={`depth-pofuduk ${rel}`}><Mascot mood="happy" size={58} bob={false} /></span>
+        <span className={`depth-object ${rel}`}>{obj}</span>
       </span>
     );
   }
-  const behind = rel === "behind"; // Pofuduk arkada -> nesne üstte
+  // örtüşmeli: önünde (Pofuduk üstte) / arkasında (nesne üstte)
+  const behind = rel === "behind";
   return (
     <span className="depth-scene">
       <span className="depth-shadow" />
@@ -48,7 +50,8 @@ function Scene({ rel, obj }: { rel: Rel; obj: string }) {
 export function DepthGame({ level, onWin }: { level: Level; onWin: () => void }) {
   const obj = level.depth?.object ?? "⚽";
   const target: Rel = level.depth?.rel ?? "behind";
-  const [order] = useState<Rel[]>(() => shuffled(ALL)); // seçenek sırası (doğru konum karışık)
+  // seçenekler: doğru konum + rastgele 2 farklı konum, karışık (3 kart)
+  const [order] = useState<Rel[]>(() => shuffled([target, ...shuffled(ALL.filter((r) => r !== target)).slice(0, 2)]));
   const [wrong, setWrong] = useState<number | null>(null);
 
   function tap(i: number) {

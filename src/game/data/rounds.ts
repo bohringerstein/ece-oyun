@@ -117,15 +117,18 @@ const DEPTH_OBJECTS: { e: string; name: string }[] = [
   { e: "🚗", name: "arabanın" }, { e: "🏠", name: "evin" }, { e: "🎁", name: "hediyenin" },
   { e: "⛄", name: "kardan adamın" }, { e: "🌺", name: "çiçeğin" },
 ];
-const DEPTH_RELS = ["front", "behind", "beside"] as const;
-const REL_WORD: Record<(typeof DEPTH_RELS)[number], string> = { front: "önünde", behind: "arkasında", beside: "yanında" };
+const DEPTH_RELS = ["front", "behind", "beside", "above"] as const;
+const REL_WORD: Record<(typeof DEPTH_RELS)[number], string> = { front: "önünde", behind: "arkasında", beside: "yanında", above: "üstünde" };
 const depthInstr = (name: string, rel: (typeof DEPTH_RELS)[number]) =>
   `Pofuduk hangisinde ${name} ${REL_WORD[rel]}? Ona dokun.`;
 export const DEPTH_INSTRS = DEPTH_OBJECTS.flatMap((o) => DEPTH_RELS.map((r) => depthInstr(o.name, r)));
 export function depthRounds(): Round[] {
-  return rounds(() => {
+  // İlişkileri turlar arasında DÖNGÜYLE geç -> 6 turda 4 konumun (ön/arka/yan/üst) hepsi mutlaka çıkar
+  // (saf rastgelede "hep arkasında" gibi kümelenme olmasın). Başlangıç sırası karışık.
+  const relOrder = shuffleArr(DEPTH_RELS.slice());
+  return Array.from({ length: ROUNDS }, (_, i) => {
     const o = pick(DEPTH_OBJECTS);
-    const rel = pick(DEPTH_RELS);
+    const rel = relOrder[i % relOrder.length];
     return { depth: { object: o.e, rel }, instr: depthInstr(o.name, rel) };
   });
 }
@@ -285,11 +288,13 @@ export function duyguYardimRounds(): Round[] {
 // İLK SES AVI (fonolojik farkındalık): verilen SESLE başlayan nesneleri bul.
 // SADECE ÜNLÜ sesler (a, e, o, u): Türkçede ünlüler tek başına doğru/net okunur; ünsüzlerin
 // yalın Latin harfi TTS'te yanlış (harf adı) okunuyordu -> ünlülerle oynuyoruz (kullanıcı kararı).
+// Yönerge = ÖRNEK KELİME + uzatılmış ünlü sesi. Örnek kelime sesi net verir; uzatma ("aaa/eee/ooo/uuu")
+// tek harfin TTS'te yanlış (harf adı: "u"->"yu") okunmasını önler. Hem pedagojik hem seslendirme-güvenli.
 const ILK_SES: { instr: string; pool: string[] }[] = [
-  { instr: '"a" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🦁", "🚗", "🐻", "🌳", "🍍", "🌙", "🐝"] }, // aslan araba ayı ağaç ananas ay arı
-  { instr: '"e" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🍎", "🏠", "🍞", "✋", "🧤"] }, // elma ev ekmek el eldiven
-  { instr: '"o" sesiyle başlayanları bul ve sepete sürükle.', pool: ["🚌", "🏹", "🏫", "🧸", "🎣"] }, // otobüs ok okul oyuncak olta
-  { instr: '"u" sesiyle başlayanları bul ve sepete sürükle.', pool: ["✈️", "🪁", "😴", "🛸"] }, // uçak uçurtma uyku uzay gemisi
+  { instr: "Aslan gibi, aaa sesiyle başlayanları bul ve sepete sürükle.", pool: ["🦁", "🚗", "🐻", "🌳", "🍍", "🌙", "🐝"] }, // aslan araba ayı ağaç ananas ay arı
+  { instr: "Elma gibi, eee sesiyle başlayanları bul ve sepete sürükle.", pool: ["🍎", "🏠", "🍞", "✋", "🧤"] }, // elma ev ekmek el eldiven
+  { instr: "Otobüs gibi, ooo sesiyle başlayanları bul ve sepete sürükle.", pool: ["🚌", "🏹", "🏫", "🧸", "🎣"] }, // otobüs ok okul oyuncak olta
+  { instr: "Uçak gibi, uuu sesiyle başlayanları bul ve sepete sürükle.", pool: ["✈️", "🪁", "😴", "🛸"] }, // uçak uçurtma uyku uzay gemisi
 ];
 export const ILKSES_INSTRS = ILK_SES.map((s) => s.instr);
 export function ilkSesRounds(): Round[] {

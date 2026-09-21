@@ -2,7 +2,24 @@ import { useEffect, useState } from "react";
 import type { Level } from "../data/types";
 import { speakInstruction } from "../audio/speak";
 import { popSound } from "../audio/sfx";
-import { Mascot } from "../ui/Mascot";
+import { Mascot, type Mood } from "../ui/Mascot";
+
+// Pofuduk'u temsil eden emojiler -> gerçek (özelleştirilmiş) Mascot olarak çizilir.
+// Böylece hikâyenin ana karakteri, çocuğun seçtiği renk/aksesuarla görünür.
+const POFUDUK: Record<string, Mood> = { "🐤": "happy", "😄": "happy", "😟": "sad", "😢": "sad", "😴": "idle" };
+
+function Actor({ char, primary }: { char: string; primary: boolean }) {
+  const mood = POFUDUK[char];
+  const cls = `story-emoji${primary ? "" : " story-emoji2"}`;
+  if (mood) {
+    return (
+      <span className={cls}>
+        <Mascot mood={mood} size={primary ? 128 : 104} bob={false} />
+      </span>
+    );
+  }
+  return <span className={cls}>{char}</span>;
+}
 
 // HİKÂYE MODU: anlatımlı resimli kitap. Sahne sahne ilerler; her sahne kendi metnini seslendirir
 // (LevelShell "story" için otomatik yönerge OKUMAZ -> üst üste ses olmaz, [[single-voice-source]]).
@@ -39,8 +56,8 @@ export function StoryGame({ level, onWin }: { level: Level; onWin: () => void })
 
       <div className="story-scene" style={{ background: scene.bg }}>
         <div className="story-actors">
-          <span className="story-emoji">{scene.emoji}</span>
-          {scene.emoji2 && <span className="story-emoji story-emoji2">{scene.emoji2}</span>}
+          <Actor char={scene.emoji} primary />
+          {scene.emoji2 && <Actor char={scene.emoji2} primary={false} />}
         </div>
       </div>
 

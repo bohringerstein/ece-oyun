@@ -553,7 +553,7 @@ export const LEVELS: Level[] = [
   {
     id: "nerede",
     section: "dikkat",
-    title: "Nerede? Ön, Arka, Yan",
+    title: "Nerede?",
     kind: "depth",
     icon: "🔭",
     instr: "Pofuduk hangisinde topun arkasında? Ona dokun.",

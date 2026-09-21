@@ -97,9 +97,9 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
         onClick={() => setStage("gate")}
         aria-label="Ebeveyn ayarları"
         style={{
-          position: "fixed", left: "calc(12px + env(safe-area-inset-left))",
-          bottom: "calc(12px + env(safe-area-inset-bottom))", zIndex: 40,
-          display: "flex", alignItems: "center", gap: 8, padding: "10px 16px 10px 12px",
+          position: "fixed", left: "calc(10px + env(safe-area-inset-left))",
+          top: "calc(10px + env(safe-area-inset-top))", zIndex: 40,
+          display: "flex", alignItems: "center", gap: 7, padding: "8px 14px 8px 10px",
           borderRadius: 999, border: "1px solid rgba(120,140,180,0.25)", cursor: "pointer",
           background: "rgba(255,255,255,0.96)", boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
         }}

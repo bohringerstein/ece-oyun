@@ -2651,6 +2651,58 @@ button {
   75% { transform: translateX(7px); }
 }
 
+/* ---------- YAŞ ONBOARDING ---------- */
+.agegate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 26, 40, 0.5);
+  backdrop-filter: blur(4px);
+  padding: calc(20px + env(safe-area-inset-top)) 20px;
+  animation: fadein 0.3s;
+}
+.agegate-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 24px 22px 20px;
+  width: min(92vw, 400px);
+  text-align: center;
+  color: #3b4761;
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.agegate-title { font-size: 25px; font-weight: 800; margin: 6px 0 0; }
+.agegate-sub { font-size: 15px; color: #6e7890; margin: 0 0 6px; }
+.agegate-opts { display: flex; gap: 16px; margin: 10px 0 6px; width: 100%; justify-content: center; }
+.agegate-opt {
+  flex: 1 1 0;
+  max-width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border: 3px solid #e7edf7;
+  background: linear-gradient(180deg, #fbfdff, #eef4ff);
+  border-radius: 22px;
+  padding: 18px 10px 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.agegate-opt:active { transform: scale(0.96); }
+@media (hover: hover) {
+  .agegate-opt:hover { border-color: #4d96ff; transform: translateY(-2px); }
+}
+.agegate-emoji { font-size: 52px; line-height: 1; }
+.agegate-age { font-size: 30px; font-weight: 800; color: #3b4761; }
+.agegate-lbl { font-size: 14px; font-weight: 600; color: #8894aa; }
+.agegate-note { font-size: 12px; color: #9aa2b6; margin: 8px 0 0; }
+
 /* ---------- GERİ AL (sıfırlama sonrası) ---------- */
 .undo-toast {
   position: fixed;

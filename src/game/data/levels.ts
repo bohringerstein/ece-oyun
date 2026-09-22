@@ -863,20 +863,21 @@ export const LEVELS: Level[] = [
   },
 ];
 
+// outcome: MEB Okul Öncesi Eğitim Programı gelişim alanı + kazanım özeti (ebeveyn görünürlüğü).
 export const SECTIONS: Section[] = [
-  { id: "sayilar", title: "Sayılar ve Sayma", emoji: "🔢", color: "#ff6b6b", levels: [] },
-  { id: "eslestirme", title: "Eşleştirme", emoji: "🧩", color: "#4d96ff", levels: [] },
-  { id: "oruntu", title: "Örüntü ve Sıralama", emoji: "🎨", color: "#6bcB77", levels: [] },
-  { id: "karsilastirma", title: "Karşılaştırma", emoji: "⚖️", color: "#f4a259", levels: [] },
-  { id: "sekiller", title: "Şekiller", emoji: "🔷", color: "#9b5de5", levels: [] },
-  { id: "dikkat", title: "Dikkat", emoji: "🔎", color: "#f15bb5", levels: [] },
-  { id: "yasam", title: "Günlük Yaşam", emoji: "🌍", color: "#00bbf9", levels: [] },
-  { id: "yapboz", title: "Yapboz", emoji: "🖼️", color: "#ef6f6c", levels: [] },
-  { id: "hafiza", title: "Hafıza", emoji: "🧠", color: "#00c2a8", levels: [] },
-  { id: "labirent", title: "Yol Bul", emoji: "🐾", color: "#f4845f", levels: [] },
-  { id: "sesler", title: "Sesler ve Kelimeler", emoji: "🔤", color: "#00b8a9", levels: [] },
-  { id: "cizim", title: "Çizim", emoji: "🎨", color: "#ff8fab", levels: [] },
-  { id: "hikaye", title: "Hikâyeler", emoji: "📖", color: "#b892ff", levels: [] },
+  { id: "sayilar", title: "Sayılar ve Sayma", emoji: "🔢", color: "#ff6b6b", levels: [], outcome: "Bilişsel: Nesneleri sayar; sayı ile nesneyi birebir eşleştirir; rakamları tanır." },
+  { id: "eslestirme", title: "Eşleştirme", emoji: "🧩", color: "#4d96ff", levels: [], outcome: "Bilişsel: Varlıkları özelliklerine göre eşleştirir; nesneler arası ilişki kurar." },
+  { id: "oruntu", title: "Örüntü ve Sıralama", emoji: "🎨", color: "#6bcB77", levels: [], outcome: "Bilişsel: Örüntüyü tamamlar/oluşturur; varlıkları belli ölçüte göre sıralar." },
+  { id: "karsilastirma", title: "Karşılaştırma", emoji: "⚖️", color: "#f4a259", levels: [], outcome: "Bilişsel: Varlıkları miktar, boyut ve ağırlık bakımından karşılaştırır." },
+  { id: "sekiller", title: "Şekiller", emoji: "🔷", color: "#9b5de5", levels: [], outcome: "Bilişsel: Geometrik şekilleri tanır ve nesneleri şekline göre ayırt eder." },
+  { id: "dikkat", title: "Dikkat", emoji: "🔎", color: "#f15bb5", levels: [], outcome: "Bilişsel: Dikkatini yoğunlaştırır; ayrıntıları ve farklılıkları fark eder." },
+  { id: "yasam", title: "Günlük Yaşam", emoji: "🌍", color: "#00bbf9", levels: [], outcome: "Öz Bakım & Sosyal-Duygusal: Günlük yaşam becerilerini uygular; duygularını tanır." },
+  { id: "yapboz", title: "Yapboz", emoji: "🖼️", color: "#ef6f6c", levels: [], outcome: "Bilişsel & Motor: Parça-bütün ilişkisi kurar; el-göz koordinasyonu geliştirir." },
+  { id: "hafiza", title: "Hafıza", emoji: "🧠", color: "#00c2a8", levels: [], outcome: "Bilişsel: Görsel hafızasını kullanır; gördüğünü hatırlar." },
+  { id: "labirent", title: "Yol Bul", emoji: "🐾", color: "#f4845f", levels: [], outcome: "Motor: İnce motor becerisi ve el-göz koordinasyonu; yön takibi yapar." },
+  { id: "sesler", title: "Sesler ve Kelimeler", emoji: "🔤", color: "#00b8a9", levels: [], outcome: "Dil: Sesleri ayırt eder (fonolojik farkındalık); sözcük dağarcığını geliştirir." },
+  { id: "cizim", title: "Çizim", emoji: "🎨", color: "#ff8fab", levels: [], outcome: "Motor & Yaratıcılık: İnce motor becerisi; özgün ürün oluşturur." },
+  { id: "hikaye", title: "Hikâyeler", emoji: "📖", color: "#b892ff", levels: [], outcome: "Dil & Sosyal-Duygusal: Dinlediğini anlar; duyguları ve olayları kavrar." },
 ];
 
 // derinlik: her uygun oyuna 10 rastgele bölüm (rakam bulma ve görsel-fark oyunu hariç).

@@ -12,6 +12,8 @@ interface Props {
   total: number;
   sections: Section[];
   done: Set<string>;
+  ageBand: string | null;
+  onChooseAge: (band: string) => void;
 }
 
 interface SkillView {
@@ -38,7 +40,7 @@ function skillView(section: string): SkillView {
 // Kapı: düğmeyi ~1.4 sn BASILI TUT (küçük çocuk açamaz; okuma gerekmez).
 // Panel (iskelet): müzik, yönerge sesi, ilerlemeyi sıfırla + ilerleme özeti.
 // (Zengin ilerleme panosu/çoklu profil sonraki fazlarda.)
-export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections, done }: Props) {
+export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections, done, ageBand, onChooseAge }: Props) {
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
   // EBEVEYN KAPISI: çocuğun çözemeyeceği iki-basamaklı toplama (okuma/sayı bilgisi gerektirir).
   // Basılı-tutma yeterli değildi (4-6 yaş aşabiliyordu) — kurul kararıyla aritmetik doğrulama.
@@ -47,6 +49,7 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
   const [quizWrong, setQuizWrong] = useState(false);
   const [speechOff, setSpeechOff] = useState(isSpeechMuted());
   const [confirmReset, setConfirmReset] = useState(false);
+  const age = ageBand ?? "kucuk"; // tek kaynak App; onboarding seçimi burada da güncel görünür
 
   const newQuiz = () => setQuiz({ a: 11 + Math.floor(Math.random() * 9), b: 3 + Math.floor(Math.random() * 7) });
   function openGate() {
@@ -183,6 +186,20 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
                 onClick={() => { const next = !speechOff; setSpeechOff(next); setSpeechMuted(next); }}
                 role="switch" aria-checked={!speechOff} aria-label="Yönerge sesi"><span style={knob(!speechOff)} /></button>
             </div>
+            {/* Yaş bandı: oyunun başlangıç zorluğunu belirler (onboarding'de sorulur, buradan değişir) */}
+            <div style={row}>
+              <span>🎂 Yaş</span>
+              <span style={{ display: "flex", gap: 8 }}>
+                {[["kucuk", "3-4"], ["buyuk", "5-6"]].map(([val, lbl]) => (
+                  <button key={val} type="button" onClick={() => onChooseAge(val)} aria-pressed={age === val}
+                    style={{
+                      border: age === val ? "2px solid #4d96ff" : "2px solid #d7deec",
+                      background: age === val ? "#eaf2ff" : "#fff", color: "#3b4761",
+                      borderRadius: 12, padding: "6px 14px", fontSize: 15, fontWeight: 800, cursor: "pointer",
+                    }}>{lbl}</button>
+                ))}
+              </span>
+            </div>
 
             {/* Yazdırılabilir boyama sayfası (yazdırma = yetişkin işi -> çocuk ekranından buraya taşındı) */}
             <button
@@ -234,6 +251,11 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
                           </div>
                           <div style={{ fontSize: 12, color: "#8894aa", marginTop: 3 }}>%{v.pct} başarı · {v.attempts} deneme</div>
                         </>
+                      )}
+                      {s.outcome && (
+                        <div style={{ fontSize: 11.5, color: "#9aa2b6", marginTop: 4, lineHeight: 1.35 }}>
+                          🎯 {s.outcome}
+                        </div>
                       )}
                     </div>
                   ))}

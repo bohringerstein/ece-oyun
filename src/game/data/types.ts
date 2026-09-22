@@ -182,4 +182,5 @@ export interface Section {
   emoji: string;
   color: string;
   levels: string[]; // level id listesi
+  outcome?: string; // MEB Okul Öncesi kazanım eşlemesi (ebeveyn panosunda gösterilir)
 }

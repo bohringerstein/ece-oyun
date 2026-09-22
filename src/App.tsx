@@ -12,6 +12,7 @@ import { StickerBook } from "./game/ui/StickerBook";
 import { ParentArea } from "./game/ui/ParentArea";
 import { CustomizeScreen } from "./game/ui/CustomizeScreen";
 import { ColoringPage } from "./game/ui/ColoringPage";
+import { AgeGate } from "./game/ui/AgeGate";
 import { Mascot } from "./game/ui/Mascot";
 import { resetProfile } from "./game/data/profile";
 
@@ -29,6 +30,22 @@ const PROGRESS_KEY = "ece-oyun-progress";
 export function App() {
   const [view, setView] = useState<View>({ name: "start" });
   const [musicOn, setMusicOn] = useState(isMusicEnabled());
+  // Yaşa göre onboarding: ilk açılışta bir kez sorulur; difficultyBand tabanını belirler.
+  const [ageBand, setAgeBand] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("ece-age-band");
+    } catch {
+      return null;
+    }
+  });
+  function chooseAge(band: string) {
+    try {
+      localStorage.setItem("ece-age-band", band);
+    } catch {
+      // yoksay
+    }
+    setAgeBand(band);
+  }
   const [done, setDone] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem(PROGRESS_KEY) || "[]"));
@@ -74,6 +91,7 @@ export function App() {
     }
     resetProfile(); // bellek-içi profil önbelleğini de sıfırla
     setDone(new Set());
+    setAgeBand(null); // yaş bandı da silindi -> onboarding yeniden sorulsun
     setUndoSnap(snap);
   }
 
@@ -187,6 +205,8 @@ export function App() {
           total={LEVELS.length}
           sections={SECTIONS}
           done={done}
+          ageBand={ageBand}
+          onChooseAge={chooseAge}
         />
         {undoSnap && (
           <div className="undo-toast" role="status">
@@ -195,6 +215,7 @@ export function App() {
             <button className="undo-x" onClick={() => setUndoSnap(null)} aria-label="Kapat">✕</button>
           </div>
         )}
+        {!ageBand && <AgeGate onChoose={chooseAge} />}
       </>
     );
   }

@@ -63,13 +63,24 @@ export function successRate(section: string): number {
   return r.attempts ? r.correct / r.attempts : 1;
 }
 
-// Zorluk bandı: 0=kolay, 1=orta, 2=zor. Yeterli veri yokken KOLAY başla (en küçük yaş korunur,
-// ilk deneyim asla "zor" hissettirmez; veri geldikçe yükselir) — uzman paneli önerisi.
+// YAŞ TABANI: onboarding'de seçilen yaş bandı zorluğa BAŞLANGIÇ tabanı verir (3-4 -> 0/kolay,
+// 5-6 -> 1/orta). Böylece 3 ve 6 yaş aynı ilk-deneyimi görmez (kurul). Veri geldikçe performans
+// tabanın üstünde ölçer; performans hiçbir zaman yaş tabanının ALTINA inmez.
+function ageFloor(): 0 | 1 {
+  try {
+    return localStorage.getItem("ece-age-band") === "buyuk" ? 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+// Zorluk bandı: 0=kolay, 1=orta, 2=zor. Yeterli veri yokken YAŞ TABANINDAN başla (ilk deneyim
+// yaşa uygun; asla yaşın altında "çok kolay" ya da üstünde "çok zor" hissettirmez). Veri geldikçe yükselir.
 export function difficultyBand(section: string): 0 | 1 | 2 {
   const r = loadSkill(section);
-  if (r.attempts < 6) return 0;
+  const floor = ageFloor();
+  if (r.attempts < 6) return floor;
   const rate = r.correct / r.attempts;
-  if (rate > 0.85) return 2;
-  if (rate < 0.5) return 0;
-  return 1;
+  const computed = rate > 0.85 ? 2 : rate < 0.5 ? 0 : 1;
+  return Math.max(computed, floor) as 0 | 1 | 2;
 }

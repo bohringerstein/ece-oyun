@@ -50,6 +50,7 @@ function Scene({ rel, obj }: { rel: Rel; obj: string }) {
 export function DepthGame({ level, onWin }: { level: Level; onWin: () => void }) {
   const obj = level.depth?.object ?? "⚽";
   const target: Rel = level.depth?.rel ?? "behind";
+  const objName = level.depth?.name ?? ""; // nesnenin tamlamali adi (or. "kutunun") — dilbilgisi + sesle uyum
   // seçenekler: doğru konum + rastgele 2 farklı konum, karışık (3 kart)
   const [order] = useState<Rel[]>(() => shuffled([target, ...shuffled(ALL.filter((r) => r !== target)).slice(0, 2)]));
   const [wrong, setWrong] = useState<number | null>(null);
@@ -69,7 +70,8 @@ export function DepthGame({ level, onWin }: { level: Level; onWin: () => void })
   return (
     <div className="depth-wrap">
       <p className="depth-prompt">
-        Pofuduk hangi resimde <span className="depth-obj">{obj}</span> <b>{REL_WORD[target]}</b>?
+        Pofuduk hangi resimde <b>{objName ? `${objName} ` : ""}</b>
+        <span className="depth-obj">{obj}</span> <b>{REL_WORD[target]}</b>?
       </p>
       <div className="depth-options">
         {order.map((rel, i) => (

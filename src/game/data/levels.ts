@@ -151,7 +151,7 @@ export const LEVELS: Level[] = [
   {
     id: "yaz-1",
     section: "sayilar",
-    title: "1'i Yaz",
+    title: "1 Rakamını Yaz",
     kind: "trace",
     icon: "✏️",
     instr: "Parmağınla bir rakamının üstünden geç. Yukarıdan aşağıya çiz.",
@@ -160,7 +160,7 @@ export const LEVELS: Level[] = [
   {
     id: "yaz-2",
     section: "sayilar",
-    title: "2'yi Yaz",
+    title: "2 Rakamını Yaz",
     kind: "trace",
     icon: "✏️",
     instr: "Parmağınla iki rakamının üstünden geç.",
@@ -175,7 +175,7 @@ export const LEVELS: Level[] = [
   {
     id: "yaz-3",
     section: "sayilar",
-    title: "3'ü Yaz",
+    title: "3 Rakamını Yaz",
     kind: "trace",
     icon: "✏️",
     instr: "Parmağınla üç rakamının üstünden geç.",
@@ -557,7 +557,7 @@ export const LEVELS: Level[] = [
     kind: "depth",
     icon: "🔭",
     instr: "Pofuduk hangi resimde topun arkasında? Ona dokun.",
-    depth: { object: "⚽", rel: "behind" },
+    depth: { object: "⚽", rel: "behind", name: "topun" },
   },
 
   // ---------------- GÜNLÜK YAŞAM ----------------

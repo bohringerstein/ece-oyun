@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { isSpeechMuted, setSpeechMuted } from "../audio/speak";
 import { loadSkill, difficultyBand } from "../data/skills";
 import type { Section } from "../data/types";
@@ -39,33 +39,43 @@ function skillView(section: string): SkillView {
 // (Zengin ilerleme panosu/çoklu profil sonraki fazlarda.)
 export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections }: Props) {
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
-  const [hold, setHold] = useState(0); // 0..1 basılı tutma ilerlemesi
+  // EBEVEYN KAPISI: çocuğun çözemeyeceği iki-basamaklı toplama (okuma/sayı bilgisi gerektirir).
+  // Basılı-tutma yeterli değildi (4-6 yaş aşabiliyordu) — kurul kararıyla aritmetik doğrulama.
+  const [quiz, setQuiz] = useState<{ a: number; b: number }>({ a: 0, b: 0 });
+  const [entry, setEntry] = useState("");
+  const [quizWrong, setQuizWrong] = useState(false);
   const [speechOff, setSpeechOff] = useState(isSpeechMuted());
   const [confirmReset, setConfirmReset] = useState(false);
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
-
-  function startHold() {
-    const t0 = performance.now();
-    if (timer.current) clearInterval(timer.current);
-    timer.current = setInterval(() => {
-      const p = Math.min(1, (performance.now() - t0) / 1400);
-      setHold(p);
-      if (p >= 1) {
-        if (timer.current) clearInterval(timer.current);
-        setStage("panel");
-        setHold(0);
-      }
-    }, 30);
+  const newQuiz = () => setQuiz({ a: 11 + Math.floor(Math.random() * 9), b: 3 + Math.floor(Math.random() * 7) });
+  function openGate() {
+    newQuiz();
+    setEntry("");
+    setQuizWrong(false);
+    setStage("gate");
   }
-  function endHold() {
-    if (timer.current) clearInterval(timer.current);
-    setHold(0);
+  function press(d: string) {
+    setQuizWrong(false);
+    setEntry((e) => (e.length < 3 ? e + d : e));
+  }
+  function del() {
+    setQuizWrong(false);
+    setEntry((e) => e.slice(0, -1));
+  }
+  function submit() {
+    if (Number(entry) === quiz.a + quiz.b) {
+      setStage("panel");
+      setEntry("");
+    } else {
+      setQuizWrong(true);
+      setEntry("");
+      newQuiz();
+    }
   }
   function close() {
     setStage("idle");
     setConfirmReset(false);
+    setEntry("");
   }
 
   const overlay: CSSProperties = {
@@ -89,12 +99,16 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
     position: "absolute", top: 3, left: on ? 27 : 3, width: 28, height: 28, borderRadius: "50%",
     background: "#fff", transition: "left .2s", boxShadow: "0 2px 4px rgba(0,0,0,0.25)",
   });
+  const keyBtn: CSSProperties = {
+    height: 54, borderRadius: 14, border: "none", background: "#eef3fb", color: "#3b4761",
+    fontSize: 24, fontWeight: 800, cursor: "pointer",
+  };
 
   return (
     <>
       {/* tetikleyici: net ikon + etiketli ebeveyn düğmesi (pill) */}
       <button
-        onClick={() => setStage("gate")}
+        onClick={openGate}
         aria-label="Ebeveyn ayarları"
         style={{
           position: "fixed", left: "calc(10px + env(safe-area-inset-left))",
@@ -122,33 +136,31 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
         <div style={overlay} onClick={close}>
           <div style={card} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: 42 }}>🔒</div>
-            <h2 style={{ margin: "8px 0" }}>Yetişkinler için</h2>
-            <p style={{ opacity: 0.75, margin: "0 0 18px" }}>Devam etmek için düğmeyi basılı tut.</p>
-            <button
-              onPointerDown={startHold}
-              onPointerUp={endHold}
-              onPointerLeave={endHold}
-              onPointerCancel={endHold}
-              style={{
-                position: "relative", width: 160, height: 160, borderRadius: "50%", border: "none",
-                cursor: "pointer", background: "#eef3fb", fontSize: 16, fontWeight: 700, color: "#3b4761",
-                overflow: "hidden", touchAction: "none", userSelect: "none",
-              }}
-            >
-              <span style={{
-                position: "absolute", inset: 0, borderRadius: "50%",
-                background: `conic-gradient(#4d96ff ${hold * 360}deg, transparent 0deg)`, opacity: 0.85,
-              }} />
-              <span style={{
-                position: "absolute", inset: 10, borderRadius: "50%", background: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>Basılı Tut</span>
-            </button>
-            <div>
-              <button onClick={close} style={{ marginTop: 18, background: "none", border: "none", color: "#8894aa", fontSize: 16, cursor: "pointer" }}>
-                Vazgeç
-              </button>
+            <h2 style={{ margin: "8px 0 4px" }}>Yetişkinler için</h2>
+            <p style={{ opacity: 0.75, margin: "0 0 16px" }}>Devam etmek için işlemi çöz.</p>
+            <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: 1 }}>
+              {quiz.a} + {quiz.b} = ?
             </div>
+            <div style={{
+              margin: "12px auto 4px", width: 140, height: 52, borderRadius: 14,
+              border: `2px solid ${quizWrong ? "#e0455f" : "#d7deec"}`, display: "flex",
+              alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800,
+              color: "#3b4761", background: "#f7f9fd",
+            }}>
+              {entry || <span style={{ color: "#c3cbd9" }}>—</span>}
+            </div>
+            {quizWrong && <div style={{ color: "#e0455f", fontSize: 14, fontWeight: 700 }}>Yanlış, tekrar dene.</div>}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, maxWidth: 250, margin: "14px auto 0" }}>
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+                <button key={d} onClick={() => press(d)} style={keyBtn}>{d}</button>
+              ))}
+              <button onClick={del} aria-label="Sil" style={{ ...keyBtn, background: "#eef1f7" }}>⌫</button>
+              <button onClick={() => press("0")} style={keyBtn}>0</button>
+              <button onClick={submit} aria-label="Onayla" style={{ ...keyBtn, background: "#4dbd74", color: "#fff" }}>✓</button>
+            </div>
+            <button onClick={close} style={{ marginTop: 16, background: "none", border: "none", color: "#8894aa", fontSize: 16, cursor: "pointer" }}>
+              Vazgeç
+            </button>
           </div>
         </div>
       )}
@@ -161,15 +173,14 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
 
             <div style={row}>
               <span>🎵 Müzik</span>
-              <span style={sw(musicOn)} onClick={onToggleMusic} role="switch" aria-checked={musicOn}><span style={knob(musicOn)} /></span>
+              <button type="button" style={{ ...sw(musicOn), border: "none", padding: 0, cursor: "pointer" }}
+                onClick={onToggleMusic} role="switch" aria-checked={musicOn} aria-label="Müzik"><span style={knob(musicOn)} /></button>
             </div>
             <div style={row}>
               <span>🗣️ Yönerge sesi</span>
-              <span
-                style={sw(!speechOff)}
+              <button type="button" style={{ ...sw(!speechOff), border: "none", padding: 0, cursor: "pointer" }}
                 onClick={() => { const next = !speechOff; setSpeechOff(next); setSpeechMuted(next); }}
-                role="switch" aria-checked={!speechOff}
-              ><span style={knob(!speechOff)} /></span>
+                role="switch" aria-checked={!speechOff} aria-label="Yönerge sesi"><span style={knob(!speechOff)} /></button>
             </div>
 
             {/* Yazdırılabilir boyama sayfası (yazdırma = yetişkin işi -> çocuk ekranından buraya taşındı) */}

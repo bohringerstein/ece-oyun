@@ -129,7 +129,7 @@ export interface Level {
 
   // depth (on/arka/yan/ust): sahnede Pofuduk bir nesneyle konumlanir. Cocuk, Pofuduk'un nesnenin
   // ONUNDE / ARKASINDA / YANINDA / USTUNDE oldugu dogru secenegi bulur. rel = sorulan konum.
-  depth?: { object: string; rel?: "front" | "behind" | "beside" | "above" };
+  depth?: { object: string; rel?: "front" | "behind" | "beside" | "above"; name?: string };
 
   // story (hikaye): sahneler. Her sahne: arka plan rengi, buyuk emoji(ler), anlatim metni.
   // Cocuk "Ileri" ile ilerler; son sahnede bitince odul akisina girer. StoryGame her sahneyi seslendirir.

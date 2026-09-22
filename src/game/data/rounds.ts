@@ -173,7 +173,7 @@ export function depthRounds(): Round[] {
   const objs = pickSeq(DEPTH_OBJECTS); // her tur farkli nesne (ardarda ayni nesne gelmesin)
   return objs.map((o, i) => {
     const rel = relOrder[i % relOrder.length];
-    return { depth: { object: o.e, rel }, instr: depthInstr(o.name, rel) };
+    return { depth: { object: o.e, rel, name: o.name }, instr: depthInstr(o.name, rel) };
   });
 }
 
@@ -303,8 +303,9 @@ export const dikdortgenRounds = () =>
   );
 export const ucanlarRounds = () =>
   selectRounds(
-    // 🚟 (tren, uçmaz) + 🎆 (havai fişek, muğlak) + 🦚 (tavus kuşu, yerde durur imgesi) çıkarıldı
-    ["✈️","🎈","🦅","🚀","🦋","🐦","🚁","🪁","🦇","🛸","🕊️","🦉","🦜","🦆","🐝","🦩","🦟"],
+    // 🚟 (tren) + 🎆 (havai fişek) + 🦚 (tavus kuşu) + 🛸 (UFO: 3-4 yaşın günlük deneyiminde yok,
+    // somut "uçan" örneği değil — kurul kararı) çıkarıldı
+    ["✈️","🎈","🦅","🚀","🦋","🐦","🚁","🪁","🦇","🕊️","🦉","🦜","🦆","🐝","🦩","🦟"],
     ["🚜","🏍️","🚗","🚲","🚂","⛵","🐢","🐘","🚌","🚚","🦔","🐌","🚑","🦥","🐊","🚕"],
     3, 3
   );
@@ -478,9 +479,11 @@ export function noktaSayRounds(band = 1): Round[] {
   const pool = band <= 0 ? [1, 2, 3, 4] : band >= 2 ? [3, 4, 5, 6] : [1, 2, 3, 4, 5, 6];
   return rounds(() => {
     const cnts = sample(pool, 3);
+    const extra = pool.filter((v) => !cnts.includes(v)); // çeldirici sayı (saymayı zorunlu kılar)
+    const numbers = extra.length ? [...cnts, pick(extra)] : cnts;
     return {
       groups: cnts.map((c, i) => ({ content: dots(c, DOT_COLORS[i % DOT_COLORS.length]), n: c })),
-      numbers: cnts,
+      numbers,
     };
   });
 }
@@ -504,7 +507,11 @@ function countRounds(pool: string[], jar: boolean, band = 1): Round[] {
     const cnts = sample(range, 3); // aralıktan 3 farklı sayı
     const emojis = sample(pool, 3);
     const groups = cnts.map((cnt, g) => ({ content: grp(emojis[g], cnt, jar), n: cnt }));
-    return { groups, numbers: cnts };
+    // ÇELDİRİCİ: gruplarda olmayan 1 sayı ekle -> çocuk elemeyle değil sayarak bulmak zorunda
+    // (kazanma grup/yuva sayısına bağlı; çeldirici token yuvasız kalır). Kurul kararı.
+    const extra = range.filter((v) => !cnts.includes(v));
+    const numbers = extra.length ? [...cnts, pick(extra)] : cnts;
+    return { groups, numbers };
   });
 }
 export const sayEsleRounds = (band?: number) =>
@@ -630,7 +637,7 @@ export const meyveSebzeRounds = () =>
   sortRounds(
     [
       { arr: ["🍌","🍇","🍓","🍎","🍊","🍑","🍒","🥝","🍍","🍐","🍉","🥭","🫐","🍈"], bin: "meyve" },
-      { arr: ["🥦","🌽","🍅","🥕","🥬","🧅","🥔","🍆","🧄","🥒","🌶️","🍠"], bin: "sebze" }, // 🥗 (yemek/salata) ve 🫒 (zeytin, kullanıcı isteği) çıkarıldı
+      { arr: ["🥦","🌽","🍅","🥕","🥬","🧅","🥔","🍆","🥒","🍠","🫑"], bin: "sebze" }, // 🥗 (salata), 🫒 (zeytin), 🧄 sarımsak + 🌶️ acı biber (baharat algısı, 3-6 yaş "sebze" demez — kurul) çıkarıldı; 🫑 dolmalık biber eklendi
     ],
     3
   );

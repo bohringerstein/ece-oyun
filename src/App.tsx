@@ -51,21 +51,43 @@ export function App() {
     });
   }
 
+  // Sıfırlama GERİ ALINABİLİR: silinen anahtarların anlık görüntüsü tutulur; kısa süre "Geri al" sunulur.
+  const [undoSnap, setUndoSnap] = useState<[string, string][] | null>(null);
+
   // Ebeveyn: tüm ilerlemeyi sıfırla (çıkartmalar + kaldığı tur + kavram kayıtları)
   function resetProgress() {
+    const snap: [string, string][] = [];
     try {
       // TÜM çocuk-verisini temizle (ilerleme, kaldığı tur, beceri, profil, ÇİZİM, onboarding).
       // Prefix-süpürme -> gelecekte eklenen her "ece-*" anahtarı otomatik kapsanır (KVKK silme hakkı).
       // Ebeveyn ayarı olan "ece-speech-muted" korunur.
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && k.startsWith("ece-") && k !== "ece-speech-muted") localStorage.removeItem(k);
+        if (k && k.startsWith("ece-") && k !== "ece-speech-muted") {
+          const v = localStorage.getItem(k);
+          if (v !== null) snap.push([k, v]); // geri-al için sakla
+          localStorage.removeItem(k);
+        }
       }
     } catch {
       // yoksay
     }
     resetProfile(); // bellek-içi profil önbelleğini de sıfırla
     setDone(new Set());
+    setUndoSnap(snap);
+  }
+
+  // Yanlışlıkla silmeyi geri al: anahtarları yaz, sonra yeniden yükle (profil/beceri önbellekleri
+  // localStorage'dan taze okunsun) -> tutarlı tam geri dönüş.
+  function undoReset() {
+    if (!undoSnap) return;
+    try {
+      for (const [k, v] of undoSnap) localStorage.setItem(k, v);
+    } catch {
+      // yoksay
+    }
+    setUndoSnap(null);
+    window.location.reload();
   }
 
   function start() {
@@ -165,6 +187,13 @@ export function App() {
           total={LEVELS.length}
           sections={SECTIONS}
         />
+        {undoSnap && (
+          <div className="undo-toast" role="status">
+            <span>İlerleme silindi</span>
+            <button onClick={undoReset}>↩ Geri Al</button>
+            <button className="undo-x" onClick={() => setUndoSnap(null)} aria-label="Kapat">✕</button>
+          </div>
+        )}
       </>
     );
   }

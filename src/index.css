@@ -436,7 +436,7 @@ button {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.04) 36%, rgba(0, 0, 0, 0.11) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.04) 34%, rgba(0, 0, 0, 0.24) 100%);
 }
 .section-card::after {
   content: "";
@@ -473,7 +473,8 @@ button {
   font-weight: 600;
   letter-spacing: 0.2px;
   text-align: center;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.24);
+  /* açık pastel kartlarda beyaz metnin AA okunabilirliği için güçlü gölge kontrastı */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 14px rgba(0, 0, 0, 0.38);
 }
 .section-progress {
   font-size: 15px;
@@ -500,6 +501,15 @@ button {
   font-size: 30px;
   font-weight: 600;
   color: #3b4761;
+  min-width: 0; /* uzun başlık back-btn'e binmesin, sığmıyorsa ... ile kısalsın */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Erişilebilir klavye odağı: tüm odaklanan öğelerde net, kontrastlı halka (WCAG 2.4.7) */
+:focus-visible {
+  outline: 3px solid #1560d0;
+  outline-offset: 2px;
 }
 .round-btn {
   font-size: 26px;
@@ -526,6 +536,7 @@ button {
   align-items: center;
   gap: 6px;
   padding: 0 18px 0 15px;
+  flex-shrink: 0; /* dar ekranda "Geri" metni kırpılmasın ("Ger" bug'ı) */
 }
 .back-tx { font-size: 16px; font-weight: 700; color: #3b4761; white-space: nowrap; }
 /* 3D oyun kolonu: üstte topbar için boşluk, sonra yönerge (kendi yeri), altta canvas kalan alanı doldurur */
@@ -635,7 +646,7 @@ button {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.03) 38%, rgba(0, 0, 0, 0.1) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.03) 36%, rgba(0, 0, 0, 0.24) 100%);
 }
 .level-card3d > * {
   position: relative;
@@ -659,7 +670,8 @@ button {
   font-size: 19px;
   font-weight: 600;
   text-align: center;
-  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+  /* açık pastel kartlarda beyaz metnin AA okunabilirliği için güçlü gölge kontrastı */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 14px rgba(0, 0, 0, 0.38);
   padding: 0 4px;
 }
 .lc-num {
@@ -719,6 +731,7 @@ button {
   color: #3b4761;
   box-shadow: 0 10px 26px -10px rgba(30, 50, 90, 0.4), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
   max-width: 52%;
+  min-width: 0;
   text-align: center;
 }
 .round-chip {
@@ -1636,7 +1649,7 @@ button {
 .bk-cover,
 .bk-end {
   justify-content: center;
-  gap: 3%;
+  gap: 2%;
   background:
     radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 55%),
     linear-gradient(160deg, #ffcf5a, #ff8f3d);
@@ -1644,16 +1657,17 @@ button {
   overflow: hidden;
 }
 .bk-cover-badge {
-  font-size: clamp(38px, 10vw, 84px);
+  font-size: clamp(30px, 7vw, 64px);
   filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.22));
   animation: sticker3dFloat 3s ease-in-out infinite;
 }
 /* yaldiz (foil) baslik */
 .bk-cover-title {
-  font-size: clamp(20px, 3.6vw, 34px);
+  font-size: clamp(15px, 3vw, 28px);
+  line-height: 1.05;
   font-weight: 700;
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   background: linear-gradient(180deg, #fff6d0 0%, #ffe089 40%, #d99a2b 60%, #fff2c0 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1667,11 +1681,11 @@ button {
   background: linear-gradient(90deg, transparent, #fff3c0, #d99a2b, #fff3c0, transparent);
 }
 .bk-cover-count {
-  font-size: clamp(13px, 2.2vw, 19px);
+  font-size: clamp(11px, 2vw, 17px);
   font-weight: 700;
   color: #6a3d00;
   background: rgba(255, 255, 255, 0.6);
-  padding: 5px 18px;
+  padding: 4px 14px;
   border-radius: 999px;
   box-shadow: 0 2px 5px rgba(150, 90, 0, 0.25);
 }
@@ -2635,6 +2649,42 @@ button {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-7px); }
   75% { transform: translateX(7px); }
+}
+
+/* ---------- GERİ AL (sıfırlama sonrası) ---------- */
+.undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #2b3550;
+  color: #fff;
+  padding: 10px 12px 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45);
+  font-size: 15px;
+  font-weight: 600;
+  max-width: 92vw;
+}
+.undo-toast button {
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 15px;
+  background: #ffd23f;
+  color: #5a4300;
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+.undo-toast .undo-x {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 8px;
+  font-size: 14px;
 }
 
 /* ---------- ONBOARDING (tek-seferlik "hayalet el") ---------- */

@@ -319,7 +319,10 @@ button {
 .map-path {
   position: relative;
   max-width: 520px;
-  margin: 6px auto 0;
+  /* İlk durağın ÜSTÜNDE duran "buradasın" maskotu (.map-node-here, top:-42px) yukarı taşar;
+     AKSESUAR (taç/şapka) ile daha da yukarı çıkıp "Çıkartmalarım/Süsle" butonlarına biniyordu
+     (kullanıcı raporu). Harita bloğunu butonlardan aşağı ayır ki en büyük aksesuar bile binmesin. */
+  margin: 40px auto 0;
   padding: 12px 0 0;
 }
 /* zikzak iz: sol-sağ dokunan noktalı yol (durakların dönüşümlü konumuyla uyumlu) */

@@ -1,14 +1,33 @@
-// Oyun ici tum konusma metinlerini ElevenLabs ile DOGAL sese cevirir.
-// Kullanim (PowerShell):
-//   $env:ELEVENLABS_API_KEY = "sk_..."            # zorunlu
-//   $env:ELEVENLABS_VOICE_ID = "<voice_id>"       # istege bagli (varsayilan: Rachel)
-//   npm run voice
+// Oyun ici TUM konusma metinlerini ElevenLabs ile DOGAL Turkce sese cevirir.
 //
-// - Metinler src/game/audio/voiceLines.ts'ten (allVoiceLines) alinir (tek kaynak).
-// - Her metin public/voice/<id>.mp3 olarak kaydedilir (id = hashLine(metin)).
-// - Zaten var olan dosyalar atlanir (kotayi bosa harcamaz, tekrar calistirilabilir).
-//   YENI ses/ayara gecerken hepsini yeniden uretmek icin: $env:FORCE="1"
-// - src/game/audio/voiceManifest.ts otomatik guncellenir.
+// TURKCE OPTIMIZASYONU (kurul ses arastirmasi):
+//  - SES: Turkce-native bir ses kullan (Ingilizce "Rachel" degil). Turkce voice, acik-e/telaffuz
+//    sorunlarini kokten azaltir. Varsayilan: "Nazli Yeni" (sicak, neseli, net diksiyon - cocuk
+//    yonergesi icin ideal). Alternatifler asagida; ELEVENLABS_VOICE_ID ile degistirilebilir.
+//  - MODEL: eleven_multilingual_v2 (Turkce'de en stabil/dogal; sayilari insan gibi okur).
+//    NOT: multilingual_v2 phoneme/IPA etiketlerini YOKSAYAR -> telaffuz duzeltmesi ALIAS
+//    (yazim-degistirme) ile yapilir (bkz. PRON). IPA gerekirse eleven_v3'e gecmek gerekir.
+//  - HIZ: dogal aralik 0.9-1.1; yonerge ~1.0 (eski 0.9 yavas kaliyordu), ovgu biraz daha canli.
+//  - TON: style=0 (Turkce'de fonetik bozulmayi onler), stability net-anlatim icin orta-yuksek.
+//
+// TELAFFUZ (ALIAS) MANTIGI:
+//  - Dosya adi (hash) HER ZAMAN ORIJINAL metinden uretilir -> runtime (speak.ts) hic degismez.
+//  - Yalniz TTS'e GIDEN metin phoneticize() ile duzeltilir (or. zor okunan kelimeler icin
+//    fonetik-guvenli yazim). Boylece oyun kodu orijinal metni kullanmaya devam eder,
+//    mp3 icerigi ise dogru telaffuzu tasir.
+//
+// Kullanim (PowerShell):
+//   $env:ELEVENLABS_API_KEY = "sk_..."                 # zorunlu
+//   $env:ELEVENLABS_VOICE_ID = "o9DOmAyPjfFu8AfoFAnM"  # istege bagli (varsayilan Nazli Yeni)
+//   $env:FORCE = "1"                                    # YENI ses/ayar -> hepsini bastan uret
+//   npm run voice
+//   npm run build
+//
+// Turkce-native ses adaylari (ElevenLabs voice library - hesabina eklemen gerekebilir):
+//   Nazli Yeni  o9DOmAyPjfFu8AfoFAnM  (sicak, neseli, net diksiyon)   <- varsayilan
+//   Betul Tuna  6GYyziau4Hk8qdg7od5c  (genc, gulumseyen, kid-friendly)
+//   Irem        hy7OAv1nH3Eqqj96Aude  (sakin, cocuk icin ozel)
+//   Sesil       n1k2o6h2qrpsjPldwAWN  (sicak, net, egitim/audiobook)
 import { build } from "esbuild";
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -20,28 +39,37 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
 const API_KEY = process.env.ELEVENLABS_API_KEY;
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM"; // Rachel (varsayilan)
-const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2"; // Turkce icin cok dilli model
-// FORCE=1: var olan mp3'leri de yeniden uret (yeni ses/ayara gecerken sifirdan uretmek icin)
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "o9DOmAyPjfFu8AfoFAnM"; // Nazli Yeni (Turkce)
+const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
 const FORCE = process.env.FORCE === "1" || process.env.ELEVENLABS_FORCE === "1";
 
-// Iki-tonlu uretim (arastirma onerisi) + tempo (speed) ince ayari:
-//  - COSKULU (ovgu/kutlama/karsilama): ekspresif + biraz DAHA HIZLI (speed 1.08).
-//  - SAKIN-NET (yonerge/ogretim + cesaretlendirme): kararli/net + biraz DAHA YAVAS
-//    (speed 0.9) ki cocuk yonergeyi rahat izlesin. style=0 -> Turkce telaffuz artefakti azalir.
-//  - PRON_FIX: telaffuzu zor cikan kelimeler (or. "terazide") icin YUKSEK stability;
-//    a->ağ tarzi sesli-harf kaymasini bastirir.
-const EXPRESSIVE = { stability: 0.45, similarity_boost: 0.8, style: 0.12, use_speaker_boost: false, speed: 1.08 };
-// stability 0.62 (yuksek) -> prozodi dalgalanmasi azalir, TUM yonergeler ayni tempoda/tutarli okunur
-const STEADY = { stability: 0.62, similarity_boost: 0.82, style: 0.0, use_speaker_boost: false, speed: 0.9 };
-const PRON_FIX = { stability: 0.72, similarity_boost: 0.85, style: 0.0, use_speaker_boost: false, speed: 0.9 };
-// "aferin" gibi bastaki 'a'si Turkce'de biraz UZUN okunan ovgu sozcukleri: coskulu ama
-// hizli uretimde 'a' kisalip kulagi tirmaliyordu. Daha yavas + kararli -> vokale nefes verir.
-const AFERIN_FIX = { stability: 0.6, similarity_boost: 0.85, style: 0.1, use_speaker_boost: false, speed: 0.94 };
+// Iki-tonlu uretim + Turkce-uygun HIZ/TON (arastirma: style=0 Turkce'de sart; hiz 0.9-1.1 dogal).
+//  - COSKULU (ovgu/kutlama/karsilama): ekspresif ama Turkce netligi korur; biraz daha canli tempo.
+//  - SAKIN-NET (yonerge/ogretim + cesaret): net, kararli; tempo eskiden 0.9 (yavas) -> 1.0 (dogal).
+//  - PRON_FIX: telaffuzu zor kelimeler icin yuksek stability (sesli-harf kaymasini bastirir).
+//  - AFERIN_FIX: bastaki 'a'si uzun okunan ovguler icin nefesli, kararli.
+const EXPRESSIVE = { stability: 0.5, similarity_boost: 0.8, style: 0.08, use_speaker_boost: true, speed: 1.05 };
+const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: true, speed: 1.0 };
+const PRON_FIX = { stability: 0.7, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true, speed: 0.98 };
+const AFERIN_FIX = { stability: 0.6, similarity_boost: 0.85, style: 0.05, use_speaker_boost: true, speed: 1.0 };
+
+// ---- TELAFFUZ SOZLUGU (alias): TTS'e GIDEN metinde riskli kelimeleri fonetik-guvenli yazima cevir.
+// Dosya adi/hash ORIJINAL metinden uretildigi icin oyun kodu ETKILENMEZ. Yeni sorunlu kelime
+// cikarsa buraya bir satir ekleyip FORCE=1 ile yeniden uret. Sag taraf Turkce okunusa gore yazilir.
+// NOT: Turkce-native ses cogu kelimeyi zaten dogru okur; bu liste yalniz istisnalar icindir.
+const PRON = [
+  // ornek/gozlemlenen: "terazi" bazi seslerde 'e' kayabiliyor -> hafif vurgu ipucu
+  // [/terazi/gi, "teraazi"],
+];
+function phoneticize(text) {
+  let s = text;
+  for (const [re, rep] of PRON) s = s.replace(re, rep);
+  return s;
+}
 
 if (!API_KEY) {
   console.error("HATA: ELEVENLABS_API_KEY ortam degiskeni gerekli.");
-  console.error('PowerShell: $env:ELEVENLABS_API_KEY = "sk_..."; npm run voice');
+  console.error('PowerShell: $env:ELEVENLABS_API_KEY = "sk_..."; $env:FORCE="1"; npm run voice');
   process.exit(1);
 }
 
@@ -67,7 +95,7 @@ const expressiveSet = new Set([
   ...mod.CUES,
 ]);
 const settingsFor = (text) => {
-  if (/terazide/i.test(text)) return PRON_FIX; // "terazi" telaffuzu icin ozel
+  if (/terazi/i.test(text)) return PRON_FIX; // "terazi" telaffuzu icin ozel
   if (/aferin/i.test(text)) return AFERIN_FIX; // "aferin"de bastaki 'a' uzun okunsun
   return expressiveSet.has(text) ? EXPRESSIVE : STEADY;
 };
@@ -75,13 +103,13 @@ const settingsFor = (text) => {
 const outDir = path.join(root, "public", "voice");
 await mkdir(outDir, { recursive: true });
 
-console.log(`${lines.length} metin. Ses: ${VOICE_ID}  Model: ${MODEL}\n`);
+console.log(`${lines.length} metin. Ses: ${VOICE_ID}  Model: ${MODEL}  ${FORCE ? "(FORCE: hepsi yeniden)" : ""}\n`);
 
 const ids = [];
 let made = 0;
 let skipped = 0;
 for (const text of lines) {
-  const id = hashLine(text);
+  const id = hashLine(text); // ORIJINAL metinden -> runtime ile eslesir
   ids.push(id);
   const file = path.join(outDir, `${id}.mp3`);
   if (existsSync(file) && !FORCE) {
@@ -96,9 +124,9 @@ for (const text of lines) {
       Accept: "audio/mpeg",
     },
     body: JSON.stringify({
-      text,
+      text: phoneticize(text), // yalniz TTS'e giden metin duzeltilir (dosya adi orijinalden)
       model_id: MODEL,
-      voice_settings: settingsFor(text), // iki-tonlu: coskulu ovgu / sakin-net yonerge
+      voice_settings: settingsFor(text),
     }),
   });
   if (!res.ok) {

@@ -98,12 +98,10 @@ function stopAudio() {
   setSpeechDucking(false);
 }
 
-// Bazi hazir kayitlar digerlerine gore YAVAS seslendirilmis (or. "Devam edelim!" eski, daha
-// yavas tempoda uretilmis bir mp3'e sahip). Dosyayi yeniden uretmeden oynatma hizini hafifce
-// artirarak tempoyu diger seslerle esitleriz (kullanici raporu).
-const PLAYBACK_RATE: Record<string, number> = {
-  "Devam edelim!": 1.18,
-};
+// Oynatma-hizi telafisi. Sesler artik gen_voice'ta Turkce-uygun HIZDA (speed ~1.0-1.05) uretiliyor,
+// bu yuzden normalde bos. Yeniden uretilemeyen tek bir klip fazla yavas/hizli kalirsa buraya
+// "<metin>": <oran> eklenebilir (1.0 = degisiklik yok).
+const PLAYBACK_RATE: Record<string, number> = {};
 
 // Bu metin icin hazir dogal kayit varsa cal; yoksa false don.
 // onEnd: ses bitince (veya hata) BIR KEZ cagrilir (senkron animasyonlar icin).

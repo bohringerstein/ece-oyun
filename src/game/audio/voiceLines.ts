@@ -12,20 +12,22 @@ export const BREATHE_OUT = "Nefes ver";
 
 // SUREC/CABA ovgusu (Dweck/Brummelman): kisi-zeka ovgusu ("akillisin/harikasin")
 // ve abarti yigini yerine yapilan isi/cabayi oven sade, cesitli ovgu.
+// NOT (Turkce ses): cumle BASINDA acik 'a'/'e' (Aa, Aferin, Aynen...) TTS'te bozuk cikabiliyor.
+// Bu yuzden mumkun oldugunca kapali unsuz/heceyle basliyoruz (anlam korunarak sozcuk sirasi degisti).
 export const PRAISE = [
-  "Aferin, doğru yaptın!",
-  "Denedin ve buldun, aferin!",
+  "Doğru yaptın, aferin!",
+  "Denedin ve buldun, bravo!",
   "Çok güzel yaptın!",
   "Bravo! Çok iyi düşündün.",
   "Çok dikkatli baktın, bravo!",
   "Çok iyi çalıştın!",
 ];
 
-// Yanlista: suclamayan, tekrar denemeye davet eden dil.
+// Yanlista: suclamayan, tekrar denemeye davet eden dil (cumle basi kapali heceyle).
 export const TRY_AGAIN = [
-  "Aa, bir daha deneyelim.",
+  "Hadi, bir daha deneyelim.",
   "Olsun, tekrar deneyelim.",
-  "Hadi bir daha bakalım.",
+  "Bir daha bakalım.",
   "Neredeyse oldu, tekrar deneyelim.",
 ];
 
@@ -36,7 +38,7 @@ export const STICKER_WIN = "Bitirdin! Çıkartmanı kazandın. Hadi kitabına ya
 export const CUES = [
   "Devam edelim!",
   "Bir tane daha!",
-  "Aynen böyle, çok güzel!",
+  "Çok güzel, aynen böyle!",
   "Şimdi yeni resimler geldi!",
   "Hadi bakalım!",
 ];

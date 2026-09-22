@@ -2443,6 +2443,19 @@ button {
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
+  max-width: 100%;
+}
+/* .sticker-btn tek başına ortalanmak için left:50%+translateX(-50%) kullanıyor; flex kutusunda
+   iki buton olunca bu offset onları sağa taşırıp overflow-x:hidden ile KIRPIYORDU ("Pofuduk'u
+   Süsle" kayboluyordu). Flex zaten ortalıyor -> offset'i sıfırla. */
+.map-actions .sticker-btn {
+  position: static;
+  left: auto;
+  transform: none;
+  margin: 0;
+}
+.map-actions .sticker-btn:active {
+  transform: translateY(4px);
 }
 .map-customize {
   background: linear-gradient(135deg, #ff9db0, #b892ff);

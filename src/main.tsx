@@ -16,6 +16,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 // (2) yeni service worker kontrolü devraldığı anda sayfayı BİR KEZ otomatik yenile.
 // Böylece kullanıcı elle zorlama yapmadan her deploy'da güncele geçer.
 if ("serviceWorker" in navigator) {
+  // Sayfa yüklenirken zaten bir service worker kontrolde miydi?
+  // İLK KURULUM (SW'siz açılış -> SW devralır) ile GÜNCELLEME (eski SW -> yeni SW) ayrımı.
+  const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.ready.then((reg) => {
     reg.update().catch(() => {});
     // her 60 sn'de bir güncelleme kontrolü (uzun süre açık kalan sekmeler için)
@@ -30,7 +33,10 @@ if ("serviceWorker" in navigator) {
   // yeni SW devralınca tek seferlik yenileme (döngü guard'lı)
   let refreshing = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (refreshing) return;
+    // İLK kurulumda YENİLEME YAPMA: SW'siz açılan sayfayı SW devralınca yenilemek gereksiz
+    // çift yükleme yapıyor ve "Başla"ya bastıktan sonra kullanıcıyı başa döndürüyordu.
+    // Yalnız MEVCUT bir SW güncellenip yeni SW devraldığında yenile.
+    if (!hadController || refreshing) return;
     refreshing = true;
     window.location.reload();
   });

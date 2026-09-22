@@ -235,7 +235,8 @@ export const LEVELS: Level[] = [
     title: "İlişkili Nesneler",
     kind: "match",
     icon: "🥄",
-    instr: "Resmi, birlikte kullandığı resmin üstüne sürükle.",
+    // içerik aitlik/neden-sonuç (itfaiye-ateş, elma-ağaç) -> "birlikte kullandığı" yanlıştı; "ilgili olan"
+    instr: "Resmi, onunla ilgili olan resmin üstüne sürükle.",
     pairs: [
       { drag: e("🥄"), target: e("🍽️") },
       { drag: e("🐝"), target: e("🍯") },
@@ -682,10 +683,12 @@ export const LEVELS: Level[] = [
   {
     id: "gunluk-sira",
     section: "yasam",
-    title: "Günlük Sıra",
+    title: "Günlük Rutin",
     kind: "sequence",
     icon: "🪥",
-    instr: "Üstteki sıraya bak. Aynı sırayla alta sürükle.",
+    // GERÇEK SIRALAMA: üst rehber gizli (hideModel); çocuk rutinin doğru sırasını kendi düşünür.
+    instr: "Önce ne yaparız, sonra ne? Doğru sırayla diz.",
+    hideModel: true,
     order: [e("🛏️"), e("🪥"), e("👕"), e("🥣")],
   },
   {

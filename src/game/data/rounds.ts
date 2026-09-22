@@ -375,10 +375,14 @@ export function ilkSesRounds(): Round[] {
 }
 
 // KELİME AVI (sözcük dağarcığı): söylenen kelimenin nesnesini bul (kelime-nesne eşleme).
+// Sözcük dağarcığı hattı: 3-6 yaşın net tanıdığı, Türkçede tek-anlamlı emoji-kelime çiftleri.
 const KELIMELER: { word: string; emoji: string }[] = [
   { word: "Elma", emoji: "🍎" }, { word: "Top", emoji: "⚽" }, { word: "Kedi", emoji: "🐱" },
   { word: "Balık", emoji: "🐟" }, { word: "Araba", emoji: "🚗" }, { word: "Muz", emoji: "🍌" },
   { word: "Ev", emoji: "🏠" }, { word: "Çiçek", emoji: "🌸" }, { word: "Köpek", emoji: "🐶" }, { word: "Ağaç", emoji: "🌳" },
+  { word: "Güneş", emoji: "☀️" }, { word: "Ay", emoji: "🌙" }, { word: "Yıldız", emoji: "⭐" },
+  { word: "Kuş", emoji: "🐦" }, { word: "Kelebek", emoji: "🦋" }, { word: "Çilek", emoji: "🍓" },
+  { word: "Şapka", emoji: "🎩" }, { word: "Balon", emoji: "🎈" }, { word: "Uçak", emoji: "✈️" }, { word: "Fil", emoji: "🐘" },
 ];
 const kelimeInstr = (w: string) => `${w} hangisi? Ona dokun ve sepete koy.`;
 export const KELIME_INSTRS = KELIMELER.map((k) => kelimeInstr(k.word));

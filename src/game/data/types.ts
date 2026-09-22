@@ -87,6 +87,9 @@ export interface Level {
 
   // sequence
   order?: Content[];
+  // sequence: üstteki model/rehber sırayı GİZLE -> çocuk doğru sırayı kendi düşünür (kopyalama değil,
+  // akıl-yürütme). Gizliyken kutulara 1..n zaman-sırası numarası ipucu konur. (Günlük Rutin için)
+  hideModel?: boolean;
 
   // pattern (birden fazla satir; null = bos yuva)
   patternRows?: (Content | null)[][];

@@ -339,17 +339,17 @@ export function buildBoard(level: Level): Board {
     const n = seq.length;
     const size = cellSize(n);
     seq.forEach((c, i) => {
-      // üstte doğru sıra referansı (rehber)
-      statics.push({ content: c, pos: [cellX(n, i), 4.8], w: size * 0.72, h: size * 0.72 });
+      // üstte doğru sıra referansı (rehber) — hideModel ise GİZLE (çocuk sırayı kendi kurar)
+      if (!level.hideModel) statics.push({ content: c, pos: [cellX(n, i), 4.8], w: size * 0.72, h: size * 0.72 });
       slots.push({
         id: `pos${i}`,
         pos: [cellX(n, i), 1.4],
         expects: `o${i}`,
         basket: false,
         style: "slot",
-        // pozisyon etiketi (1,2,3...) YOK: "Sayıları Sırala"da referans sayilarla
-        // (or. 5-6-7-8-9) cakisip cocugu sasirtiyordu. Kutular ustteki rehber
-        // satirla zaten sutun sutun hizali; etikete gerek yok.
+        // Normalde pozisyon etiketi YOK (üstteki rehberle hizalı). Ama model GİZLİYSE, sıra ipucu
+        // olarak 1..n zaman-sırası numarası göster (rutinde "önce/sonra" hissi).
+        label: level.hideModel ? String(i + 1) : undefined,
         w: size,
         h: size,
       });

@@ -55,7 +55,7 @@ function jigsawLevel(count: number, seed: number): Level {
     title: `${count} Parça Yapboz${count >= 7 ? " (İleri)" : ""}`, // 7-8 parça 5 yaş seviyesi
     kind: "jigsaw",
     icon: "🧩",
-    instr: "Yukarıdaki resme bak. Parçaları yerlerine sürükle.",
+    instr: "Resme bak ve parçaları yerlerine sürükle.",
     jigsaw: { emoji: pic.emoji, bg: pic.bg, layout: JIGSAW_LAYOUTS[count] },
   };
 }

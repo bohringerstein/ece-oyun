@@ -41,7 +41,13 @@ export function WeightGame({ level, onWin }: { level: Level; onWin: () => void }
       wrongSound();
       speakEncourage();
       setPicked(side);
-      setTimeout(() => setPicked((p) => (p === side ? null : p)), 450);
+      // NEDENSEL GERİ BİLDİRİM: yanlışta da teraziyi ağır tarafa eğ -> çocuk hangisinin ağır
+      // olduğunu GÖRÜR (kavram öğretilir), sonra sıfırlanıp tekrar denenir (kurul).
+      setTilt(heavySide);
+      setTimeout(() => {
+        setTilt("none");
+        setPicked((p) => (p === side ? null : p));
+      }, 1100);
     }
   }
 

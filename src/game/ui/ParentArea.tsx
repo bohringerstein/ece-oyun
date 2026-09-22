@@ -11,6 +11,7 @@ interface Props {
   earned: number;
   total: number;
   sections: Section[];
+  done: Set<string>;
 }
 
 interface SkillView {
@@ -37,7 +38,7 @@ function skillView(section: string): SkillView {
 // Kapı: düğmeyi ~1.4 sn BASILI TUT (küçük çocuk açamaz; okuma gerekmez).
 // Panel (iskelet): müzik, yönerge sesi, ilerlemeyi sıfırla + ilerleme özeti.
 // (Zengin ilerleme panosu/çoklu profil sonraki fazlarda.)
-export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections }: Props) {
+export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring, earned, total, sections, done }: Props) {
   const [stage, setStage] = useState<"idle" | "gate" | "panel">("idle");
   // EBEVEYN KAPISI: çocuğun çözemeyeceği iki-basamaklı toplama (okuma/sayı bilgisi gerektirir).
   // Basılı-tutma yeterli değildi (4-6 yaş aşabiliyordu) — kurul kararıyla aritmetik doğrulama.
@@ -193,7 +194,12 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
 
             {/* Gelişim panosu (kavram kaydı): bölüm bazında deneme, başarı %, çubuk ve seviye */}
             {(() => {
-              const views = sections.map((s) => ({ s, v: skillView(s.id) }));
+              const views = sections.map((s) => ({
+                s,
+                v: skillView(s.id),
+                got: s.levels.filter((id) => done.has(id)).length, // kazanılan çıkartma
+                tot: s.levels.length,
+              }));
               const playedViews = views.filter(({ v }) => v.played);
               const weak = playedViews.filter(({ v }) => v.pct > 0 && v.pct < 55).map(({ s }) => s.title);
               const strong = playedViews.filter(({ v }) => v.pct >= 80).map(({ s }) => s.title);
@@ -208,23 +214,25 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
               return (
                 <div style={{ textAlign: "left", margin: "10px 0", maxHeight: 240, overflowY: "auto" }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#8894aa", margin: "4px 6px" }}>Gelişim</div>
-                  {views.map(({ s, v }) => (
+                  {views.map(({ s, v, got, tot }) => (
                     <div key={s.id} style={{ padding: "8px 10px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 15, marginBottom: 5 }}>
                         <span style={{ fontWeight: 600 }}>{s.emoji} {s.title}</span>
-                        <span style={{ color: v.color, fontWeight: 700, fontSize: 13 }}>
-                          {v.played ? v.txt : "henüz oynanmadı"}
+                        <span style={{ color: v.played ? v.color : got > 0 ? "#3b4761" : "#98a2b3", fontWeight: 700, fontSize: 13 }}>
+                          {v.played ? v.txt : got > 0 ? "başladı 👍" : "henüz oynanmadı"}
                         </span>
+                      </div>
+                      {/* çıkartma her zaman gösterilir -> "5 çıkartma var ama oynanmadı" çelişkisi olmaz */}
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#8894aa", marginTop: 2 }}>
+                        <span>⭐ {got}/{tot} çıkartma</span>
+                        {v.played && v.attempts >= 3 && <span>{v.band}</span>}
                       </div>
                       {v.played && v.attempts >= 3 && (
                         <>
-                          <div style={{ height: 8, borderRadius: 999, background: "#e8edf6", overflow: "hidden" }}>
+                          <div style={{ height: 8, borderRadius: 999, background: "#e8edf6", overflow: "hidden", marginTop: 4 }}>
                             <div style={{ height: "100%", width: `${v.pct}%`, background: v.color, borderRadius: 999, transition: "width .3s" }} />
                           </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#8894aa", marginTop: 3 }}>
-                            <span>%{v.pct} başarı · {v.attempts} deneme</span>
-                            <span>{v.band}</span>
-                          </div>
+                          <div style={{ fontSize: 12, color: "#8894aa", marginTop: 3 }}>%{v.pct} başarı · {v.attempts} deneme</div>
                         </>
                       )}
                     </div>

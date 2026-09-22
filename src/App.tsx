@@ -186,6 +186,7 @@ export function App() {
           earned={LEVELS.filter((l) => done.has(l.id)).length}
           total={LEVELS.length}
           sections={SECTIONS}
+          done={done}
         />
         {undoSnap && (
           <div className="undo-toast" role="status">

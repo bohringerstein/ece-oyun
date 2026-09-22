@@ -158,9 +158,14 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     return () => clearTimeout(t);
   }, [showOnboard]);
 
+  // ÖLÇÜLEBİLİR (yanlış yapılabilen) oyun tipleri: yalnız bunlar başarı kaydına/zorluk bandına girer.
+  // trace/draw/story/breathe/maze "yanlışı olmayan" tamamlama/yaratıcılık oyunları; bunlar recordWrong
+  // çağırmadığından band'i yapay %100'e (ileri seviye) şişiriyordu (kurul kök-sorun düzeltmesi).
+  const SCORED_KINDS = ["match", "select", "sort", "sequence", "pattern", "count", "compare", "puzzle", "jigsaw", "spot", "memory", "weight", "seriate", "depth"];
+
   function handleWin() {
     if (won || flash) return;
-    recordCorrect(); // her tamamlanan tur = bir doğru (kavram kaydı)
+    if (SCORED_KINDS.includes(data.kind)) recordCorrect(); // yalnız ölçülebilir turlar kavram kaydına girer
     if (round < total - 1) {
       // ara bölüm bitti: mini kutlama, sıradaki bölüm.
       // ÖVGÜ SESİ TAM BİTİNCE geç (sabit süreyle kesme). round degisince bu effect'in

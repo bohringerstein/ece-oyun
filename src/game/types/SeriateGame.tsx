@@ -18,7 +18,8 @@ export function SeriateGame({ level, onWin }: { level: Level; onWin: () => void 
 
   // boyut kademelerini uret + karistirilmis yerlesim
   const objs = useMemo<Obj[]>(() => {
-    const base = [0.42, 0.6, 0.78, 0.96, 1.14];
+    // boyut kademeleri arası fark BELİRGİN olsun (küçük kontrast 3-4 yaş ayırt eşiğinin altındaydı - kurul)
+    const base = [0.4, 0.64, 0.9, 1.16, 1.42];
     const arr: Obj[] = Array.from({ length: n }, (_, i) => ({ id: i, size: base[i], order: i }));
     // yerlesim sirasini karistir (dogru sira boyutta, ekranda rastgele)
     for (let i = arr.length - 1; i > 0; i--) {

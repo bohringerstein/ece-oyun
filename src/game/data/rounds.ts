@@ -433,7 +433,8 @@ function compareSizeRounds(kind: "big" | "small"): Round[] {
   return rounds(() => ({
     compareRows: sample(SIZE_POOL, 3).map((emoji) => ({
       items: [e(emoji), e(emoji), e(emoji)],
-      itemScales: [1.0, 0.62, 0.4],
+      // ölçekler daha AYRIK: küçük emojide 0.62↔1.0 farkı gözle belirsizdi (kurul); artık net kademe
+      itemScales: [1.0, 0.54, 0.3],
       correctIndex: kind === "big" ? 0 : 2,
     })),
     compareBySize: true,
@@ -462,7 +463,8 @@ const FILL_ITEMS = ["🔵", "🔴", "🟢", "🟡", "🟣", "🟠", "🍬", "⭐
 function fillRounds(kind: "full" | "empty"): Round[] {
   return rounds(() => ({
     compareRows: sample(FILL_ITEMS, 3).map((emoji) => ({
-      items: [grp(emoji, randInt(3, 5), true), grp(emoji, 0, true)], // [dolu, bos]
+      // "dolu" kavanozu gerçekten dolu göster (tepeye yakın); az nesne "içinde bir şey var" gibiydi (kurul)
+      items: [grp(emoji, randInt(6, 8), true), grp(emoji, 0, true)], // [dolu, bos]
       correctIndex: kind === "full" ? 0 : 1,
     })),
     compareBySize: false,

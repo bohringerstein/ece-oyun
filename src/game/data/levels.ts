@@ -441,7 +441,7 @@ export const LEVELS: Level[] = [
     items: [
       { content: e("🎁"), correct: true },
       { content: e("🏀"), correct: false },
-      { content: e("🪟"), correct: true },
+      { content: e("🟦"), correct: true }, // 🪟 (pencere=dikdörtgen) yerine saf kare
       { content: e("🍦"), correct: false },
       { content: e("🧊"), correct: true },
       { content: e("⚽"), correct: false },

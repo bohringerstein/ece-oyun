@@ -98,6 +98,13 @@ function stopAudio() {
   setSpeechDucking(false);
 }
 
+// Bazi hazir kayitlar digerlerine gore YAVAS seslendirilmis (or. "Devam edelim!" eski, daha
+// yavas tempoda uretilmis bir mp3'e sahip). Dosyayi yeniden uretmeden oynatma hizini hafifce
+// artirarak tempoyu diger seslerle esitleriz (kullanici raporu).
+const PLAYBACK_RATE: Record<string, number> = {
+  "Devam edelim!": 1.18,
+};
+
 // Bu metin icin hazir dogal kayit varsa cal; yoksa false don.
 // onEnd: ses bitince (veya hata) BIR KEZ cagrilir (senkron animasyonlar icin).
 function playPrerecorded(text: string, onEnd?: () => void): boolean {
@@ -107,6 +114,7 @@ function playPrerecorded(text: string, onEnd?: () => void): boolean {
   stopAudio();
   const a = new Audio(`${BASE}voice/${id}.mp3`);
   a.volume = 1;
+  a.playbackRate = PLAYBACK_RATE[text] ?? 1;
   curAudio = a;
   setSpeechDucking(true); // konusurken arka plan muzigini kis
   let ended = false;

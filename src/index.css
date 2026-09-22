@@ -28,16 +28,25 @@ body,
   margin: 0;
   height: 100%;
   width: 100%;
+  max-width: 100%;
   font-family: "Fredoka", "Segoe UI", sans-serif;
   overflow: hidden;
-  /* mobilde asagi-cekip-yenile / lastik-bant sicramasini engelle (iOS+Android) */
+  /* mobilde asagi-cekip-yenile / lastik-bant sicramasini + YATAY kaydirmayi engelle (iOS+Android) */
   overscroll-behavior: none;
+  overscroll-behavior-x: none;
   /* iOS'ta yatay/otomatik metin buyutmeyi kilitle */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+/* Uygulama gorunum-alanini KILITLE: telefonda/tablette oyun saga-sola kaydirilamaz
+   ("ekrana sığdır", kullanıcı raporu). Ic kaydirilabilir alanlar (harita/bölüm ekranı)
+   yalnizca DIKEY kaydirir; yatay tasma kirpilir. */
+#root {
+  position: fixed;
+  inset: 0;
 }
 body {
   color: #3b4761;
@@ -94,10 +103,11 @@ h2 {
   padding-top: calc(56px + env(safe-area-inset-top));
 }
 .draw-canvas {
-  width: min(90vw, 60vh);
-  height: min(90vw, 60vh);
-  max-width: 520px;
-  max-height: 520px;
+  /* çizim alanı büyütüldü (kullanıcı isteği): daha geniş tuval, ekranı taşırmadan */
+  width: min(94vw, 70vh);
+  height: min(94vw, 70vh);
+  max-width: 620px;
+  max-height: 620px;
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
@@ -235,7 +245,17 @@ button {
   padding: calc(28px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right))
     calc(40px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));
   overflow-y: auto;
+  overflow-x: hidden; /* yatay tasma kaydirilmasin */
   height: 100%;
+}
+/* Dikey kaydirilabilir tum ekranlar: yatay eksende ASLA kaydirma (ekrana sığsın) */
+.map,
+.section-screen,
+.customize,
+.coloring,
+.start-screen {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ---------- MACERA HARİTASI ---------- */

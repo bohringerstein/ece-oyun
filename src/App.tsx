@@ -161,7 +161,7 @@ export function App() {
             stopSpeak();
             setView({ name: "coloring" });
           }}
-          earned={done.size}
+          earned={LEVELS.filter((l) => done.has(l.id)).length}
           total={LEVELS.length}
           sections={SECTIONS}
         />

@@ -60,7 +60,9 @@ export function BreatheGame({ level, onWin }: { level: Level; onWin: () => void 
     <div className="breathe-wrap">
       <p className="breathe-label">{phase === "in" ? "Nefes al 🌬️" : "Yavaşça ver 😮‍💨"}</p>
       <div className="breathe-stage">
-        <div className={`breathe-circle ${phase}`}>
+        {/* giriş yönergesi çalarken (started=false) halka KÜÇÜK dursun; başlayınca ilk "Nefes al"
+            komutuyla birlikte büyüsün (önceden büyük başlıyordu, ilk "al"da büyümüyordu - kullanıcı). */}
+        <div className={`breathe-circle ${started ? phase : "out"}`}>
           <Mascot mood="happy" size={120} bob={false} />
         </div>
       </div>

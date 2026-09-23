@@ -235,8 +235,8 @@ export function ParentArea({ musicOn, onToggleMusic, onResetProgress, onColoring
                     <div key={s.id} style={{ padding: "8px 10px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 15, marginBottom: 5 }}>
                         <span style={{ fontWeight: 600 }}>{s.emoji} {s.title}</span>
-                        <span style={{ color: v.played ? v.color : got > 0 ? "#3b4761" : "#98a2b3", fontWeight: 700, fontSize: 13 }}>
-                          {v.played ? v.txt : got > 0 ? "başladı 👍" : "henüz oynanmadı"}
+                        <span style={{ color: got === tot && tot > 0 ? "#2f9e5e" : v.played ? v.color : got > 0 ? "#3b4761" : "#98a2b3", fontWeight: 700, fontSize: 13 }}>
+                          {got === tot && tot > 0 ? "tamamlandı ⭐" : v.played ? v.txt : got > 0 ? "başladı 👍" : "henüz oynanmadı"}
                         </span>
                       </div>
                       {/* çıkartma her zaman gösterilir -> "5 çıkartma var ama oynanmadı" çelişkisi olmaz */}

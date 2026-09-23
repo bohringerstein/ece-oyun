@@ -54,6 +54,43 @@ function pickSeq<T>(pool: readonly T[], n = ROUNDS, prev?: T): T[] {
   }
   return out;
 }
+// TUR ORTUSMESINI ONLE (kullanici raporu: "bir onceki turun cogu sonraki turda geliyordu").
+// n turluk k'li gruplar uretir; her tur, bir onceki turda GELMEYEN ogeleri onceler. Havuz >= 2k ise
+// ardisik turlar TAMAMEN ayrik olur; kucuk havuzda ortusme minimuma iner (kacinilmaz kismi tekrar).
+function sampleSeq<T>(pool: readonly T[], k: number, n = ROUNDS): T[][] {
+  const out: T[][] = [];
+  let prev = new Set<T>();
+  for (let r = 0; r < n; r++) {
+    const sh = shuffleArr(pool.slice());
+    const ordered = [...sh.filter((c) => !prev.has(c)), ...sh.filter((c) => prev.has(c))]; // once taze
+    const g = ordered.slice(0, Math.min(k, pool.length));
+    out.push(g);
+    prev = new Set(g);
+  }
+  return out;
+}
+// Ciftler icin sirali orneleyici: hem ardisik tur ortusmesini onler HEM grup-ici emoji benzersizligini
+// korur (samplePairsUnique mantigi: ayni turda bir emoji iki hedefe denk gelmesin).
+function pairSeq(pool: [string, string][], k: number, n = ROUNDS): [string, string][][] {
+  const out: [string, string][][] = [];
+  let prev = new Set<[string, string]>();
+  for (let r = 0; r < n; r++) {
+    const sh = shuffleArr(pool.slice());
+    const ordered = [...sh.filter((p) => !prev.has(p)), ...sh.filter((p) => prev.has(p))];
+    const g: [string, string][] = [];
+    const used = new Set<string>();
+    for (const [a, b] of ordered) {
+      if (g.length >= k) break;
+      if (a === b || used.has(a) || used.has(b)) continue;
+      g.push([a, b]);
+      used.add(a);
+      used.add(b);
+    }
+    out.push(g);
+    prev = new Set(g);
+  }
+  return out;
+}
 
 // UYARLANIR ZORLUK: aktif bölümün difficultyBand'i (0=kolay,1=orta,2=zor) üreticilere
 // geçirilir. Sayma/nicelik oyunlarında band, sayı aralığını belirler -> iyi giden çocuk
@@ -112,22 +149,12 @@ export function shadowRounds(): Round[] {
 // Bir turda HICBIR emoji tekrar etmesin (ne surukle ne hedef tarafinda). Aksi halde
 // ayni emoji (or. 🧦) iki farkli hedefe denk gelip cocugu "hangisi nereye?" ikilemine
 // sokabiliyordu. Benzersiz emoji seti garantili.
-function samplePairsUnique(pool: [string, string][], k: number): [string, string][] {
-  const out: [string, string][] = [];
-  const used = new Set<string>();
-  for (const [a, b] of shuffleArr(pool.slice())) {
-    if (a === b || used.has(a) || used.has(b)) continue;
-    out.push([a, b]);
-    used.add(a);
-    used.add(b);
-    if (out.length >= k) break;
-  }
-  return out;
-}
 // band ile eşleştirilecek ÇİFT sayısı uyarlanır (kolay az, zor çok), [3,5] aralığında.
+// pairSeq: grup-içi emoji benzersizliği (aynı turda 🧦 iki hedefe denk gelmesin) + ARDIŞIK tur
+// örtüşmesini önler (bir önceki turun çiftleri sonraki turda tekrar etmesin).
 function pairRounds(pool: [string, string][], per = 4, band = 1): Round[] {
   const cnt = Math.max(3, Math.min(per + (band - 1), 5));
-  return rounds(() => ({ pairs: samplePairsUnique(pool, cnt).map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
+  return pairSeq(pool, cnt).map((g) => ({ pairs: g.map(([a, b]) => ({ drag: e(a), target: e(b) })) }));
 }
 
 // ILISKILI = "birbiriyle ilgili": aitlik / neden-sonuç (hayvan-ürün, sebep-sonuç).
@@ -187,7 +214,7 @@ const AYNI_POOL: string[] = [
   "🍉","🐠","🦄","🌵","🎵","🐞","🍌","🚲","🌙","🐘","🦁","🐸","🍦","🎃","🐳","🌼","🚁","🍩","🪁","🎯",
 ];
 export const ayniRounds = () =>
-  rounds(() => ({ pairs: sample(AYNI_POOL, 3).map((c) => ({ drag: e(c), target: e(c) })) }));
+  sampleSeq(AYNI_POOL, 3).map((g) => ({ pairs: g.map((c) => ({ drag: e(c), target: e(c) })) }));
 
 // FARKLI OLANI BUL (dikkat) - ayni gruptan biri farkli
 const FARKLI_POOL: string[] = [
@@ -195,8 +222,7 @@ const FARKLI_POOL: string[] = [
   "🍎","🍊","🍌","🍓","🍇","🍉","🍒","🥕","🌽","🌸","🌻","⭐","🚗","🚌","✈️","⚽","🎈","🎁","🌈","🚀",
 ];
 export const farkliRounds = (band?: number) =>
-  rounds(() => {
-    const [same, diff] = sample(FARKLI_POOL, 2);
+  sampleSeq(FARKLI_POOL, 2).map(([same, diff]) => {
     // band ile "aynı" (çeldirici) sayısı: kolay 3, orta 3-4, zor 5 -> farklıyı bulmak zorlaşır
     const n = (band ?? 1) <= 0 ? 3 : (band ?? 1) >= 2 ? 5 : randInt(3, 4);
     const items = Array.from({ length: n - 1 }, () => ({ content: e(same), correct: false }));
@@ -211,13 +237,16 @@ const PZCOLORS = [
 ];
 const SHAPES = ["circle", "triangle", "square", "star", "heart"] as const;
 export function puzzleRounds(): Round[] {
-  return rounds(() => ({
-    puzzles: sample(SHAPES, 3).map((shape) => ({
-      shape,
-      color: pick(PZCOLORS),
-      missing: randInt(0, 3) as 0 | 1 | 2 | 3,
-    })),
-  }));
+  return rounds(() => {
+    const color = pick(PZCOLORS); // turdaki TÜM parçalar aynı renk -> renk ipucu yok, şekilden eşleştir
+    return {
+      puzzles: sample(SHAPES, 3).map((shape) => ({
+        shape,
+        color,
+        missing: randInt(0, 3) as 0 | 1 | 2 | 3,
+      })),
+    };
+  });
 }
 
 // --------- SEÇME (şekiller / uçanlar / duygular) ---------
@@ -236,28 +265,40 @@ const LOOKALIKE_GROUPS: string[][] = [
 ];
 const LOOKALIKE_OF = new Map<string, number>();
 LOOKALIKE_GROUPS.forEach((g, i) => g.forEach((c) => LOOKALIKE_OF.set(c, i)));
-// sample gibi ama gorsel-ikiz gruplarindan turda en fazla bir oge secer.
-function sampleNoLook(pool: readonly string[], k: number): string[] {
-  const out: string[] = [];
-  const usedGroups = new Set<number>();
-  for (const c of shuffleArr(pool.slice())) {
-    const g = LOOKALIKE_OF.get(c);
-    if (g !== undefined && usedGroups.has(g)) continue;
-    out.push(c);
-    if (g !== undefined) usedGroups.add(g);
-    if (out.length >= k) break;
+// sampleSeq gibi (ardisik tur ortusmesini onler) AMA ayrica grup-ici gorsel-ikiz cakismasini
+// engeller (ayni turda iki dag/iki top/iki saat olmaz). Sekil oyunlari icin.
+function sampleSeqNoLook(pool: string[], k: number, n = ROUNDS): string[][] {
+  const out: string[][] = [];
+  let prev = new Set<string>();
+  for (let r = 0; r < n; r++) {
+    const sh = shuffleArr(pool.slice());
+    const ordered = [...sh.filter((c) => !prev.has(c)), ...sh.filter((c) => prev.has(c))]; // once taze
+    const g: string[] = [];
+    const usedGroups = new Set<number>();
+    for (const c of ordered) {
+      if (g.length >= k) break;
+      const gid = LOOKALIKE_OF.get(c);
+      if (gid !== undefined && usedGroups.has(gid)) continue; // ayni turda ikiz gorsel yok
+      g.push(c);
+      if (gid !== undefined) usedGroups.add(gid);
+    }
+    if (g.length < k) for (const c of ordered) { if (g.length >= k) break; if (!g.includes(c)) g.push(c); }
+    out.push(g);
+    prev = new Set(g);
   }
   return out;
 }
 // band ile ÇELDİRİCİ sayısı uyarlanır: kolay az, zor fazla çeldirici (görsel ayırt etme yükü).
-// noLook=true (şekil oyunları): hem doğru hem çeldirici tarafında görsel-ikiz çakışmasını önler.
+// noLook=true (şekil oyunları): görsel-ikiz çakışmasını da önler. Her iki durumda da sampleSeq ile
+// ARDIŞIK turlar mümkün olduğunca farklı olur (kullanıcı raporu: turlar birbirini tekrar ediyordu).
 function selectRounds(correct: string[], wrong: string[], nc = 3, nw = 3, instr?: string, band = 1, noLook = false): Round[] {
   const w = Math.max(2, nw + (band - 1)); // band0: nw-1, band1: nw, band2: nw+1
-  const take = noLook ? sampleNoLook : sample;
-  return rounds(() => {
+  const cSeq = noLook ? sampleSeqNoLook(correct, nc) : sampleSeq(correct, nc);
+  const wSeq = noLook ? sampleSeqNoLook(wrong, w) : sampleSeq(wrong, w);
+  return cSeq.map((cg, r) => {
     const items = [
-      ...take(correct, nc).map((c) => ({ content: e(c), correct: true })),
-      ...take(wrong, w).map((c) => ({ content: e(c), correct: false })),
+      ...cg.map((c) => ({ content: e(c), correct: true })),
+      ...wSeq[r].map((c) => ({ content: e(c), correct: false })),
     ];
     return instr ? { items, instr } : { items };
   });
@@ -414,8 +455,8 @@ export function routineRounds(): Round[] {
 const QTY = ["🍎","🍬","⭐","🐟","🎈","🌸","🍓","🐥","🍇","🚗","🐝","🍒","🌼","🐞","🍊","🐤","🎁","🐙","🍄","🐚"];
 function compareQtyRounds(kind: "more" | "less", band = 1): Round[] {
   const max = qtyMax(band); // band ile üst sınır: kolay 4, orta 6, zor 9
-  return rounds(() => ({
-    compareRows: sample(QTY, 3).map((emoji) => {
+  return sampleSeq(QTY, 3).map((g) => ({
+    compareRows: g.map((emoji) => {
       const a = randInt(1, max);
       let b = randInt(1, max);
       while (b === a) b = randInt(1, max);
@@ -434,8 +475,8 @@ const SIZE_POOL = [
   "🐬","🎃","🐸","🍄","🦒","🚌","🐧","🌈","🐝","🍔",
 ];
 function compareSizeRounds(kind: "big" | "small"): Round[] {
-  return rounds(() => ({
-    compareRows: sample(SIZE_POOL, 3).map((emoji) => ({
+  return sampleSeq(SIZE_POOL, 3).map((g) => ({
+    compareRows: g.map((emoji) => ({
       items: [e(emoji), e(emoji), e(emoji)],
       // ölçekler daha AYRIK: küçük emojide 0.62↔1.0 farkı gözle belirsizdi (kurul); artık net kademe
       itemScales: [1.0, 0.54, 0.3],
@@ -465,8 +506,8 @@ export const hafifRounds = () => weightRounds("light");
 // Ayni kavanozun DOLU vs BOŞ hali; cocuk dolu (ya da bos) olani secer.
 const FILL_ITEMS = ["🔵", "🔴", "🟢", "🟡", "🟣", "🟠", "🍬", "⭐", "🍓", "🐟"];
 function fillRounds(kind: "full" | "empty"): Round[] {
-  return rounds(() => ({
-    compareRows: sample(FILL_ITEMS, 3).map((emoji) => ({
+  return sampleSeq(FILL_ITEMS, 3).map((g) => ({
+    compareRows: g.map((emoji) => ({
       // "dolu" kavanozu gerçekten dolu göster (tepeye yakın); az nesne "içinde bir şey var" gibiydi (kurul)
       items: [grp(emoji, randInt(6, 8), true), grp(emoji, 0, true)], // [dolu, bos]
       correctIndex: kind === "full" ? 0 : 1,
@@ -483,8 +524,7 @@ const DOT_COLORS = ["#e63946", "#3a86ff", "#2a9d8f", "#f77f00", "#8338ec", "#ff0
 export function noktaSayRounds(band = 1): Round[] {
   // subitizing: nokta deseni saymadan tanınır -> üst sınır 6'da kalır; band alt/üst tabanı kaydırır
   const pool = band <= 0 ? [1, 2, 3, 4] : band >= 2 ? [3, 4, 5, 6] : [1, 2, 3, 4, 5, 6];
-  return rounds(() => {
-    const cnts = sample(pool, 3);
+  return sampleSeq(pool, 3).map((cnts) => {
     const extra = pool.filter((v) => !cnts.includes(v)); // çeldirici sayı (saymayı zorunlu kılar)
     const numbers = extra.length ? [...cnts, pick(extra)] : cnts;
     return {
@@ -509,9 +549,10 @@ export function seriateRounds(band = 1): Round[] {
 // band ile sayı aralığı uyarlanır (bkz. countRange): kolay 1-4, orta 1-7, zor 4-10.
 function countRounds(pool: string[], jar: boolean, band = 1): Round[] {
   const range = countRange(band);
-  return rounds(() => {
-    const cnts = sample(range, 3); // aralıktan 3 farklı sayı
-    const emojis = sample(pool, 3);
+  const cntSeq = sampleSeq(range, 3); // ardışık turlarda farklı sayı grupları
+  const emojiSeq = sampleSeq(pool, 3); // ardışık turlarda farklı nesneler
+  return cntSeq.map((cnts, r) => {
+    const emojis = emojiSeq[r];
     const groups = cnts.map((cnt, g) => ({ content: grp(emojis[g], cnt, jar), n: cnt }));
     // ÇELDİRİCİ: gruplarda olmayan 1 sayı ekle -> çocuk elemeyle değil sayarak bulmak zorunda
     // (kazanma grup/yuva sayısına bağlı; çeldirici token yuvasız kalır). Kurul kararı.
@@ -681,7 +722,7 @@ const MEMORY_POOL: string[] = [
   "🚗","🚌","✈️","🚀","⛵","🚂","⚽","🎈","🎁","⭐","🌈","🌸","🌻","🌵","🌙","☀️","🍦","🎂","🧸","🎩",
 ];
 export function memoryRounds(pairs: number): Round[] {
-  return rounds(() => ({ memory: { chars: sample(MEMORY_POOL, pairs) } }));
+  return sampleSeq(MEMORY_POOL, pairs).map((chars) => ({ memory: { chars } }));
 }
 
 // --------- YOL BUL (labirent / yol takibi) ---------

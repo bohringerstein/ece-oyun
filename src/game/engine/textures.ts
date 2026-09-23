@@ -26,11 +26,14 @@ function finalize(cv: HTMLCanvasElement): THREE.Texture {
   return tex;
 }
 
-function drawEmoji(ctx: CanvasRenderingContext2D, char: string, size = 360) {
+// iOS (Apple Color Emoji) glyph metrikleri farklı: emoji, yazı kutusunun ÜST/ALTINA taşıp
+// canvas'ta KIRPILABILIYOR ("yarım emoji"). Boyutu 512'lik tuvale göre küçültüp (daha çok kenar payı)
+// dikey ofseti sıfıra yakın tutmak kırpılmayı önler. (kullanıcı: iPhone'da yarım emoji)
+function drawEmoji(ctx: CanvasRenderingContext2D, char: string, size = 328) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-  ctx.fillText(char, SIZE / 2, SIZE / 2 + 20);
+  ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+  ctx.fillText(char, SIZE / 2, SIZE / 2 + 6);
 }
 
 function drawShape(ctx: CanvasRenderingContext2D, shape: string, color: string) {
@@ -247,8 +250,9 @@ function drawGroup(ctx: CanvasRenderingContext2D, char: string, n: number, jar?:
   ctx.globalAlpha = 1;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${s}px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-  for (const [px, py] of pts) ctx.fillText(char, px * SIZE, py * SIZE + 10);
+  // Apple Color Emoji İLK sırada (iOS'ta emoji doğru render olsun; eksikti -> yarım/tofu riski)
+  ctx.font = `${s}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+  for (const [px, py] of pts) ctx.fillText(char, px * SIZE, py * SIZE + 4);
 }
 
 // Nokta deseni (subitizing / "nokta say"): 1-6 arasi zar benzeri pip yerlesimi.

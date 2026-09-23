@@ -223,10 +223,11 @@ export const LEVELS: Level[] = [
     kind: "puzzle",
     icon: "🧩",
     instr: "Her şeklin bir parçası eksik. Doğru parçayı boşluğa sürükle.",
+    // TÜM parçalar AYNI renk -> çocuk renkten değil ŞEKİL/boşluktan eşleştirir (kurul/kullanıcı).
     puzzles: [
-      { shape: "circle", color: "#f77f00", missing: 3 },
-      { shape: "triangle", color: "#ffd60a", missing: 2 },
-      { shape: "square", color: "#2a9d8f", missing: 1 },
+      { shape: "circle", color: "#4d96ff", missing: 3 },
+      { shape: "triangle", color: "#4d96ff", missing: 2 },
+      { shape: "square", color: "#4d96ff", missing: 1 },
     ],
   },
   {
@@ -361,7 +362,7 @@ export const LEVELS: Level[] = [
   {
     id: "kisa",
     section: "karsilastirma",
-    title: "Hangisi Daha Kısa?",
+    title: "Hangisi Daha Küçük?",
     kind: "compare",
     icon: "🦒",
     compareBySize: true,

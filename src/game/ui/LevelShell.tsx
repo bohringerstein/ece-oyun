@@ -238,7 +238,7 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
           <div className="board-3d">
             {data.instr && (
               <div className="instr-line" aria-live="polite">
-                <span className="instr-line-ic" aria-hidden="true">{data.icon}</span>
+                {/* oyunun kendi ikonu yönerge başına konmaz (kullanıcı) - yalnız yönerge metni */}
                 <span>{data.instr}</span>
               </div>
             )}

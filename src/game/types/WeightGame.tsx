@@ -54,7 +54,7 @@ export function WeightGame({ level, onWin }: { level: Level; onWin: () => void }
   return (
     <div className="weight-wrap">
       <div className="weight-hint">
-        {w.mode === "heavy" ? "⬇️ Daha AĞIR olana dokun" : "⬆️ Daha HAFİF olana dokun"}
+        {w.mode === "heavy" ? "Daha ağır olana dokun" : "Daha hafif olana dokun"}
       </div>
       <div className={`scale tilt-${tilt}`}>
         <div className="scale-beam">

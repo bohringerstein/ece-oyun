@@ -64,7 +64,7 @@ export function SeriateGame({ level, onWin }: { level: Level; onWin: () => void 
 
   return (
     <div className="seriate-wrap">
-      <div className="seriate-hint">🔢 En küçükten en büyüğe sırayla dokun</div>
+      <div className="seriate-hint">En küçükten en büyüğe sırayla dokun</div>
       <div className="seriate-row">
         {objs.map((o) => (
           <button

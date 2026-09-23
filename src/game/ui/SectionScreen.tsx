@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { Section } from "../data/types";
 import { getLevel } from "../data/levels";
 
@@ -22,8 +23,32 @@ const CARD_COLORS = [
 ];
 
 export function SectionScreen({ section, done, onPlay, onBack }: Props) {
+  // KAYDIRMA HAFIZASI: bir oyundan geri gelince listenin en tepesine atmasın; kaldığın yerde kal
+  // (telefon/tablette uzun listede önemli - kullanıcı raporu). Bölüm bazında sessionStorage'da tutulur.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const key = `ece-scroll-${section.id}`;
+    try {
+      const s = sessionStorage.getItem(key);
+      if (s) el.scrollTop = Number(s);
+    } catch {
+      // yoksay
+    }
+    const onScroll = () => {
+      try {
+        sessionStorage.setItem(key, String(el.scrollTop));
+      } catch {
+        // yoksay
+      }
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [section.id]);
+
   return (
-    <div className="section-screen" style={{ background: section.color + "22" }}>
+    <div className="section-screen" ref={scrollRef} style={{ background: section.color + "22" }}>
       <div className="topbar">
         <button className="round-btn back-btn" onClick={onBack} aria-label="Geri">
           <span aria-hidden="true">⬅</span>

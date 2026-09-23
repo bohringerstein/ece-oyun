@@ -823,11 +823,11 @@ export const LEVELS: Level[] = [
     instr: "Pofuduk'un hikâyesini birlikte dinleyelim.",
     story: {
       scenes: [
-        { bg: "#fff2d6", emoji: "🐤", emoji2: "🍪", text: "Pofuduk oyun oynadı, sonra kurabiye yiyecekti." },
+        { bg: "#fff2d6", emoji: "🐤", emoji2: "🍪", text: "Pofuduk oyun oynadı, sonra bisküvi yiyecekti." },
         { bg: "#ffe0e6", emoji: "🐤", emoji2: "🖐️", text: "Ama elleri toz toprak içindeydi." },
         { bg: "#e6faff", emoji: "🚰", emoji2: "🧼", text: "Musluğu açtı, sabunla ellerini güzelce ovaladı." },
         { bg: "#e6e0ff", emoji: "🐤", emoji2: "✨", text: "Elleri tertemiz, mis gibi oldu!" },
-        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🍪", text: "Artık kurabiyesini afiyetle yiyebilir. Aferin Pofuduk!" },
+        { bg: "#d7f0d0", emoji: "🐤", emoji2: "🍪", text: "Artık bisküvisini afiyetle yiyebilir. Aferin Pofuduk!" },
       ],
     },
   },

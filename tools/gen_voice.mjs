@@ -60,9 +60,11 @@ const AFERIN_FIX = { stability: 0.62, similarity_boost: 0.85, style: 0.0, use_sp
 // ISRARLA yanlis okudugu (yabanci-kokenli / acik-e-a vurgusu kayan) istisnalar icindir. Yeni sorunlu
 // kelime duyulunca buraya bir satir eklenip FORCE=1 ile yeniden uretilir.
 const PRON = [
-  // Acik-e/yabanci-kokenli riskli kelimeler icin ihtiyati alias (Betul'de test edilip kalibre edilecek):
-  // [/\bterazi\b/gi, "terazi"],   // gerekirse: "teraazi"
-  // [/\baferin\b/gi, "aferin"],   // gerekirse: "aaferin"
+  // Turkce k->g YUMUSAMASI: "Pofuduk'un/a/u..." ekranda dogru (ozel isim + kesme) ama SESTE
+  // "Pofuduğun" okunmali. Unlu ekten once k -> g (Pofuduk'la gibi UNSUZ ekte korunur, eslesmiyor).
+  [/Pofuduk'([aeıioöuü])/gi, "Pofuduğ$1"],
+  // Yeni duyulan bozuk kelimeler buraya (sag = Turkce okunusa gore). Ornek:
+  // [/\bterazi\b/gi, "teraazi"],
 ];
 function phoneticize(text) {
   let s = text;

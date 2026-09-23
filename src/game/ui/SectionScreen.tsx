@@ -30,12 +30,17 @@ export function SectionScreen({ section, done, onPlay, onBack }: Props) {
     const el = scrollRef.current;
     if (!el) return;
     const key = `ece-scroll-${section.id}`;
-    try {
-      const s = sessionStorage.getItem(key);
-      if (s) el.scrollTop = Number(s);
-    } catch {
-      // yoksay
-    }
+    const restore = () => {
+      try {
+        const s = sessionStorage.getItem(key);
+        if (s) el.scrollTop = Number(s);
+      } catch {
+        // yoksay
+      }
+    };
+    restore(); // senkron dene (flicker olmasın)
+    // Safari/iOS'ta mount anında izgara henüz tam yükseklikte olmayabilir -> layout oturunca tekrar dene
+    requestAnimationFrame(() => requestAnimationFrame(restore));
     const onScroll = () => {
       try {
         sessionStorage.setItem(key, String(el.scrollTop));

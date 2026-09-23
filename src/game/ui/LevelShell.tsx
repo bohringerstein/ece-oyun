@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Content, Level } from "../data/types";
 import { Scene3D } from "../engine/Scene3D";
 import { GameBoard3D } from "../engine/GameBoard3D";
@@ -70,6 +70,9 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     }
   });
   const [ready, setReady] = useState(false);
+  // İLK GİRİŞ: oyuna (kaldığı turdan/resume ile bile) ilk açılışta ANA yönerge çalsın; sonraki tur
+  // geçişlerinde kısa CUE. Aksi halde resume'da "Devam edelim" çalıp ana yönerge hiç duyulmuyordu.
+  const firstSpeak = useRef(true);
   const [won, setWon] = useState(false);
   const [winPhase, setWinPhase] = useState<"announce" | "reward" | "card">("announce");
   const [flash, setFlash] = useState(false);
@@ -124,12 +127,14 @@ export function LevelShell({ level, done, onBack, onWin, onNext }: Props) {
     // kelebek/balık/yıldız...). Varsa her turda onu seslendir ki çocuk ne arayacağını
     // bilsin; yoksa (görev her tur aynı) kısa bir devam ipucu (CUE) çal.
     const roundHasOwnInstr = !!(sessionRounds && sessionRounds[round] && "instr" in sessionRounds[round]);
+    const isFirst = firstSpeak.current; // oyuna ilk giriş (mount) -> ana yönerge, resume turu olsa bile
+    firstSpeak.current = false;
     // Hikâye & nefes kendi seslerini yönetir -> otomatik yönerge okuma ([[single-voice-source]])
     const t =
       data.kind === "story" || data.kind === "breathe"
         ? undefined
         : setTimeout(
-            () => speakInstruction(round === 0 || roundHasOwnInstr ? data.instr : CUES[(round - 1) % CUES.length]),
+            () => speakInstruction(round === 0 || roundHasOwnInstr || isFirst ? data.instr : CUES[(round - 1) % CUES.length]),
             550
           );
     return () => {

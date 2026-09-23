@@ -743,7 +743,7 @@ export const LEVELS: Level[] = [
     title: "Kelime Avı",
     kind: "select",
     icon: "💬",
-    instr: "Elma hangisi? Ona dokun ve sepete koy.",
+    instr: "Hangisi elma? Ona dokun ve sepete koy.",
     items: [
       { content: e("🍎"), correct: true },
       { content: e("🚗"), correct: false },

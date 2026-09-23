@@ -39,27 +39,30 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
 const API_KEY = process.env.ELEVENLABS_API_KEY;
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "o9DOmAyPjfFu8AfoFAnM"; // Nazli Yeni (Turkce)
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "6GYyziau4Hk8qdg7od5c"; // Betul Tuna (Turkce, secildi)
 const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
 const FORCE = process.env.FORCE === "1" || process.env.ELEVENLABS_FORCE === "1";
 
-// Iki-tonlu uretim + Turkce-uygun HIZ/TON (arastirma: style=0 Turkce'de sart; hiz 0.9-1.1 dogal).
-//  - COSKULU (ovgu/kutlama/karsilama): ekspresif ama Turkce netligi korur; biraz daha canli tempo.
-//  - SAKIN-NET (yonerge/ogretim + cesaret): net, kararli; tempo eskiden 0.9 (yavas) -> 1.0 (dogal).
-//  - PRON_FIX: telaffuzu zor kelimeler icin yuksek stability (sesli-harf kaymasini bastirir).
-//  - AFERIN_FIX: bastaki 'a'si uzun okunan ovguler icin nefesli, kararli.
-const EXPRESSIVE = { stability: 0.5, similarity_boost: 0.8, style: 0.08, use_speaker_boost: true, speed: 1.05 };
-const STEADY = { stability: 0.55, similarity_boost: 0.82, style: 0.0, use_speaker_boost: true, speed: 1.0 };
-const PRON_FIX = { stability: 0.7, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true, speed: 0.98 };
-const AFERIN_FIX = { stability: 0.6, similarity_boost: 0.85, style: 0.05, use_speaker_boost: true, speed: 1.0 };
+// BUTUNLUK icin iki ton BIRBIRINE YAKIN; hiz TEK banda sabit (1.0). Kullanici: ovgu TIZ geliyordu,
+// yonerge DUSUK/monoton geliyordu.
+//  - EXPRESSIVE (ovgu): tizligi azaltmak icin style=0 + daha YUKSEK stability (0.6) -> kararli/az keskin,
+//    tempo 1.0 (1.05 degil, sakin).
+//  - STEADY (yonerge): dusuklugu gidermek icin hafif style (0.06) ile biraz daha CANLI, stability 0.5.
+//  - style Turkce'de dusuk tutulur (fonetik bozulma); ikisi de speaker_boost + speed 1.0 (tutarli).
+const EXPRESSIVE = { stability: 0.6, similarity_boost: 0.82, style: 0.0, use_speaker_boost: true, speed: 1.0 };
+const STEADY = { stability: 0.5, similarity_boost: 0.82, style: 0.06, use_speaker_boost: true, speed: 1.0 };
+const PRON_FIX = { stability: 0.72, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true, speed: 1.0 };
+const AFERIN_FIX = { stability: 0.62, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true, speed: 1.0 };
 
 // ---- TELAFFUZ SOZLUGU (alias): TTS'e GIDEN metinde riskli kelimeleri fonetik-guvenli yazima cevir.
-// Dosya adi/hash ORIJINAL metinden uretildigi icin oyun kodu ETKILENMEZ. Yeni sorunlu kelime
-// cikarsa buraya bir satir ekleyip FORCE=1 ile yeniden uret. Sag taraf Turkce okunusa gore yazilir.
-// NOT: Turkce-native ses cogu kelimeyi zaten dogru okur; bu liste yalniz istisnalar icindir.
+// Dosya adi/hash ORIJINAL metinden uretildigi icin oyun kodu ETKILENMEZ. Sag taraf Turkce okunusa gore.
+// Turkce YAZILDIGI GIBI OKUNUR -> Turkce ses (Betul) cogu kelimeyi dogru okur; bu liste modelin
+// ISRARLA yanlis okudugu (yabanci-kokenli / acik-e-a vurgusu kayan) istisnalar icindir. Yeni sorunlu
+// kelime duyulunca buraya bir satir eklenip FORCE=1 ile yeniden uretilir.
 const PRON = [
-  // ornek/gozlemlenen: "terazi" bazi seslerde 'e' kayabiliyor -> hafif vurgu ipucu
-  // [/terazi/gi, "teraazi"],
+  // Acik-e/yabanci-kokenli riskli kelimeler icin ihtiyati alias (Betul'de test edilip kalibre edilecek):
+  // [/\bterazi\b/gi, "terazi"],   // gerekirse: "teraazi"
+  // [/\baferin\b/gi, "aferin"],   // gerekirse: "aaferin"
 ];
 function phoneticize(text) {
   let s = text;

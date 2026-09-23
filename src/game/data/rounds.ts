@@ -425,7 +425,9 @@ const KELIMELER: { word: string; emoji: string }[] = [
   { word: "Kuş", emoji: "🐦" }, { word: "Kelebek", emoji: "🦋" }, { word: "Çilek", emoji: "🍓" },
   { word: "Şapka", emoji: "🎩" }, { word: "Balon", emoji: "🎈" }, { word: "Uçak", emoji: "✈️" }, { word: "Fil", emoji: "🐘" },
 ];
-const kelimeInstr = (w: string) => `${w} hangisi? Ona dokun ve sepete koy.`;
+// "Elma hangisi?" -> kelime cümle başında (açık-e/a) TTS'te bozulabiliyor; "Hangisi elma?" ile
+// açık sesli harf cümle başından çıkar (kullanıcı: açık e/a başta sorun).
+const kelimeInstr = (w: string) => `Hangisi ${w.toLocaleLowerCase("tr")}? Ona dokun ve sepete koy.`;
 export const KELIME_INSTRS = KELIMELER.map((k) => kelimeInstr(k.word));
 export function kelimeAviRounds(): Round[] {
   // pickSeq: her tur farkli kelime sorulur (ayni "cicek hangisi?" arka arkaya sorulmasin)
